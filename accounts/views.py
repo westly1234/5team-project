@@ -14,6 +14,11 @@ from web.models import HealthSurvey
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import logout
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .forms import UserUpdateForm, ProfileUpdateForm
+from .models import Profile 
+from .models import Profile, BodyCompositionRecord
 
 
 def signup(request: HttpRequest):
@@ -131,3 +136,45 @@ def save_survey_view(request):
 def logout_view(request):
     logout(request)
     return redirect('home')  # 로그아웃 후 리디렉션
+
+
+@login_required
+def profile_edit(request):
+    profile, created = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=profile)
+        
+        if user_form.is_valid() and profile_form.is_valid():
+            saved_user = user_form.save()
+            saved_profile = profile_form.save()
+            messages.success(request, '프로필 정보가 성공적으로 업데이트되었습니다!')
+
+            # ✅ 프로필 저장 후, 신체 기록(BodyCompositionRecord) 생성
+            # 저장된 프로필에 체중, 골격근량, 체지방량 값이 모두 있을 경우에만 기록합니다.
+            if (saved_profile.current_weight and 
+                saved_profile.skeletal_muscle_mass and 
+                saved_profile.body_fat_mass):
+                
+                BodyCompositionRecord.objects.create(
+                    user=request.user,
+                    weight=saved_profile.current_weight,
+                    skeletal_muscle_mass=saved_profile.skeletal_muscle_mass,
+                    body_fat_mass=saved_profile.body_fat_mass
+                )
+                messages.info(request, '신체 변화 기록이 추가되었습니다.')
+
+            return redirect('web:services')
+        else:
+            messages.error(request, '입력된 정보를 다시 확인해주세요.')
+    else:
+        # ... (GET 요청 부분은 그대로)
+        user_form = UserUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=profile)
+
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form
+    }
+    return render(request, 'accounts/profile_edit.html', context)

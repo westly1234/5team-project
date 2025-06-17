@@ -21,21 +21,24 @@ try:
 except ImportError:
     Meal = None
     
-# --- (1) 헬퍼 함수를 뷰 바깥으로 이동 (전역 헬퍼 함수로 변경) ---
-# 이렇게 하면 뷰 함수 내의 변수와 충돌할 위험이 없습니다.
+# ✅ 인바디 그래프를 위해 새로 추가한 모델을 import 합니다.
+try:
+    from accounts.models import BodyCompositionRecord
+except ImportError:
+    BodyCompositionRecord = None
+
+# --- 헬퍼 함수 (기존과 동일) ---
 def parse_nutrition_value(value_str):
     """'50g', '450kcal' 같은 문자열에서 숫자만 추출하는 헬퍼 함수"""
     if isinstance(value_str, (int, float)):
         return value_str
     if isinstance(value_str, str):
-        # 여기서 re는 항상 상단에서 import한 정규표현식 모듈을 가리킵니다.
         numbers = re.findall(r'\d+\.?\d*', value_str)
         if numbers:
             return float(numbers[0])
-    return 0 # 숫자를 찾지 못하면 0을 반환
+    return 0
 
 # --- 기존 뷰 함수들은 그대로 유지 ---
-
 def home(request):
     return render(request, 'web/index.html')
 
@@ -68,13 +71,18 @@ def ai_chatbot_view(request):
 def start_trial(request):
     return render(request, 'web/start_trial.html')
 
-# --- 대시보드 뷰 함수 (오류 수정) ---
 
+# --- 대시보드 뷰 함수 (수정된 버전) ---
 @login_required
 def services_page(request):
     user = request.user
     today = timezone.now().date()
-    context = {}
+    
+    # context 딕셔너리에 필요한 모든 데이터를 담습니다.
+    context = {
+        'user': user,
+        'active_menu': 'dashboard',
+    }
 
     # --- 1. 최근 운동 루틴 가져오기 ---
     latest_routine = None
@@ -82,9 +90,6 @@ def services_page(request):
         try:
             latest_routine = Routine.objects.filter(user=user).prefetch_related('routineexercise_set__exercise').latest('created_at')
             exercises_in_routine = []
-            
-            # --- (2) 루틴 순회 시 변수명을 're'에서 'routine_ex'로 변경 ---
-            # 're'라는 변수명은 정규표현식 모듈과 충돌하므로 사용하지 않는 것이 좋습니다.
             for routine_ex in latest_routine.routineexercise_set.all()[:5]:
                 exercise_detail = {
                     'name': routine_ex.exercise.name,
@@ -93,7 +98,6 @@ def services_page(request):
                 }
                 exercises_in_routine.append(exercise_detail)
             latest_routine.exercises_list = exercises_in_routine
-
         except Routine.DoesNotExist:
             latest_routine = None
     context['latest_routine'] = latest_routine
@@ -105,19 +109,31 @@ def services_page(request):
         for meal in daily_meals:
             if meal.analysis_result and isinstance(meal.analysis_result, dict) and 'total_nutrition' in meal.analysis_result:
                 nutrition = meal.analysis_result['total_nutrition']
-                # 이제 이 함수는 뷰 바깥에 정의된 안전한 헬퍼 함수를 호출합니다.
                 today_diet_summary['total_kcal'] += parse_nutrition_value(nutrition.get('calories', 0))
                 today_diet_summary['carbs'] += parse_nutrition_value(nutrition.get('carbohydrate', 0))
                 today_diet_summary['protein'] += parse_nutrition_value(nutrition.get('protein', 0))
                 today_diet_summary['fat'] += parse_nutrition_value(nutrition.get('fat', 0))
     context['today_diet_summary'] = today_diet_summary
 
-    # --- 3. 체중 변화 차트 데이터 준비 ---
-    weight_chart_data = {
-        'labels': ['5/12', '5/13', '5/14', '5/15', '5/16', '5/17', '5/18'],
-        'weights': [75.5, 75.1, 74.8, 74.9, 74.2, 73.8, 73.5]
+    # --- 3. ✅ 인바디 스타일 그래프 데이터 준비 (수정된 부분) ---
+    inbody_chart_data = {
+        'labels': [],
+        'weights': [],
+        'muscles': [],
+        'fats': [],
     }
-    context['weight_chart_data'] = json.dumps(weight_chart_data)
+    if BodyCompositionRecord:
+        # 현재 사용자의 기록을 날짜순으로 가져옵니다 (최대 30개).
+        records = BodyCompositionRecord.objects.filter(user=user).order_by('created_at')[:30]
+        
+        # Chart.js가 사용할 데이터 형식으로 가공합니다.
+        inbody_chart_data['labels'] = [rec.created_at.strftime('%m/%d') for rec in records]
+        inbody_chart_data['weights'] = [rec.weight for rec in records]
+        inbody_chart_data['muscles'] = [rec.skeletal_muscle_mass for rec in records]
+        inbody_chart_data['fats'] = [rec.body_fat_mass for rec in records]
+
+    # JSON으로 변환하여 context에 추가합니다.
+    context['inbody_chart_data'] = json.dumps(inbody_chart_data)
 
     # --- 4. 식단 구성 도넛 차트 데이터 준비 ---
     diet_chart_data = {

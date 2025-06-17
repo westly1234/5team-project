@@ -101,7 +101,7 @@
         border-radius: 12px; padding: 24px; backdrop-filter: blur(5px);
         transition: all 0.3s ease; display: flex; flex-direction: column;
     }
-    .dashboard-card:hover {
+    a.dashboard-card:hover {
         transform: translateY(-5px); background: rgba(255, 255, 255, 0.05);
         border-color: rgba(78, 205, 196, 0.5);
     }
@@ -112,7 +112,11 @@
     .card-header .icon { font-size: 1.5rem; margin-right: 12px; color: #4ecdc4; }
     .card-header .title { font-size: 1.2rem; font-weight: 600; color: #fff; }
     .card-content { flex-grow: 1; }
+
+    /* 프로필 카드 스타일 수정 */
     .profile-card { grid-area: 1 / 2 / 2 / 3; }
+    a.profile-link-card { text-decoration: none; color: inherit; }
+    a.profile-link-card:hover { color: inherit; }
     .profile-info { text-align: center; }
     .profile-info .avatar {
         width: 90px; height: 90px; border-radius: 50%;
@@ -120,9 +124,17 @@
     }
     .profile-info .username { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; color: #fff; }
     .profile-info .user-email { font-size: 0.9rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 20px; }
-    .profile-stats { display: flex; justify-content: space-around; text-align: center; }
-    .profile-stats .stat .value { font-size: 1.2rem; font-weight: 600; color: #fff; }
+    
+    /* 프로필 통계 레이아웃을 Grid로 변경 */
+    .profile-stats { 
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3열 그리드 */
+        gap: 15px; /* 아이템 사이 간격 */
+        text-align: center; 
+    }
+    .profile-stats .stat .value { font-size: 1.1rem; font-weight: 600; color: #fff; }
     .profile-stats .stat .label { font-size: 0.8rem; color: rgba(255, 255, 255, 0.6); }
+    
     .workout-card { grid-area: 1 / 1 / 2 / 2; }
     .workout-list { list-style: none; padding: 0; margin: 0; }
     .workout-list .exercise-item {
@@ -134,8 +146,8 @@
     .workout-list .exercise-details { font-size: 0.9rem; color: rgba(255, 255, 255, 0.6); }
     .progress-chart-card { grid-area: 2 / 1 / 3 / 2; }
     .chart-container { position: relative; height: 100%; min-height: 250px; }
-
-    /* --- ✨ 식단 카드 CSS (개선된 버전) --- */
+    
+    /* 식단 카드 CSS */
     .diet-card { 
         grid-area: 2 / 2 / 3 / 3; 
     }
@@ -236,11 +248,8 @@
             <li><a href="{% url 'web:services' %}" class="nav-item {% if active_menu == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2-fill icon"></i> 대시보드 홈</a></li>
             <li><a href="{% url 'routine:select' %}" class="nav-item {% if active_menu == 'routine' %}active{% endif %}"><i class="bi bi-person-arms-up icon"></i> 운동 루틴 생성</a></li>
             <li><a href="{% url 'routine:my_routines' %}" class="nav-item {% if active_menu == 'routine_list' %}active{% endif %}"><i class="bi bi-list-task icon"></i> 내 루틴 목록</a></li>
-            
-            <!-- ✅ 식단 관련 메뉴 수정 및 추가 -->
             <li><a href="{% url 'diet:diet_report' %}" class="nav-item {% if active_menu == 'diet_report' %}active{% endif %}"><i class="bi bi-pie-chart-fill icon"></i> 식단 대시보드</a></li>
             <li><a href="{% url 'diet:diet_analysis' %}" class="nav-item {% if active_menu == 'diet_analysis' %}active{% endif %}"><i class="bi bi-camera-fill icon"></i> 식단 기록하기</a></li>
-            
             <li><a href="{% url 'place:search' %}" class="nav-item {% if active_menu == 'place' %}active{% endif %}"><i class="bi bi-geo-alt-fill icon"></i> 운동 장소</a></li>
             <li><a href="{% url 'music:music_playlist' %}" class="nav-item {% if active_menu == 'music' %}active{% endif %}"><i class="bi bi-music-note-beamed icon"></i> AI 음악 추천</a></li>
             <li><a href="#" class="nav-item {% if active_menu == 'chatbot' %}active{% endif %}"><i class="bi bi-chat-dots-fill icon"></i> AI 챗봇 상담</a></li>
@@ -281,11 +290,11 @@
                 </div>
             </div>
 
-            <!-- 프로필 카드 -->
-            <div class="dashboard-card profile-card">
+            <!-- 프로필 카드 (신규 정보 추가) -->
+            <a href="{% url 'accounts:profile_edit' %}" class="dashboard-card profile-card profile-link-card">
                  <div class="card-content">
                     <div class="profile-info">
-                        <img src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'web/images/default_avatar.png' %}{% endif %}" alt="User Avatar" class="avatar">
+                        <img src="{% if user.profile.image and user.profile.image.url %}{{ user.profile.image.url }}{% else %}{% static 'web/images/default_avatar.png' %}{% endif %}" alt="User Avatar" class="avatar">
                         <div class="username">{{ user.first_name|default:user.username }}</div>
                         <div class="user-email">{{ user.email }}</div>
                     </div>
@@ -296,30 +305,48 @@
                         </div>
                         <div class="stat">
                             <div class="value">{{ user.profile.current_weight|default:"-" }}<small>kg</small></div>
-                            <div class="label">몸무게</div>
+                            <div class="label">체중</div>
                         </div>
                          <div class="stat">
                             <div class="value">{{ user.profile.target_weight|default:"-" }}<small>kg</small></div>
-                            <div class="label">목표</div>
+                            <div class="label">목표 체중</div>
+                        </div>
+                        <div class="stat">
+                            <div class="value">{{ user.profile.skeletal_muscle_mass|default:"-" }}<small>kg</small></div>
+                            <div class="label">골격근량</div>
+                        </div>
+                        <div class="stat">
+                            <div class="value">{{ user.profile.body_fat_mass|default:"-" }}<small>kg</small></div>
+                            <div class="label">체지방량</div>
+                        </div>
+                        <div class="stat">
+                            <div class="value">
+                                {% if user.profile.body_fat_percentage is not None %}
+                                    {{ user.profile.body_fat_percentage|floatformat:1 }}<small>%</small>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                            <div class="label">체지방률</div>
                         </div>
                     </div>
                  </div>
-            </div>
+            </a>
 
-            <!-- 체중 변화 그래프 카드 -->
+            <!-- ✅ 체중 변화 그래프 카드 수정 -->
             <div class="dashboard-card progress-chart-card">
                 <div class="card-header">
                     <i class="bi bi-graph-up-arrow icon"></i>
-                    <span class="title">체중 변화 추이</span>
+                    <span class="title">주요 지표 변화 (InBody 스타일)</span>
                 </div>
                 <div class="card-content">
                     <div class="chart-container">
-                        <canvas id="weightProgressChart"></canvas>
+                        <canvas id="inbodyStyleChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- ✨ 오늘의 식단 요약 카드 (개선된 버전) -->
+            <!-- 오늘의 식단 요약 카드 -->
             <div class="dashboard-card diet-card">
                 <div class="card-header">
                     <i class="bi bi-pie-chart-fill icon"></i>
@@ -376,28 +403,81 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const weightData = JSON.parse('{{ weight_chart_data|safe }}');
+    // ✅ 'inbody_chart_data'를 파싱하도록 수정
+    const inbodyData = JSON.parse('{{ inbody_chart_data|safe }}');
     const dietData = JSON.parse('{{ diet_chart_data|safe }}');
 
-    // 1. 체중 변화 라인 차트
-    if (document.getElementById('weightProgressChart')) {
-        const weightCtx = document.getElementById('weightProgressChart').getContext('2d');
-        new Chart(weightCtx, {
-            type: 'line', data: {
-                labels: weightData.labels,
-                datasets: [{
-                    label: '체중(kg)', data: weightData.weights, fill: true,
-                    backgroundColor: 'rgba(78, 205, 196, 0.1)', borderColor: '#4ecdc4',
-                    tension: 0.4, pointBackgroundColor: '#fff', pointBorderColor: '#4ecdc4', pointHoverRadius: 7,
-                }]
+    // ✅ 1. 인바디 스타일 라인 차트로 교체
+    if (document.getElementById('inbodyStyleChart')) {
+        const inbodyCtx = document.getElementById('inbodyStyleChart').getContext('2d');
+        new Chart(inbodyCtx, {
+            type: 'line', 
+            data: {
+                labels: inbodyData.labels, // X축: 날짜
+                datasets: [
+                    {
+                        label: '체중 (kg)', 
+                        data: inbodyData.weights,
+                        borderColor: '#4ECDC4', // 청록색
+                        backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                        fill: false,
+                        tension: 0.1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    },
+                    {
+                        label: '골격근량 (kg)', 
+                        data: inbodyData.muscles,
+                        borderColor: '#FF6B6B', // 붉은색
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        fill: false,
+                        tension: 0.1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    },
+                    {
+                        label: '체지방량 (kg)', 
+                        data: inbodyData.fats,
+                        borderColor: '#FFE66D', // 노란색
+                        backgroundColor: 'rgba(255, 230, 109, 0.1)',
+                        fill: false,
+                        tension: 0.1,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }
+                ]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
+                responsive: true, 
+                maintainAspectRatio: false,
                 scales: {
-                    y: { beginAtZero: false, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: 'rgba(255, 255, 255, 0.7)' }},
-                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: 'rgba(255, 255, 255, 0.7)' }}
+                    y: { 
+                        beginAtZero: false, 
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }, 
+                        ticks: { 
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            callback: function(value) { return value + 'kg'; } // Y축에 'kg' 단위 추가
+                        }
+                    },
+                    x: { 
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
+                        ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                    }
                 },
-                plugins: { legend: { display: false } }
+                plugins: { 
+                    legend: { // 범례 스타일
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.8)',
+                            font: { size: 12 }
+                        }
+                    } 
+                },
+                interaction: { // 마우스 호버 시 상호작용
+                    mode: 'index',
+                    intersect: false,
+                },
             }
         });
     }
