@@ -1,0 +1,98 @@
+{% extends 'web/dashboard_sliding_base.html' %}
+{% load static %}
+
+{% block title %}식단 분석 결과{% endblock %}
+
+{% block page_content %}
+<script src="https://cdn.tailwindcss.com"></script>
+
+<div class="p-6 sm:p-8">
+    <header class="text-left mb-12">
+        <div class="border-l-4 border-green-400 pl-4">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Analysis Result</h1>
+            <p class="text-md text-gray-400 mt-2">AI가 분석한 식단 결과입니다.</p>
+        </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8">
+        <!-- 왼쪽: 사용자가 올린 정보 -->
+        <div class="md:col-span-2 bg-gray-800/50 backdrop-blur-sm border border-white/10 p-6 rounded-2xl self-start">
+            <h3 class="text-xl font-bold text-white mb-4">입력한 정보</h3>
+            {% if meal.image %}
+                <div class="mb-4">
+                    <h4 class="text-md font-semibold text-gray-300 mb-2">업로드한 사진</h4>
+                    <img src="{{ meal.image.url }}" alt="음식 사진" class="w-full rounded-lg shadow-lg">
+                </div>
+            {% endif %}
+            {% if meal.text_input %}
+                <div>
+                    <h4 class="text-md font-semibold text-gray-300 mb-2">작성한 내용</h4>
+                    <p class="text-gray-300 bg-gray-900/70 p-4 rounded-md whitespace-pre-wrap">{{ meal.text_input }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 오른쪽: AI 분석 결과 -->
+        <div class="md:col-span-3 bg-gray-800/50 backdrop-blur-sm border border-white/10 p-6 rounded-2xl">
+            {% if meal.analysis_result and not meal.analysis_result.error %}
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-4">섭취 항목 및 칼로리</h3>
+                        <ul class="space-y-2">
+                            {% for food in meal.analysis_result.foods %}
+                            <li class="flex justify-between items-center bg-gray-900/50 p-3 rounded-md">
+                                <span class="text-gray-300">{{ food.name }}</span>
+                                <span class="font-semibold text-cyan-400">{{ food.calories }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-4">총 영양 정보 (추정치)</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                            {% with nutrition=meal.analysis_result.total_nutrition %}
+                            <div class="bg-gray-900/50 p-4 rounded-lg">
+                                <p class="text-sm text-gray-400">총 칼로리</p>
+                                <p class="text-2xl font-bold text-green-400">{{ nutrition.calories }}</p>
+                            </div>
+                            <div class="bg-gray-900/50 p-4 rounded-lg">
+                                <p class="text-sm text-gray-400">탄수화물</p>
+                                <p class="text-2xl font-bold text-white">{{ nutrition.carbohydrate }}</p>
+                            </div>
+                            <div class="bg-gray-900/50 p-4 rounded-lg">
+                                <p class="text-sm text-gray-400">단백질</p>
+                                <p class="text-2xl font-bold text-white">{{ nutrition.protein }}</p>
+                            </div>
+                            <div class="bg-gray-900/50 p-4 rounded-lg">
+                                <p class="text-sm text-gray-400">지방</p>
+                                <p class="text-2xl font-bold text-white">{{ nutrition.fat }}</p>
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-4">AI의 한 줄 피드백</h3>
+                        <div class="bg-blue-900/30 border border-blue-500/50 p-4 rounded-lg">
+                            <p class="text-blue-200 leading-relaxed">💡 {{ meal.analysis_result.feedback }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                 <div class="flex flex-col items-center justify-center h-full text-center py-10">
+                    <svg class="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h3 class="text-xl font-bold text-white">분석 실패</h3>
+                    <p class="text-gray-400 mt-2">AI가 식단을 분석하는 데 실패했습니다. 잠시 후 다시 시도해주세요.</p>
+                </div>
+            {% endif %}
+            
+            <div class="mt-8 text-center">
+                <a href="{% url 'diet:diet_analysis' %}" class="inline-block text-gray-300 hover:text-white bg-gray-700 hover:bg-gray-600 py-2 px-5 rounded-lg transition-colors">
+                    <i class="bi bi-arrow-left mr-2"></i> 다른 식단 분석하기
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

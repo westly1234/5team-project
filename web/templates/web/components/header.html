@@ -1,0 +1,248 @@
+{% load static %}
+
+<style>
+  /* 네비게이션 바 전체 스타일 */
+  .menu.menu2 .navbar-dropdown {
+    padding: 0.5rem 0; /* 상단바의 상하 패딩을 줄여 세로 길이 축소 */
+  }
+
+  .menu.menu2 .container-fluid { /* container를 fluid로 변경하여 가로 너비 확장 */
+    padding-left: 2rem; /* 좌우 여백 */
+    padding-right: 2rem;
+  }
+
+  /* 로고와 이름 스타일 */
+  .menu.menu2 .navbar-brand {
+    display: flex; 
+    align-items: center; 
+    text-decoration: none; 
+    margin-right: 1rem; /* 로고와 검색창 사이 간격 */
+  }
+  .menu.menu2 .navbar-logo img {
+    height: 2.5rem; /* 로고 이미지 기본 높이 (세로 길이 줄임에 따라 작게) */
+    max-height: 40px; /* 로고 이미지 최대 높이 제한 (상단바 세로 높이 고려) */
+    width: auto; /* 가로 비율 유지 */
+    margin-right: 0.5rem; 
+    object-fit: contain; /* 이미지가 잘리지 않고 다 보이도록 */
+  }
+  .menu.menu2 .navbar-brand-name {
+    font-size: 1.3rem; /* 로고 이름 폰트 크기 조정 */
+    font-weight: 600; 
+    color: #333; 
+  }
+
+  /* 네비게이션 바 검색창 & 드롭다운 스타일 */
+  .menu.menu2 .header-search {
+    margin-left: auto; /* 로고와 검색창 사이 공간을 채움 (오른쪽으로 밀기) */
+    margin-right: 1.5rem; 
+    display: flex; 
+    align-items: center; 
+  }
+
+  .menu.menu2 .search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px; /* 약간 더 둥글게 */
+    padding: 0px 5px 0px 12px; /* 패딩 조정 */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+    width: 250px; /* 검색창 너비 조정 */
+    height: 36px; /* 검색창 높이 조정 */
+  }
+
+  .menu.menu2 #rag-search-box {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    padding: 6px 0; /* 패딩 조정 */
+    font-size: 0.85rem; /* 폰트 크기 조정 */
+    background-color: transparent;
+    color: #333;
+  }
+
+  .menu.menu2 #rag-search-box::placeholder {
+    color: #aaa;
+  }
+
+  .menu.menu2 #rag-search-button {
+    border: none;
+    background-color: transparent;
+    color: #757575;
+    padding: 0 8px; /* 패딩 조정 */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .menu.menu2 #rag-search-button i {
+    font-size: 0.9rem; /* 아이콘 크기 조정 */
+  }
+
+  .menu.menu2 #popular-searches,
+  .menu.menu2 #rag-search-results {
+    position: absolute;
+    top: calc(100% + 6px); /* 간격 조정 */
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px; /* 둥근 모서리 조정 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 1050;
+    padding: 0;
+  }
+
+  .menu.menu2 .popular-searches-title {
+    font-weight: 600;
+    padding: 10px 12px; /* 패딩 조정 */
+    font-size: 0.8rem; /* 폰트 크기 조정 */
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .menu.menu2 #popular-searches ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .menu.menu2 #popular-searches ul li {
+    padding: 8px 12px; /* 패딩 조정 */
+    font-size: 0.85rem; /* 폰트 크기 조정 */
+    color: #555;
+    cursor: pointer;
+    border-bottom: 1px solid #f9f9f9;
+  }
+  .menu.menu2 #popular-searches ul li:last-child {
+    border-bottom: none;
+  }
+
+  .menu.menu2 #popular-searches ul li:hover {
+    background-color: #f7f7f7;
+  }
+
+  /* 메뉴 아이템들 스타일 조정 */
+  .menu.menu2 .nav-item .nav-link {
+    padding: 0.5rem 0.8rem; /* 메뉴 아이템 패딩 조정 */
+    font-size: 0.9rem !important; /* display-4 클래스보다 우선 적용 */
+  }
+  
+  .menu.menu2 .profile-status-container {
+    margin-right: 0.8rem; /* 간격 조정 */
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem; /* 폰트 크기 조정 */
+    color: #555;
+  }
+  .menu.menu2 .navbar-buttons .btn {
+    padding: 0.4rem 0.8rem; /* 버튼 패딩 조정 */
+    font-size: 0.85rem !important; /* display-4 클래스보다 우선 적용 */
+  }
+  .menu.menu2 .navbar-buttons {
+    display: flex;
+    align-items: center;
+  }
+
+
+  @media (max-width: 991.98px) { 
+    .menu.menu2 .container-fluid {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    .menu.menu2 .header-search {
+      width: 100%; 
+      margin-left: 0;
+      margin-right: 0;
+      margin-top: 0.5rem; /* 모바일에서 로고 아래 간격 */
+      margin-bottom: 0.5rem; 
+      order: 0; /* 기본 순서로 (토글러 다음에 위치하도록) */
+    }
+    .menu.menu2 .search-container {
+      width: 100%; 
+      height: 38px;
+    }
+    .menu.menu2 .navbar-brand-name {
+        font-size: 1.2rem; 
+    }
+    .menu.menu2 .navbar-logo img {
+        height: 2.2rem; 
+        max-height: 35px;
+    }
+    .menu.menu2 .nav-item .nav-link {
+        padding: 0.5rem 0;
+    }
+  }
+
+</style>
+
+<section data-bs-version="5.1" class="menu menu2 cid-uLCYYlJoum" once="menu" id="menu-5-uLCYYlJoum">
+  <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
+    <!-- container를 container-fluid로 변경하여 가로 너비 확장 -->
+    <div class="container-fluid"> 
+      <a class="navbar-brand" href="/"> 
+        <span class="navbar-logo">
+          <img src="{% static 'images/logo_filename.png' %}" alt="HealthWise Logo">
+        </span>
+        <span class="navbar-brand-name">HealthWise</span> 
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbarSupportedContent" data-bs-target="#navbarSupportedContent" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        
+        <div class="header-search">
+          <div class="search-container">
+            <input type="text" id="rag-search-box" placeholder="운동, 식단, 장소 검색..." aria-label="Search">
+            <button id="rag-search-button" aria-label="Search">
+              <i class="fas fa-search"></i>
+            </button>
+            <div id="popular-searches" style="display: none;">
+              <div class="popular-searches-title">인기 검색어</div>
+              <ul>
+                <li>유산소 운동</li>
+                <li>저탄수화물 식단</li>
+                <li>근처 헬스장</li>
+                <li>스트레칭 방법</li>
+                <li>다이어트 식단</li>
+              </ul>
+            </div>
+            <div id="rag-search-results" style="display: none;"></div>
+          </div>
+        </div>
+        
+        <ul class="navbar-nav nav-dropdown" data-app-modern-menu="true"> <!-- ms-auto 제거 또는 조정하여 메뉴 위치 변경 -->
+          <li class="nav-item">
+            <a class="nav-link link text-black" href="#exercise-section">운동</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link link text-black" href="#meal-section">식단</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link link text-black" href="#place-section">장소</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link link text-black" href="#faq-section">챗봇 FAQ</a>
+          </li>
+        </ul>
+
+        <div class="profile-status-container ms-auto"> <!-- 프로필 상태를 오른쪽으로 밀기 위해 ms-auto 추가 -->
+          <div id="profileStatus">프로필을 작성해주세요</div>
+        </div>
+
+        <div class="navbar-buttons mbr-section-btn">
+          <a href="#" class="btn btn-primary" style="margin-right: 5px;">Log In</a>
+          <a href="#" class="btn btn-secondary">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+</section>

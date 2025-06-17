@@ -1,0 +1,369 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 건강 파트너 - 메인</title>
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #f8f9fa; /* 페이지 전체 기본 배경 */
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* ▼▼▼▼▼ .dynamic-bg-slider-section 스타일 수정 ▼▼▼▼▼ */
+        .dynamic-bg-slider-section {
+            width: 100%;
+            /* padding: 60px 0; -> 상단 패딩은 아래에서 조절 */
+            padding-top: 50px; /* 제목과 탭 메뉴를 위한 상단 공간 확보 (값 조절 필요) */
+            padding-bottom: 60px; /* 하단 패딩 유지 */
+            box-sizing: border-box;
+            transition: background-color 0.4s ease-out;
+            display: flex;
+            flex-direction: column; /* 자식 요소들을 수직으로 쌓도록 변경 */
+            align-items: center;
+            /* justify-content: center; -> flex-start로 변경하여 상단부터 배치 */
+            justify-content: flex-start;
+            min-height: 100vh; /* 최소 화면 전체 높이 (탭메뉴와 슬라이더 포함) */
+            background-color: #e0f2fe; /* 초기 연한 하늘색 배경 */
+        }
+        /* ▲▲▲▲▲ .dynamic-bg-slider-section 스타일 수정 끝 ▲▲▲▲▲ */
+
+
+        .main-title-area {
+            text-align: center;
+            /* padding: 50px 20px 25px; -> dynamic-bg-slider-section 내부로 옮겨지므로 패딩 조절 */
+            padding: 0 20px 20px; /* 위쪽 패딩은 부모에서, 아래쪽 패딩 조절 */
+            /* background-color: #f8f9fa; -> 부모 배경색을 사용하도록 transparent 또는 제거 */
+            background-color: transparent;
+            width: 100%; /* 부모 너비에 맞춤 */
+            box-sizing: border-box;
+        }
+        .main-title-area h1 {
+            font-size: 2.8rem;
+            font-weight: 700; color: #2c3e50; margin: 0; line-height: 1.3;
+        }
+
+        .tab-menu-container {
+            display: flex;
+            justify-content: center;
+            /* padding: 0 20px 35px; -> dynamic-bg-slider-section 내부로 옮겨지므로 패딩 조절 */
+            padding: 0 20px 30px; /* 위쪽 패딩 제거, 아래쪽 패딩 조절 */
+            flex-wrap: wrap;
+            gap: 12px;
+            /* background-color: #f8f9fa; -> 부모 배경색을 사용하도록 transparent 또는 제거 */
+            background-color: transparent;
+            width: 100%; /* 부모 너비에 맞춤 */
+            box-sizing: border-box;
+            position: relative; /* z-index 적용을 위해 */
+            z-index: 5; /* 슬라이더보다 위에 오도록 (필요시) */
+        }
+        .tab-button {
+            padding: 10px 22px; font-size: 1rem; font-weight: 500; color: #555;
+            background-color: #e9ecef; border: none; border-radius: 25px;
+            cursor: pointer; transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+            outline: none; display: inline-flex; align-items: center; white-space: nowrap;
+        }
+        .tab-button .icon { margin-right: 8px; font-size: 1.2em; }
+        .tab-button.active { background-color: #2c3e50; color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .tab-button:hover:not(.active) { background-color: #ced4da; }
+
+
+        .swiper-container-main-feature {
+            width: 100%;
+            max-width: 1200px;
+            height: auto;
+            margin: 0 auto; /* 위쪽 마진은 필요 없어짐 */
+            position: relative;
+            overflow: visible !important;
+        }
+
+        /* ... (swiper-slide, slide-card-layout 등 나머지 스타일은 거의 그대로 유지) ... */
+        /* ... (카드 배경색, 텍스트 영역, 이미지 영역 스타일 등은 그대로 유지) ... */
+        /* ... (swiper 버튼, 페이지네이션 스타일 등은 그대로 유지) ... */
+        /* ... (반응형 스타일은 그대로 유지, 필요시 패딩 등 미세 조정) ... */
+
+        .swiper-slide {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            box-sizing: border-box;
+            background-color: transparent !important;
+            width: 70% !important;
+            min-height: 500px;
+            padding: 10px 0;
+            transform: scale(0.8);
+            opacity: 0.6;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            border-radius: 25px;
+            cursor: grab;
+        }
+        .swiper-slide:active { cursor: grabbing; }
+
+        .swiper-slide-active {
+            transform: scale(1);
+            opacity: 1;
+            z-index: 1;
+            box-shadow: none;
+        }
+
+        .slide-card-layout {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 40px 50px;
+            padding-bottom: 70px;
+            box-sizing: border-box;
+            gap: 30px;
+            color: white;
+            border-radius: inherit;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-bg-light-blue { background: linear-gradient(135deg, #a0c4ff 0%, #bde0fe 100%); }
+        .card-bg-blue { background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); }
+        .card-bg-green { background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); }
+        .card-bg-orange { background: linear-gradient(135deg, #fd7e14 0%, #c65e0a 100%); }
+        .card-bg-teal { background: linear-gradient(135deg, #20c997 0%, #138464 100%); }
+        .card-bg-purple { background: linear-gradient(135deg, #6f42c1 0%, #4d2d85 100%); }
+
+
+        .slide-card-layout .text-area { flex-basis: 55%; text-align: left; }
+        .slide-card-layout .text-area h2 {
+            font-size: 2.6rem; font-weight: 700;
+            margin-top: 0; margin-bottom: 15px; line-height: 1.25;
+        }
+        .slide-card-layout .text-area p {
+            font-size: 1.05rem; line-height: 1.65;
+            margin-bottom: 25px; opacity: 0.9;
+        }
+        .slide-card-layout .cta-button {
+            display: inline-block; padding: 12px 30px; font-size: 1rem;
+            font-weight: 600; color: #333; background-color: white;
+            border-radius: 25px; text-decoration: none;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .slide-card-layout .cta-button:hover {
+            background-color: #e9ecef; transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.12);
+        }
+
+        .slide-card-layout .image-area {
+            width: 48% !important; min-height: 550px !important; max-width: 650px !important;
+            text-align: center; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; border-radius: 0 !important;
+        }
+        .slide-card-layout .image-area img {
+            width: 100% !important; height: 100% !important;
+            max-width: none !important; max-height: none !important;
+            object-fit: cover; border-radius: 0 !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        }
+
+        .swiper-button-prev, .swiper-button-next {
+            color: white; background-color: rgba(0,0,0,0.2);
+            border-radius: 50%; width: 45px; height: 45px;
+            transition: background-color 0.3s;
+            top: 50%; transform: translateY(-50%); z-index: 10;
+            display: flex !important; align-items: center; justify-content: center;
+        }
+        .swiper-button-prev { left: -15px; }
+        .swiper-button-next { right: -15px; }
+
+        .swiper-button-prev::after, .swiper-button-next::after { font-size: 18px; font-weight: bold; }
+
+        .swiper-pagination {
+            position: absolute;
+            bottom: 25px !important;
+            left: 50%;
+            transform: translateX(0%); /* translateX(-50%) 가 더 정확할 수 있습니다. */
+            width: auto;
+            z-index: 5;
+        }
+        .swiper-pagination-bullet { background-color: rgba(255,255,255,0.6); opacity: 1; width: 10px; height: 10px; border-radius: 50%; margin: 0 5px !important;}
+        .swiper-pagination-bullet-active { background-color: white; opacity: 1; transform: scale(1.15);}
+
+        @media (max-width: 1024px) { /* ... 반응형 스타일 ... */ }
+        @media (max-width: 768px) { /* ... 반응형 스타일 ... */ }
+
+    </style>
+</head>
+<body>
+    <!-- ▼▼▼▼▼ HTML 구조 변경: 제목과 탭 메뉴를 슬라이더 섹션 안으로 이동 ▼▼▼▼▼ -->
+    <div class="dynamic-bg-slider-section">
+        <div class="main-title-area">
+            <h1>모든 순간을 위한 AI 건강 파트너</h1>
+        </div>
+        <div class="tab-menu-container">
+            <button class="tab-button active" data-slide-index="0"><span class="icon">🏋️</span>운동</button>
+            <button class="tab-button" data-slide-index="1"><span class="icon">🧘</span>스트레칭</button>
+            <button class="tab-button" data-slide-index="2"><span class="icon">🥗</span>식단</button>
+            <button class="tab-button" data-slide-index="3"><span class="icon">💡</span>영양 상식</button>
+            <button class="tab-button" data-slide-index="4"><span class="icon">🤖</span>AI 챗봇</button>
+        </div>
+
+        <div class="swiper-container-main-feature">
+            <div class="swiper-wrapper">
+                
+                <div class="swiper-slide" data-hover-bg-color="#a0c4ff">
+                    <div class="slide-card-layout card-bg-light-blue">
+                        <div class="text-area">
+                            <h2>AI 맞춤형<br>운동 프로그램</h2>
+                            <p>AI가 분석한 당신만을 위한 최적의 운동 루틴을 경험하고, 건강 목표를 효과적으로 달성하세요.</p>
+                            <a href="#" class="cta-button">지금 시작하기</a>
+                        </div>
+                        <div class="image-area">
+                            <img src="{% static 'images/운동하는 사람.jpg' %}" alt="AI 운동 프로그램">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="swiper-slide" data-hover-bg-color="#28a745">
+                     <div class="slide-card-layout card-bg-green">
+                        <div class="text-area">
+                            <h2>유연성을 위한<br>스트레칭 가이드</h2>
+                            <p>전문가가 단계별로 안내하는 스트레칭으로 몸의 긴장을 풀고 유연성을 향상시켜보세요.</p>
+                            <a href="#" class="cta-button">가이드 보기</a>
+                        </div>
+                        <div class="image-area">
+                            <img src="{% static 'images/요가하는 사람.jpg' %}" alt="스트레칭 가이드">
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide" data-hover-bg-color="#fd7e14">
+                    <div class="slide-card-layout card-bg-orange">
+                         <div class="text-area">
+                            <h2>AI 스마트<br>식단 플래너</h2>
+                            <p>개인의 목표와 취향에 맞는 건강하고 맛있는 식단을 AI가 매일 새롭게 추천해 드립니다.</p>
+                            <a href="#" class="cta-button">식단 확인하기</a>
+                        </div>
+                        <div class="image-area">
+                            <img src="{% static 'images/식단 접시.jpg' %}" alt="AI 식단 플래너">
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide" data-hover-bg-color="#20c997">
+                    <div class="slide-card-layout card-bg-teal">
+                        <div class="text-area">
+                            <h2>똑똑하게 챙기는<br>영양 상식</h2>
+                            <p>복잡한 영양 정보를 쉽고 재미있는 퀴즈와 팁으로 알아보고 건강한 습관을 만드세요.</p>
+                            <a href="#" class="cta-button">상식 배우기</a>
+                        </div>
+                        <div class="image-area">
+                            <img src="{% static 'images/영양상식.jpg' %}" alt="영양 상식">
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide" data-hover-bg-color="#6f42c1">
+                    <div class="slide-card-layout card-bg-purple">
+                        <div class="text-area">
+                            <h2>24시간 대기<br>AI 건강 챗봇</h2>
+                            <p>궁금한 건강 정보나 사소한 고민까지, 언제든지 AI 챗봇에게 편하게 물어보고 답변을 받으세요.</p>
+                            <a href="#" class="cta-button">챗봇과 대화하기</a>
+                        </div>
+                        <div class="image-area">
+                            <img src="{% static 'images/AI 챗봇.jpg' %}" alt="AI 챗봇">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-prev"></div>
+            <div class="swiper-button-next"></div>
+        </div>
+    </div>
+    <!-- ▲▲▲▲▲ HTML 구조 변경 끝 ▲▲▲▲▲ -->
+
+
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sliderSection = document.querySelector('.dynamic-bg-slider-section');
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const initialBgColor = window.getComputedStyle(sliderSection).backgroundColor || '#e0f2fe'; // 초기 배경색 가져오기
+
+            // 초기 배경색 적용 (JavaScript에서도 한 번 더 명시)
+            sliderSection.style.backgroundColor = initialBgColor;
+
+            const mySwiper = new Swiper('.swiper-container-main-feature', {
+                loop: true,
+                slidesPerView: 'auto',
+                centeredSlides: true,
+                spaceBetween: 20, // 슬라이드 간 간격
+                grabCursor: true,
+                effect: 'slide', // 기본 슬라이드 효과
+
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                on: {
+                    init: function () {
+                        // 활성 탭 버튼 초기화
+                        if (tabButtons.length > this.realIndex) {
+                           tabButtons[this.realIndex].classList.add('active');
+                        }
+                        // 활성 슬라이드 스타일 적용
+                        if(this.slides[this.activeIndex]) {
+                            this.slides[this.activeIndex].classList.add('swiper-slide-active');
+                        }
+
+                        // 슬라이드 호버 시 배경색 변경 로직 (옵션)
+                        this.slides.forEach(slide => {
+                            slide.addEventListener('mouseenter', function() {
+                                const hoverBgColor = this.dataset.hoverBgColor || initialBgColor; // data-hover-bg-color 값 사용
+                                sliderSection.style.backgroundColor = hoverBgColor;
+                            });
+                            slide.addEventListener('mouseleave', function() {
+                                // 마우스가 떠나면 현재 활성 슬라이드에 해당하는 탭의 배경색으로 돌아가거나,
+                                // 혹은 초기 배경색으로 돌아가도록 설정할 수 있습니다.
+                                // 여기서는 초기 배경색으로 돌아가도록 합니다.
+                                sliderSection.style.backgroundColor = initialBgColor;
+                            });
+                        });
+                    },
+                    slideChange: function () {
+                        // 탭 버튼 활성 상태 업데이트
+                        tabButtons.forEach(button => button.classList.remove('active'));
+                        if (tabButtons.length > this.realIndex) {
+                            tabButtons[this.realIndex].classList.add('active');
+                        }
+                        // 슬라이드 변경 시에는 배경색을 초기 값 또는 현재 탭에 맞는 색으로 변경
+                        sliderSection.style.backgroundColor = initialBgColor; // 또는 현재 탭에 맞는 색상
+                    },
+                    slideChangeTransitionEnd: function() {
+                        // 모든 슬라이드에서 active 클래스 제거 후 현재 활성 슬라이드에만 추가
+                        this.slides.forEach(slide => slide.classList.remove('swiper-slide-active'));
+                        const activeSlide = this.slides[this.activeIndex];
+                        if(activeSlide) {
+                           activeSlide.classList.add('swiper-slide-active');
+                        }
+                        // 여기서도 배경색을 업데이트 할 수 있습니다.
+                        sliderSection.style.backgroundColor = initialBgColor; // 또는 현재 탭에 맞는 색상
+                    }
+                }
+            });
+
+            // 탭 버튼 클릭 시 해당 슬라이드로 이동
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const slideIndex = parseInt(this.dataset.slideIndex);
+                    mySwiper.slideToLoop(slideIndex); // 루프 모드이므로 slideToLoop 사용
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

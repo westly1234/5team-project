@@ -1,0 +1,84 @@
+{% extends 'web/dashboard_sliding_base.html' %}
+
+{% block title %}내 운동 루틴 대시보드{% endblock %}
+
+{% block page_content %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    .routine-card .exercise-list { max-height: 0; opacity: 0; transform: translateY(10px); transition: max-height 0.4s ease-out, opacity 0.4s ease-out, margin-top 0.4s ease-out; }
+    .routine-card:hover .exercise-list { max-height: 500px; opacity: 1; transform: translateY(0); margin-top: 1rem; }
+    .routine-card:hover .reveal-icon { transform: rotate(180deg); }
+</style>
+
+<div class="p-4 sm:p-8">
+    <header class="text-left mb-12">
+        <div class="border-l-4 border-violet-400 pl-4">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">My Routine Vault</h1>
+            <p class="text-md text-gray-400 mt-2">{{ user.username }}님의 모든 운동 기록 보관소입니다.</p>
+        </div>
+    </header>
+
+    {% if routines %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for routine in routines %}
+                <div class="routine-card group bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg p-6 transition-all duration-300 hover:border-violet-500/50 hover:shadow-2xl hover:shadow-violet-500/10 hover:-translate-y-1">
+                    <div class="flex flex-col h-full">
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-start">
+                                <h2 class="text-xl font-bold text-white mb-2">{{ routine.name }}</h2>
+                                <div class="flex items-center gap-2">
+                                    <form id="delete-form-{{ routine.id }}" method="post" action="{% url 'routine:delete_routine' routine.id %}" class="inline">
+                                        {% csrf_token %}
+                                        <button type="button" onclick="confirmDelete('{{ routine.id }}')" class="text-gray-500 hover:text-red-400 transition-colors" title="삭제하기"><i class="bi bi-trash3"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-400 mb-4">총 <span class="font-bold text-violet-400">{{ routine.exercises.count }}</span>개의 운동 포함<span class="mx-2 text-gray-600">·</span><span class="text-xs">{{ routine.created_at|date:"y.m.d" }}</span></p>
+                        </div>
+                        <div class="exercise-list overflow-hidden">
+                            <ul class="space-y-3">
+                                {% for re in routine.routineexercise_set.all %}
+                                <li class="flex items-center gap-3 text-sm border-t border-white/10 pt-3 first:border-t-0 first:pt-0">
+                                    <img src="{{ re.exercise.gif_url }}" alt="{{ re.exercise.name }}" class="w-10 h-10 object-cover rounded-md border border-gray-600 flex-shrink-0">
+                                    <div class="flex-grow">
+                                        <span class="font-medium text-gray-300">{{ re.exercise.name }}</span>
+                                        <div class="text-xs text-gray-400 mt-1">
+                                            {% if re.exercise.exercise_type == 'cardio' %}
+                                                {{ re.duration_minutes }} 분
+                                            {% else %}
+                                                {{ re.sets }} sets × {{ re.reps }} reps / {{ re.weight }} kg
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="text-center mt-auto pt-4 border-t border-white/10"><span class="text-xs text-gray-500 group-hover:text-violet-400 transition-colors">상세 정보 보기 <i class="bi bi-chevron-down reveal-icon transition-transform inline-block"></i></span></div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-20 bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-dashed border-gray-700">
+            <div class="text-6xl mb-4 animate-bounce">🏋️‍♀️</div><h3 class="text-2xl font-bold text-white">루틴 보관함이 비어있습니다!</h3>
+            <p class="text-gray-400 mt-2 mb-6">첫 번째 커스텀 루틴을 만들어 당신의 운동 여정을 기록해보세요.</p>
+            <a href="{% url 'routine:select' %}" class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500 to-pink-500 text-white font-bold px-6 py-2.5 rounded-lg transition-all hover:scale-105"><i class="bi bi-plus-lg"></i> 새로운 루틴 만들러 가기</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function confirmDelete(routineId) {
+    if (confirm("정말로 이 루틴을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = `/routine/delete/${routineId}/`;
+        const csrfToken = '{{ csrf_token }}';
+        form.innerHTML = `<input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

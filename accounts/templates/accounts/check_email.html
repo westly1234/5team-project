@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이메일 인증 안내</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 15vh; /* 상단 여백으로 중앙 상단 느낌 */
+            box-sizing: border-box;
+        }
+
+        /* 페이지 전체 제목 (h1) 스타일 */
+        h1.page-main-title {
+            color: #2c3e50; /* 진한 회색/네이비 계열 */
+            margin-bottom: 30px; /* 아래 컨테이너와의 간격 */
+            font-size: 28px; /* 제목 크기 */
+            font-weight: 600; /* 제목 굵기 */
+            text-align: center; /* 제목도 중앙 정렬 */
+        }
+
+        .email-check-container {
+            background-color: #ffffff;
+            padding: 35px 45px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 580px;
+            text-align: center; /* 내부 텍스트 기본 중앙 정렬 */
+        }
+
+        /* 만약 .email-check-container 내부에 h2를 사용한다면 이 스타일이 적용됩니다. */
+        .email-check-container h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 24px; /* 페이지 전체 h1보다는 약간 작게 */
+            font-weight: 600;
+        }
+
+        .email-check-container p {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 18px;
+        }
+
+        .email-check-container .thank-you {
+            font-weight: 500;
+            color: #34495e;
+            margin-top: 20px;
+            /* margin-bottom은 일반 p와 동일하게 적용 */
+        }
+
+        .email-check-container p:last-child {
+            margin-bottom: 0;
+        }
+
+        .email-check-container .highlight-text {
+            font-weight: 500;
+            color: #d9534f; /* 빨간색 계열로 강조 */
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="page-main-title">[2단계] 이메일 인증 필요</h1>
+
+    <div class="email-check-container">
+        <!-- 현재 HTML에는 h2가 없으므로 .email-check-container h2 스타일은 적용되지 않습니다. -->
+        <!-- 만약 여기에 소제목을 추가한다면: -->
+        <!-- <h2>이메일 확인 안내</h2> -->
+
+        <p>입력하신 이메일로 인증 링크를 발송했습니다.</p>
+        <p>이메일을 열고 인증 링크를 클릭하면 가입이 완료됩니다.</p>
+        <p>이메일을 받지 못하셨다면 <span class="highlight-text">스팸 메일함</span>을 확인해보세요.</p>
+    </div>
+
+</body>
+</html>

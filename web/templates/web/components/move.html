@@ -1,0 +1,239 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결합된 페이지 - 구름 요소 제거</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* --- Headspace 스타일 히어로 섹션 --- */
+        .hero-section {
+            background-color: #e5ddbf; /* 실제로는 Headspace 파란색(#0052FF) 또는 이미지 배경 사용 */
+            color: white;
+            padding-top: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- 반복 텍스트 섹션 (히어로 섹션 내부) --- */
+        .hero-looping-text-banner {
+            background-color: #e5ddbf; /* 히어로 배경과 동일하게 */
+            padding: 15px 0;
+            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .hero-looping-text-banner .loop-container {
+            display: flex;
+        }
+
+        .hero-looping-text-banner .item.display-1 {
+            font-size: 1.6rem;
+            padding: 0 25px;
+            color: rgba(16, 12, 12, 0.85);
+            font-weight: 500;
+            animation: loopText 30s linear infinite;
+        }
+
+        @keyframes loopText {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* --- 히어로 메인 콘텐츠 영역 (반복 텍스트 아래) --- */
+        .hero-main-content-wrapper {
+            padding: 40px 40px 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(70vh - 50px); /* 반복 텍스트 영역 높이 고려 */
+        }
+
+        .hero-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .hero-text-content {
+            flex-basis: 50%;
+            padding-right: 40px;
+            z-index: 2;
+        }
+
+        .hero-text-content h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero-text-content p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            max-width: 450px;
+        }
+
+        .hero-buttons a {
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-right: 15px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .hero-buttons .btn-demo {
+            background-color: white;
+            color: #0052FF; /* 파란색 */
+        }
+        .hero-buttons .btn-demo:hover {
+            background-color: #f0f0f0;
+        }
+
+        .hero-buttons .btn-learn-more {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        .hero-buttons .btn-learn-more:hover {
+            background-color: white;
+            color: #0052FF; /* 파란색 */
+        }
+
+        .hero-images-container {
+            flex-basis: 45%;
+            position: relative;
+            min-height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-images-container img, .hero-images-container .decorative-element {
+            position: absolute;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .img-1 { width: 160px; height: auto; top: 0px; right: 180px; z-index: 2; transform: rotate(-5deg); }
+        .img-2 { width: 220px; height: auto; top: 80px; right: 20px; z-index: 3; }
+        .img-3 { width: 200px; height: auto; top: 230px; right: 150px; z-index: 1; transform: rotate(3deg); }
+        
+        .sparkle-1 { width: 30px; height: 30px; background-image: url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 24 24' fill='yellow' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 0L14.1213 9.87868L24 12L14.1213 14.1213L12 24L9.87868 14.1213L0 12L9.87868 9.87868L12 0Z'/%3E%3C/svg%3E"); background-size: contain; box-shadow: none; border-radius: 0; top: 80px; right: 200px; z-index: 1; }
+        .sparkle-2 { width: 45px; height: 45px; background-image: url("data:image/svg+xml,%3Csvg width='45' height='45' viewBox='0 0 24 24' fill='orange' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 0L14.1213 9.87868L24 12L14.1213 14.1213L12 24L9.87868 14.1213L0 12L9.87868 9.87868L12 0Z'/%3E%3C/svg%3E"); background-size: contain; box-shadow: none; border-radius: 0; top: 130px; right: 240px; z-index: 1; }
+        /* .cloud-element 스타일은 여기서 삭제됨 */
+
+        /* 반응형 조정 */
+        @media (max-width: 992px) {
+            .hero-text-content { flex-basis: 100%; text-align: center; padding-right: 0; margin-bottom: 40px; }
+            .hero-text-content p { margin-left: auto; margin-right: auto; }
+            .hero-images-container { flex-basis: 100%; min-height: 350px; }
+            .img-1 { width: 130px; top: 10px; right: auto; left: 5%;}
+            .img-2 { width: 180px; top: 60px; right: 5%; left: auto; }
+            .img-3 { width: 160px; top: 180px; right: auto; left: 20%;}
+            .sparkle-1 { top: 50px; right: auto; left: 25%;}
+            .sparkle-2 { top: 90px; right: auto; left: 10%;}
+            /* .cloud-element 관련 반응형 스타일도 여기서 삭제됨 */
+        }
+        @media (max-width: 768px) {
+             .hero-text-content h1 { font-size: 2.5rem; }
+            .hero-buttons a { display: block; margin-bottom: 10px; margin-right: 0; }
+            .hero-buttons .btn-learn-more { margin-bottom: 0; }
+            .img-1 { width: 100px; top: 0px; right: auto; left: 2%;}
+            .img-2 { width: 150px; top: 40px; right: 2%; left: auto; }
+            .img-3 { width: 120px; top: 150px; right: auto; left: 10%;}
+            /* .cloud-element 관련 반응형 스타일도 여기서 삭제됨 */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Headspace 스타일 히어로 섹션 -->
+    <section class="hero-section">
+        <!-- 반복 텍스트 배너 (히어로 섹션 내부 상단) -->
+        <div class="hero-looping-text-banner" id="features-61-uLCYYlLC84">
+            <div class="loop-container">
+                <div class="item display-1"
+                     data-linewords="AI Workouts • Meal Plans • Local Spots • Progress Tracking • Expert Support • Personalized Paths •"
+                     data-direction="-1" data-speed="0.05">
+                    ☁️ Smarter fitness • Tailored meals • Nearby spots • 24/7 support • Real results
+                </div>
+                <div class="item display-1"
+                     data-linewords="AI Workouts • Meal Plans • Local Spots • Progress Tracking • Expert Support • Personalized Paths •"
+                     data-direction="-1" data-speed="0.05">
+                    ☁️ Smarter fitness • Tailored meals • Nearby spots • 24/7 support • Real results
+                </div>
+                <div class="item display-1"
+                     data-linewords="AI Workouts • Meal Plans • Local Spots • Progress Tracking • Expert Support • Personalized Paths •"
+                     data-direction="-1" data-speed="0.05">
+                    ☁️ Smarter fitness • Tailored meals • Nearby spots • 24/7 support • Real results
+                </div>
+            </div>
+        </div>
+
+        <!-- 히어로 메인 콘텐츠 (반복 텍스트 아래) -->
+        <div class="hero-main-content-wrapper">
+            <div class="hero-container">
+                <div class="hero-text-content">
+                    <h1>4,000 개가 넘는 주요 조직이 HealthWise를 선택합니다</h1>
+                    <p>Support your team today with mindfulness, coaching, EAP, therapy, and psychiatry.</p>
+                    <div class="hero-buttons">
+                        <a href="#" class="btn-demo">Request a demo</a>
+                        <a href="#" class="btn-learn-more">Learn more</a>
+                    </div>
+                </div>
+                <div class="hero-images-container">
+                    <img src="{% static 'images/웃는 사람1.png' %}" alt="웃는 사람" class="img-1">
+                    <img src="{% static 'images/웃는 사람2.png' %}" alt="웃는 사람" class="img-2">
+                    <img src="{% static 'images/웃는 사람3.png' %}" alt="웃는 사람" class="img-3">
+                    
+                    <div class="decorative-element sparkle-1"></div>
+                    <div class="decorative-element sparkle-2"></div>
+                    <!-- <div class="decorative-element cloud-element"></div> 이 줄이 삭제되었습니다 -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 반복 텍스트용 JavaScript (필요시 여기에 또는 별도 파일로) -->
+    <script>
+        // data-attributes 기반 반복 텍스트용 JavaScript 로직
+        // (이전 답변의 예시 JavaScript 코드 참고 또는 기존 코드 사용)
+        // 예시:
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     const loopContainers = document.querySelectorAll('.loop-container');
+        //     loopContainers.forEach(container => {
+        //         const items = Array.from(container.children);
+        //         const speed = parseFloat(container.querySelector('.item').dataset.speed) || 0.05;
+        //         const direction = parseInt(container.querySelector('.item').dataset.direction) || -1;
+        //         let totalWidth = 0;
+        //         items.forEach(item => {
+        //             // 첫 번째 아이템 복제본을 뒤에 추가하여 끊김 없는 효과 (필요시)
+        //             // const clone = item.cloneNode(true);
+        //             // container.appendChild(clone);
+        //             totalWidth += item.offsetWidth + parseFloat(getComputedStyle(item).marginLeft) + parseFloat(getComputedStyle(item).marginRight);
+        //         });
+        //
+        //         // 간단한 CSS 애니메이션을 사용하고 있으므로,
+        //         // 복잡한 JS 애니메이션 로직은 필요 없을 수 있습니다.
+        //         // 만약 data-speed, data-direction을 JS로 직접 제어하려면
+        //         // CSS의 @keyframes loopText 및 animation 속성을 제거하고 여기에 로직을 구현해야 합니다.
+        //     });
+        // });
+    </script>
+
+</body>
+</html>

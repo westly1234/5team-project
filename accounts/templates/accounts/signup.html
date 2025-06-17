@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    // ✅ CSRF 토큰을 쿠키에서 추출
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // 쿠키 이름이 name=으로 시작하는지 확인
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');  // ✅ 전역에서 사용할 수 있도록 정의
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0; /* 전체 화면 사용 시 body 패딩 제거 */
+            box-sizing: border-box;
+            overflow-x: hidden; /* 가로 스크롤 방지 */
+        }
+
+        .signup-container-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+            padding: 20px; /* 회원가입 폼 주변 여백 */
+            box-sizing: border-box;
+        }
+
+        .signup-container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 550px;
+        }
+
+        .form-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label,
+        .form-group legend {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        
+        .form-group input[type="radio"],
+        .form-group input[type="checkbox"] {
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .form-group input[type="radio"] + label,
+        .form-group input[type="checkbox"] + label {
+            font-weight: normal;
+            display: inline;
+            margin-right: 15px;
+        }
+
+        .django-form-fields p {
+            margin-bottom: 15px;
+        }
+        .django-form-fields label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        .django-form-fields input[type="text"],
+        .django-form-fields input[type="email"],
+        .django-form-fields input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        .django-form-fields input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 17px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .submit-button:hover {
+            background-color: #0056b3;
+        }
+
+        .survey-status-area {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+        }
+        .survey-status-area .info-text {
+            font-size: 14px;
+            color: #495057;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .survey-button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 10px auto 0;
+        }
+        .survey-button:hover {
+            background-color: #218838;
+        }
+        .survey-complete-text {
+            color: #155724;
+            font-weight: bold;
+            text-align: center;
+        }
+        .notice-text {
+             font-size: 14px;
+             color: #495057;
+             margin-bottom: 10px;
+             line-height: 1.5;
+             text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- 설문조사 폼 스타일 --- */
+        #newHealthSurveyWrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f2f5; /* Tailwind bg-gray-100 과 유사 */
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #newHealthSurveyWrapper > form#survey-form {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            height: 100%;
+        }
+        /* #slider의 바로 위 부모 div (relative overflow-hidden min-h-screen flex flex-col bg-gray-100) */
+        #newHealthSurveyWrapper #survey-form > div.relative {
+            flex-grow: 1;
+            overflow: hidden; /* slider가 넘치는 것을 숨김 */
+            display: flex; /* 내부 slider를 위해 추가 */
+            flex-direction: column; /* 내부 slider를 위해 추가 */
+        }
+
+        #slider {
+            display: flex;
+            transition-property: transform;
+            transition-duration: 300ms;
+            transition-timing-function: ease-in-out;
+            height: 100%; /* 부모 높이를 기준으로 꽉 차도록 */
+            flex-grow: 1; /* 추가 */
+        }
+
+        .step-container {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 1rem;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .form-card {
+            background-color: white;
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 36rem;
+            margin: auto; /* 수평 중앙 정렬 (step-container가 flex이므로 justify-content로 이미 처리됨) */
+            max-height: calc(100% - 2rem); /* form-card의 최대 높이 제한 (패딩 고려) */
+            overflow-y: auto;
+        }
+        .label-group {
+            margin-bottom: 1.75rem;
+        }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: 2px solid transparent;
+            box-shadow: 0 0 0 2px #3b82f6;
+            border-color: #3b82f6;
+        }
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container-wrapper">
+        <div class="signup-container">
+            <h2 class="form-title">회원가입</h2>
+
+            <form method="post" id="signupForm">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label><strong>회원 유형:</strong></label>
+                    <input type="radio" name="user_type" value="company" id="user_type_company" required> <label for="user_type_company">기업</label>
+                    <input type="radio" name="user_type" value="normal" id="user_type_normal" required> <label for="user_type_normal">일반</label>
+                </div>
+
+                <div id="surveyActionArea" class="survey-status-area hidden">
+                </div>
+                
+                <div id="mainFormFields" class="django-form-fields hidden">
+                    {{ form.as_p }}
+                </div>
+                
+                <button type="submit" id="submitSignup" class="submit-button hidden">가입하기</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="newHealthSurveyWrapper" class="hidden">
+        <form id="survey-form">
+             {#{% csrf_token %}#} <!-- 이 form은 AJAX로 전송되므로, CSRF 토큰은 JS에서 signupForm의 것을 사용 -->
+            <div class="relative overflow-hidden flex flex-col bg-gray-100" style="height: calc(100% - 5rem);"> <!-- sticky 버튼 높이 제외 -->
+                <div class="fixed top-0 left-0 right-0 h-2.5 bg-gray-200 z-20 shadow">
+                    <div id="progress-bar"
+                        class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300 ease-out"
+                        style="width: 0%;"></div>
+                </div>
+
+                <div id="slider" class="flex transition-transform duration-300 ease-in-out flex-grow">
+                    <!-- Step 1: 기본 건강 정보 -->
+                    <div class="step-container">
+                        <div class="form-card">
+                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">기본 건강 정보</h2>
+                            <div class="label-group">
+                                <label for="blood-type" class="block text-lg font-medium text-gray-700 mb-2">혈액형</label>
+                                <select id="blood-type" name="blood_type" required
+                                    class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">선택하세요</option>
+                                    <option value="A_RH+">A형 RH+</option>
+                                    <option value="A_RH-">A형 RH-</option>
+                                    <option value="B_RH+">B형 RH+</option>
+                                    <option value="B_RH-">B형 RH-</option>
+                                    <option value="O_RH+">O형 RH+</option>
+                                    <option value="O_RH-">O형 RH-</option>
+                                    <option value="AB_RH+">AB형 RH+</option>
+                                    <option value="AB_RH-">AB형 RH-</option>
+                                    <option value="UNKNOWN">모름</option>
+                                </select>
+                            </div>
+                            <div class="label-group">
+                                <h3 class="text-lg font-medium text-gray-700 mb-3">알레르기 유무 및 종류 (중복 선택 가능)</h3>
+                                <div id="allergy-group">
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="none" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>없음</span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="food" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>음식</span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="drug" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>약물</span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="pollen" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>꽃가루</span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="dust_mite" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>집먼지 진드기</span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="animal_fur" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>동물 털</span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span>기타</span></label>
+                                </div>
+                                <textarea id="allergy-details" name="allergy_details" rows="3" class="border border-gray-300 mt-2 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="알레르기 종류 및 반응을 상세히 적어주세요. (예: 복숭아 - 두드러기, 페니실린 - 호흡곤란)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: 과거 병력 -->
+                    <div class="step-container">
+                        <div class="form-card">
+                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">과거 병력</h2>
+                            <div class="label-group">
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">다음 중 진단받은 적이 있는 만성 질환이 있다면 모두 선택해주세요.</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="chronic-disease-group">
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="none" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>해당 없음</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="hypertension" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>고혈압</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="diabetes" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>당뇨병</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="dyslipidemia" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>고지혈증</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="thyroid" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>갑상선 질환</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="heart" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>심장 질환</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="cerebrovascular" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>뇌혈관 질환</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="respiratory" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>호흡기 질환</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="digestive" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>소화기 질환</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="kidney" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>신장 질환</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="arthritis" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>관절염</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="cancer" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>암</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="mental_health" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>정신 건강 문제</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span>기타</span></label>
+                                </div>
+                                <textarea id="chronic-disease-details" name="chronic_disease_details" rows="3" class="border border-gray-300 mt-3 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="기타 만성 질환명 또는 상세 정보를 입력해주세요."></textarea>
+                            </div>
+                            <div class="label-group">
+                                <label for="surgery-history" class="block text-lg font-medium text-gray-700 mb-2">수술 이력이 있다면 상세히 적어주세요 (수술명, 시기 등). 없다면 '없음'으로 기재.</label>
+                                <textarea id="surgery-history" name="surgery_history" rows="3" required class="border border-gray-300 p-3 w-full text-base rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 2015년 맹장 수술, 2020년 무릎 연골 수술 또는 없음"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: 현재 복용 약물 및 영양제 -->
+                    <div class="step-container">
+                        <div class="form-card">
+                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">현재 복용 약물 및 영양제</h2>
+                            <div class="label-group">
+                                <label for="current-medication" class="block text-lg font-medium text-gray-700 mb-2">현재 처방받아 복용 중인 약물이 있다면 모두 적어주세요. 없다면 '없음'으로 기재.</label>
+                                <textarea id="current-medication" name="current_medication" rows="3" required class="border border-gray-300 p-3 w-full text-base rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 고혈압약 (아침 식후 1정), 당뇨약 (저녁 식후 1정) 또는 없음"></textarea>
+                            </div>
+                            <div class="label-group">
+                                <label for="supplements" class="block text-lg font-medium text-gray-700 mb-2">현재 복용 중인 일반의약품 또는 건강보조식품(영양제)이 있다면 모두 적어주세요. 없다면 '없음'으로 기재.</label>
+                                <textarea id="supplements" name="supplements" rows="3" required class="border border-gray-300 p-3 w-full text-base rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 종합비타민, 오메가3, 유산균, 진통제 (필요시) 또는 없음"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: 생활 습관 -->
+                    <div class="step-container">
+                        <div class="form-card">
+                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">생활 습관</h2>
+                            <div class="label-group">
+                                <h3 class="text-lg font-medium text-gray-700 mb-2">흡연 여부</h3>
+                                <select id="smoking-status" name="smoking_status" required class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">선택하세요</option>
+                                    <option value="never">흡연 안 함 (비흡연)</option>
+                                    <option value="ex_smoker">과거 흡연했으나 현재 금연</option>
+                                    <option value="current_smoker">현재 흡연 중</option>
+                                </select>
+                                <div id="smoking-details-container" class="mt-4 hidden space-y-3">
+                                    <div>
+                                        <label for="smoking-period" class="block text-sm font-medium text-gray-600 mb-1">흡연 기간 (년)</label>
+                                        <input type="number" id="smoking-period" name="smoking_period" min="0" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 5">
+                                    </div>
+                                    <div>
+                                        <label for="smoking-amount" class="block text-sm font-medium text-gray-600 mb-1">하루 평균 흡연량 (개비)</label>
+                                        <input type="number" id="smoking-amount" name="smoking_amount" min="0" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 10">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="label-group">
+                                <h3 class="text-lg font-medium text-gray-700 mb-2">음주 빈도</h3>
+                                <select id="drinking-frequency" name="drinking_frequency" required class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">선택하세요</option>
+                                    <option value="none">전혀 안 마심</option>
+                                    <option value="monthly_1_less">월 1회 미만</option>
+                                    <option value="monthly_2_3">월 2~3회</option>
+                                    <option value="weekly_1_2">주 1~2회</option>
+                                    <option value="weekly_3_4">주 3~4회</option>
+                                    <option value="daily">거의 매일</option>
+                                </select>
+                                <div id="drinking-details-container" class="mt-4 hidden">
+                                    <label for="drinking-amount" class="block text-sm font-medium text-gray-600 mb-1">1회 평균 음주량</label>
+                                    <input type="text" id="drinking-amount" name="drinking_amount" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 소주 1병 또는 맥주 2캔">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 5: 가족력 -->
+                    <div class="step-container">
+                        <div class="form-card">
+                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">가족력 (부모, 형제자매)</h2>
+                            <div class="label-group">
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">직계 가족 중 다음 질환을 앓았거나 앓고 계신 분이 있다면 모두 선택해주세요.</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="family-history-group">
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="none" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>해당 없음</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="hypertension" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>고혈압</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="diabetes" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>당뇨병</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="heart_disease" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>심장 질환</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="stroke" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>뇌졸중</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="cancer" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>암</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="dementia" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>치매</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span>기타</span></label>
+                                </div>
+                                <textarea id="family-history-details" name="family_history_details" rows="3" class="border border-gray-300 mt-3 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="기타 가족력 또는 상세 정보를 입력해주세요."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sticky bottom-0 left-0 right-0 bg-white p-5 shadow-lg border-t border-gray-200 z-10">
+                <div class="max-w-lg mx-auto flex justify-between items-center">
+                    <button id="prev-button" type="button"
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-7 py-3.5 text-lg rounded-lg font-semibold transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled>이전</button>
+                    <div class="text-sm text-gray-600 font-medium"><span id="current-step-display">1</span> / <span
+                            id="total-steps-display">5</span></div>
+                    <button id="next-button" type="button"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 text-lg rounded-lg font-semibold transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed">다음</button>
+                </div>
+            </div>
+        </form>
+        
+        <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const surveyForm = document.getElementById("survey-form");
+            const slider = document.getElementById("slider");
+            const surveySteps = document.querySelectorAll("#slider > .step-container");
+            const totalSteps = surveySteps.length;
+            const progressBar = document.getElementById("progress-bar");
+            const prevButton = document.getElementById("prev-button");
+            const nextButton = document.getElementById("next-button");
+            const currentStepDisplay = document.getElementById("current-step-display");
+            const totalStepsDisplay = document.getElementById("total-steps-display");
+
+            if (slider) {
+                slider.style.width = `${totalSteps * 100}%`; 
+                if (totalSteps > 0) {
+                    const stepWidthPercentage = 100 / totalSteps;
+                    surveySteps.forEach(step => {
+                        step.style.width = `${stepWidthPercentage}%`;
+                    });
+                }
+            }
+            
+            function setupCheckboxGroupToggle(groupContainerId, detailsTextareaId, otherCheckboxSelector = '.other-checkbox') {
+                const groupContainer = document.getElementById(groupContainerId);
+                if (!groupContainer) return;
+                const checkboxes = groupContainer.querySelectorAll('input[type="checkbox"]');
+                const detailsTextarea = document.getElementById(detailsTextareaId);
+                const noneCheckbox = groupContainer.querySelector('input[type="checkbox"][value="none"]');
+
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', () => {
+                        const isOtherCheckbox = checkbox.classList.contains('other-checkbox');
+                        
+                        if (checkbox.value === 'none' && checkbox.checked) {
+                            checkboxes.forEach(cb => {
+                                if (cb !== checkbox) cb.checked = false;
+                            });
+                            if (detailsTextarea) {
+                                detailsTextarea.classList.add('hidden');
+                                detailsTextarea.required = false;
+                                detailsTextarea.value = '';
+                            }
+                        } else if (checkbox.value !== 'none' && checkbox.checked && noneCheckbox) {
+                            noneCheckbox.checked = false;
+                        }
+                        
+                        if (detailsTextarea && groupContainer.querySelector(otherCheckboxSelector)) { // Ensure other-checkbox exists
+                             const otherActualCheckbox = groupContainer.querySelector(otherCheckboxSelector);
+                             if (otherActualCheckbox.checked) {
+                                detailsTextarea.classList.remove('hidden');
+                                detailsTextarea.required = true;
+                            } else {
+                                detailsTextarea.classList.add('hidden');
+                                detailsTextarea.required = false;
+                                detailsTextarea.value = '';
+                            }
+                        }
+                        updateButtonStates(); 
+                    });
+                });
+            }
+
+            setupCheckboxGroupToggle('allergy-group', 'allergy-details');
+            setupCheckboxGroupToggle('chronic-disease-group', 'chronic-disease-details');
+            setupCheckboxGroupToggle('family-history-group', 'family-history-details');
+
+            const smokingStatusSelect = document.getElementById('smoking-status');
+            const smokingDetailsContainer = document.getElementById('smoking-details-container');
+            const smokingPeriodInput = document.getElementById('smoking-period');
+            const smokingAmountInput = document.getElementById('smoking-amount');
+
+            if (smokingStatusSelect) {
+                smokingStatusSelect.addEventListener('change', function() {
+                    if (this.value === 'current_smoker' || this.value === 'ex_smoker') {
+                        smokingDetailsContainer.classList.remove('hidden');
+                        smokingPeriodInput.required = true;
+                        smokingAmountInput.required = (this.value === 'current_smoker');
+                        if(this.value === 'ex_smoker') smokingAmountInput.required = false; // 전 흡연자는 양은 필수 아님
+                    } else {
+                        smokingDetailsContainer.classList.add('hidden');
+                        smokingPeriodInput.required = false;
+                        smokingAmountInput.required = false;
+                        smokingPeriodInput.value = '';
+                        smokingAmountInput.value = '';
+                    }
+                    updateButtonStates();
+                });
+            }
+
+            const drinkingFrequencySelect = document.getElementById('drinking-frequency');
+            const drinkingDetailsContainer = document.getElementById('drinking-details-container');
+            const drinkingAmountInput = document.getElementById('drinking-amount');
+
+            if (drinkingFrequencySelect) {
+                drinkingFrequencySelect.addEventListener('change', function() {
+                    if (this.value !== 'none' && this.value !== '') {
+                        drinkingDetailsContainer.classList.remove('hidden');
+                        drinkingAmountInput.required = true;
+                    } else {
+                        drinkingDetailsContainer.classList.add('hidden');
+                        drinkingAmountInput.required = false;
+                        drinkingAmountInput.value = '';
+                    }
+                    updateButtonStates();
+                });
+            }
+            
+            let currentStep = 0;
+            if (totalStepsDisplay) totalStepsDisplay.textContent = totalSteps;
+
+            function updateSliderAndProgressDisplay() {
+                if (!slider || !progressBar || !currentStepDisplay) return;
+                slider.style.transform = `translateX(-${(currentStep / totalSteps) * 100}%)`;
+                progressBar.style.width = `${((currentStep + 1) / totalSteps) * 100}%`;
+                currentStepDisplay.textContent = currentStep + 1;
+            }
+
+            function shakeElement(element) {
+                if (!element) return;
+                element.classList.add("animate-shake");
+                setTimeout(() => element.classList.remove("animate-shake"), 500);
+            }
+            
+            // 유효성 검사 함수: giveFeedback 파라미터 추가
+            function validateStep(stepIndex, giveFeedback = false) {
+                const stepElement = surveySteps[stepIndex];
+                if (!stepElement) return false;
+            
+                const visibleRequiredFields = stepElement.querySelectorAll(
+                    'select[required]:not(.hidden), input[type="text"][required]:not(.hidden), input[type="number"][required]:not(.hidden), textarea[required]:not(.hidden)'
+                );
+            
+                for (const field of visibleRequiredFields) {
+                    if (!field.value.trim()) {
+                        if (giveFeedback) {
+                            shakeElement(field);
+                            field.focus();
+                        }
+                        return false;
+                    }
+                }
+
+                // 체크박스 그룹 유효성 검사 (최소 1개 선택)
+                const checkboxGroups = [
+                    { group: 'allergy-group', name: 'allergy' },
+                    { group: 'chronic-disease-group', name: 'chronic_disease'},
+                    { group: 'family-history-group', name: 'family_history'}
+                ];
+
+                for (const chkGroup of checkboxGroups) {
+                    const groupContainer = stepElement.querySelector(`#${chkGroup.group}`);
+                    if (groupContainer) { // 현재 스텝에 해당 그룹이 있을 때만 검사
+                        const checkedInGroup = groupContainer.querySelector(`input[name="${chkGroup.name}"]:checked`);
+                        if (!checkedInGroup) {
+                           if (giveFeedback) {
+                                // 그룹의 첫번째 요소나 그룹 전체를 shake
+                                const firstLabel = groupContainer.querySelector('label');
+                                if(firstLabel) shakeElement(firstLabel);
+                                // 포커스는 첫번째 체크박스로
+                                const firstCheckbox = groupContainer.querySelector(`input[name="${chkGroup.name}"]`);
+                                if(firstCheckbox) firstCheckbox.focus();
+                           }
+                           return false;
+                        }
+                    }
+                }
+            
+                // 각 단계별 특수 유효성 검사 ('기타' 선택 시 상세 입력 등)
+                if (stepIndex === 0) { 
+                    const allergyOther = stepElement.querySelector('input[name="allergy"][value="other"]:checked');
+                    const allergyDetails = document.getElementById('allergy-details');
+                    if (allergyOther && !allergyDetails.value.trim()){
+                        if(giveFeedback) { shakeElement(allergyDetails); allergyDetails.focus(); }
+                        return false;
+                    }
+                } else if (stepIndex === 1) { 
+                     const chronicOther = stepElement.querySelector('input[name="chronic_disease"][value="other"]:checked');
+                     const chronicDetails = document.getElementById('chronic-disease-details');
+                     if (chronicOther && !chronicDetails.value.trim()){
+                        if(giveFeedback) { shakeElement(chronicDetails); chronicDetails.focus(); }
+                        return false;
+                    }
+                } else if (stepIndex === 3) { // 생활 습관 (4번째 페이지, 인덱스 3)
+                    const smokingStatus = smokingStatusSelect.value;
+                    if ((smokingStatus === 'current_smoker' || smokingStatus === 'ex_smoker') && !smokingPeriodInput.value.trim()){
+                        if(giveFeedback) { shakeElement(smokingPeriodInput); smokingPeriodInput.focus(); }
+                        return false;
+                    }
+                    if (smokingStatus === 'current_smoker' && !smokingAmountInput.value.trim()){
+                        if(giveFeedback) { shakeElement(smokingAmountInput); smokingAmountInput.focus(); }
+                        return false;
+                    }
+                    const drinkingFreq = drinkingFrequencySelect.value;
+                    if (drinkingFreq && drinkingFreq !== 'none' && !drinkingAmountInput.value.trim()){
+                         if(giveFeedback) { shakeElement(drinkingAmountInput); drinkingAmountInput.focus(); }
+                         return false;
+                    }
+                } else if (stepIndex === 4) { // 가족력 (5번째 페이지, 인덱스 4)
+                     const familyOther = stepElement.querySelector('input[name="family_history"][value="other"]:checked');
+                     const familyDetails = document.getElementById('family-history-details');
+                     if (familyOther && !familyDetails.value.trim()){
+                        if(giveFeedback) { shakeElement(familyDetails); familyDetails.focus(); }
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            // 버튼 상태 업데이트 함수: validateStep을 피드백 없이 호출
+            function updateButtonStates() {
+                if (!prevButton || !nextButton) return;
+                prevButton.disabled = currentStep === 0;
+
+                // 현재 스텝의 유효성을 피드백 없이 검사하여 버튼 상태만 업데이트
+                const isValid = validateStep(currentStep, false); 
+                
+                nextButton.disabled = !isValid;
+                nextButton.classList.toggle("opacity-50", !isValid);
+                nextButton.classList.toggle("cursor-not-allowed", !isValid);
+                nextButton.textContent = (currentStep === totalSteps - 1) ? "제출" : "다음";
+            }
+
+            function gatherFormData() {
+                const formData = new FormData(surveyForm);
+                const data = {};
+                
+                // FormData.entries()는 동일 name에 대해 여러 값을 올바르게 처리하지 못할 수 있음.
+                // 특히 체크박스. 직접 순회하며 처리.
+                surveyForm.querySelectorAll('input, select, textarea').forEach(el => {
+                    if (!el.name) return;
+
+                    if (el.type === 'checkbox') {
+                        if (el.checked) {
+                            if (!data[el.name]) {
+                                data[el.name] = [];
+                            }
+                            data[el.name].push(el.value);
+                        }
+                    } else if (el.type === 'radio') {
+                        if (el.checked) {
+                            data[el.name] = el.value;
+                        }
+                    } else {
+                         data[el.name] = el.value;
+                    }
+                });
+                
+                // 단일 값으로 예상되는 체크박스 배열을 단일 값으로 변경 (만약 단일 선택만 가능하고, 배열로 들어갔다면)
+                // 여기서는 allergy, chronic_disease, family_history는 다중 선택이므로 배열 유지.
+
+                if (data.smoking_status !== 'current_smoker' && data.smoking_status !== 'ex_smoker') {
+                    delete data.smoking_period;
+                    delete data.smoking_amount;
+                } else if (data.smoking_status === 'ex_smoker' && data.smoking_amount === '') { // 전 흡연자는 흡연량 비필수
+                    delete data.smoking_amount; 
+                }
+
+                if (data.drinking_frequency === 'none' || data.drinking_frequency === '') {
+                    delete data.drinking_amount;
+                }
+
+                if (!data.allergy || !(data.allergy.includes('other'))) {
+                    delete data.allergy_details;
+                }
+                if (!data.chronic_disease || !(data.chronic_disease.includes('other'))) {
+                    delete data.chronic_disease_details;
+                }
+                if (!data.family_history || !(data.family_history.includes('other'))) {
+                    delete data.family_history_details;
+                }
+
+                return data;
+            }
+
+            if (prevButton) {
+                prevButton.addEventListener("click", () => {
+                    if (currentStep > 0) {
+                        currentStep--;
+                        updateSliderAndProgressDisplay();
+                        updateButtonStates();
+                    }
+                });
+            }
+
+            if (nextButton) {
+                nextButton.addEventListener("click", () => {
+                    // "다음" 또는 "제출" 버튼 클릭 시에만 유효성 검사와 함께 피드백(shake, focus) 제공
+                    if (!validateStep(currentStep, true)) { 
+                         // validateStep 내부에서 이미 focus 및 shake 처리됨.
+                         // alert("현재 단계의 모든 필수 항목을 입력하거나 선택해주세요."); // 필요시 주석 해제
+                         return;
+                    }
+
+                    if (currentStep < totalSteps - 1) {
+                        currentStep++;
+                        updateSliderAndProgressDisplay();
+                        updateButtonStates(); // 다음 스텝으로 이동 후 즉시 버튼 상태 업데이트
+                    } else {
+                        // 마지막 단계: 제출 로직
+                        const collectedFormData = gatherFormData();
+                        console.log("Survey Data to Submit:", collectedFormData);
+                        
+                        nextButton.disabled = true;
+                        nextButton.textContent = "제출 중...";
+
+                        fetch("/save-survey/", { // 실제 Django URL로 변경 필요 (이 주석은 그대로 두거나, 확실하면 지워도 돼요)
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRFToken": csrftoken
+                            },
+                            body: JSON.stringify(collectedFormData)
+                        })
+                        .then(async res => {
+                            const responseText = await res.text();
+                            if (!res.ok) {
+                                let errorMsg = `서버 오류 (${res.status})`;
+                                try {
+                                    const errData = JSON.parse(responseText);
+                                    errorMsg = errData.error || errData.message || errorMsg;
+                                } catch (e) {
+                                    if (responseText.toLowerCase().includes("<!doctype html")) {
+                                        errorMsg = `서버에서 HTML 응답을 받았습니다. (상태: ${res.status}). 로그인 페이지 또는 서버 오류일 수 있습니다.`;
+                                    } else {
+                                        errorMsg = `서버 응답 처리 오류 (상태: ${res.status}). 응답: ${responseText.substring(0,100)}...`;
+                                    }
+                                }
+                                throw new Error(errorMsg);
+                            }
+                            return responseText ? JSON.parse(responseText) : { success: true, message: "설문이 전송되었으나, 서버에서 내용 없는 응답을 반환했습니다."};
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message || "설문이 성공적으로 저장되었습니다!");
+                                // 전역 함수 호출로 설문 완료 처리
+                                if (typeof window.handleSurveyCompletion === 'function') {
+                                    window.handleSurveyCompletion(collectedFormData);
+                                }
+                            } else {
+                                alert("저장 중 오류 발생: " + (data.error || data.message || "알 수 없는 오류"));
+                                nextButton.disabled = false; // 오류 시 버튼 복원
+                                updateButtonStates();      // 버튼 텍스트 및 상태 업데이트
+                            }
+                        })
+                        .catch(err => {
+                            console.error("설문 전송 에러:", err);
+                            alert("설문 저장 중 에러가 발생했습니다: " + err.message);
+                            nextButton.disabled = false; // 오류 시 버튼 복원
+                            updateButtonStates();      // 버튼 텍스트 및 상태 업데이트
+                        });
+                    }
+                });
+            }
+            
+            // 모든 입력 필드에 대해 input/change 이벤트 발생 시 버튼 상태 업데이트
+            surveyForm.querySelectorAll('input, select, textarea').forEach(input => {
+                input.addEventListener('input', updateButtonStates);
+                input.addEventListener('change', updateButtonStates);
+            });
+
+            // 초기화
+            updateSliderAndProgressDisplay();
+            updateButtonStates();
+        });
+        </script>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userTypeRadios = document.querySelectorAll('input[name="user_type"]');
+        const signupContainerWrapper = document.querySelector('.signup-container-wrapper');
+        const newHealthSurveyWrapper = document.getElementById('newHealthSurveyWrapper');
+        
+        const mainFormFields = document.getElementById('mainFormFields');
+        const submitSignupButton = document.getElementById('submitSignup');
+        const surveyActionArea = document.getElementById('surveyActionArea');
+
+        let isSurveyStored = false; // 설문 데이터가 임시 저장(또는 성공적으로 제출)되었는지 여부
+
+        function updateSignupFormDisplay() {
+            const selectedUserTypeRadio = document.querySelector('input[name="user_type"]:checked');
+
+            if (!selectedUserTypeRadio) { // 아무것도 선택 안된 초기 상태
+                signupContainerWrapper.classList.remove('hidden');
+                newHealthSurveyWrapper.classList.add('hidden');
+                mainFormFields.classList.add('hidden');
+                submitSignupButton.classList.add('hidden');
+                surveyActionArea.classList.add('hidden');
+                return;
+            }
+
+            const userType = selectedUserTypeRadio.value;
+
+            if (userType === 'company') {
+                signupContainerWrapper.classList.remove('hidden');
+                newHealthSurveyWrapper.classList.add('hidden');    
+                
+                mainFormFields.classList.remove('hidden');
+                submitSignupButton.classList.remove('hidden');
+                surveyActionArea.classList.add('hidden');
+            } else if (userType === 'normal') {
+                if (isSurveyStored) { // 설문이 완료된 경우
+                    signupContainerWrapper.classList.remove('hidden'); // 회원가입 폼 표시
+                    newHealthSurveyWrapper.classList.add('hidden');    // 설문 폼 숨김
+                    
+                    mainFormFields.classList.remove('hidden');         // Django 폼 필드 표시
+                    submitSignupButton.classList.remove('hidden');     // 가입하기 버튼 표시
+                    
+                    surveyActionArea.classList.remove('hidden');
+                    surveyActionArea.innerHTML = `
+                        <p class="survey-complete-text">✅ 설문 작성 완료</p>
+                        <button type="button" id="editSurveyDataBtn" class="survey-button" style="background-color: #ffc107; color: #212529;">내용 수정하기</button>
+                    `;
+                    const editBtn = document.getElementById('editSurveyDataBtn');
+                    if(editBtn) editBtn.addEventListener('click', openSurveyForEdit);
+
+                } else { // 설문 미완료 시
+                    signupContainerWrapper.classList.remove('hidden'); // 회원가입 유형 선택 부분은 계속 표시
+                    newHealthSurveyWrapper.classList.add('hidden');    // 설문 폼은 일단 숨김 (버튼 누르면 표시)
+                    
+                    surveyActionArea.classList.remove('hidden');
+                    surveyActionArea.innerHTML = `
+                        <p class="notice-text">
+                            <span style="color: red;">*필수</span> 더 나은 서비스 제공을 위해 간단한 질문지 작성이 필요합니다.<br>양해 부탁드립니다.
+                        </p>
+                        <button type="button" id="startSurveyBtn" class="survey-button">질문지 작성하기</button>
+                    `;
+                    const startBtn = document.getElementById('startSurveyBtn');
+                    if(startBtn) startBtn.addEventListener('click', function() {
+                        signupContainerWrapper.classList.add('hidden'); // 회원가입 폼 숨기고
+                        newHealthSurveyWrapper.classList.remove('hidden'); // 설문 폼 표시
+                    });
+
+                    mainFormFields.classList.add('hidden'); // Django 폼 필드 숨김
+                    submitSignupButton.classList.add('hidden'); // 가입하기 버튼 숨김
+                }
+            }
+        }
+
+        userTypeRadios.forEach(radio => {
+            radio.addEventListener('change', updateSignupFormDisplay);
+        });
+
+        function openSurveyForEdit() {
+            signupContainerWrapper.classList.add('hidden');
+            newHealthSurveyWrapper.classList.remove('hidden');
+            // TODO: 설문 폼에 기존 데이터 로드하는 로직이 필요하다면 여기에 추가
+        }
+
+        // 설문조사 스크립트에서 호출될 전역 함수
+        window.handleSurveyCompletion = function(surveyData) {
+            console.log("회원가입 폼: 설문 완료 데이터 수신:", surveyData);
+            isSurveyStored = true; 
+            
+            // 중요: 설문 폼을 숨기고 회원가입 폼을 다시 표시
+            newHealthSurveyWrapper.classList.add('hidden');
+            signupContainerWrapper.classList.remove('hidden');
+            
+            updateSignupFormDisplay(); // 화면 상태를 '설문 완료'로 업데이트
+        };
+        
+        // 초기 로드 시 회원 유형에 따른 UI 업데이트
+        updateSignupFormDisplay(); 
+    });
+    </script>
+
+</body>
+</html>

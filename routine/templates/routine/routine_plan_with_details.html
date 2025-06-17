@@ -1,0 +1,56 @@
+{% extends 'web/dashboard_sliding_base.html' %}
+
+{% block title %}{{ routine_title }}{% endblock %}
+
+{% block page_content %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @keyframes slide-in-fwd { 0% { transform: translateY(50px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+    .slide-in-fwd { animation: slide-in-fwd 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both; }
+</style>
+
+<div class="p-4 sm:p-8">
+    <header class="text-left mb-12 max-w-4xl mx-auto">
+        <div class="border-l-4 border-cyan-400 pl-4">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">{{ routine_title }}</h1>
+            <p class="text-md text-gray-400 mt-2">아래 운동 계획을 확인하고 오늘의 목표를 달성해보세요.</p>
+        </div>
+    </header>
+
+    <div class="space-y-8 max-w-4xl mx-auto">
+        {% for item in routine %}
+            <div class="slide-in-fwd bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg flex flex-col md:flex-row items-center gap-6 p-6" style="--delay: {{ forloop.counter0 }}; animation-delay: calc(var(--delay) * 150ms);">
+                <div class="flex-shrink-0 text-5xl font-black text-gray-700">{{ forloop.counter|stringformat:"02d" }}</div>
+                <img src="{{ item.gif_url }}" alt="{{ item.name }}" class="w-40 h-40 sm:w-48 sm:h-48 rounded-xl object-cover border-2 border-gray-700 flex-shrink-0">
+                <div class="flex-grow text-center md:text-left">
+                    <p class="text-sm font-semibold text-violet-400 mb-1">{{ item.muscle_group }}</p>
+                    <h2 class="text-2xl font-bold text-white mb-4">{{ item.name }}</h2>
+                    {% if item.exercise_type == 'cardio' %}
+                        <div class="flex items-center justify-center md:justify-start gap-4 text-sm mt-3">
+                            <div class="text-center"><div class="text-gray-400">운동 시간</div><div class="text-2xl font-bold text-cyan-400">{{ item.duration }} <span class="text-lg">분</span></div></div>
+                        </div>
+                    {% else %}
+                        <div class="flex items-center justify-center md:justify-start gap-4 text-sm mt-3">
+                            <div class="text-center"><div class="text-gray-400">세트</div><div class="text-2xl font-bold text-cyan-400">{{ item.sets }}</div></div>
+                            <div class="text-gray-600 text-4xl font-thin">×</div>
+                            <div class="text-center"><div class="text-gray-400">반복</div><div class="text-2xl font-bold text-cyan-400">{{ item.reps }}</div></div>
+                            <div class="text-gray-600 text-4xl font-thin">/</div>
+                            <div class="text-center"><div class="text-gray-400">무게(kg)</div><div class="text-2xl font-bold text-cyan-400">{{ item.weight }}</div></div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center py-20 bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-dashed border-gray-700">
+                <div class="text-6xl mb-4">🤷‍♂️</div><h3 class="text-2xl font-bold text-white">루틴을 생성할 수 없습니다.</h3>
+                <p class="text-gray-400 mt-2 mb-6">선택한 운동이 없거나, AI 추천에 실패했습니다.</p>
+                <a href="{% url 'routine:select' %}" class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500 to-pink-500 text-white font-bold px-6 py-2.5 rounded-lg"><i class="bi bi-arrow-left"></i> 루틴 다시 만들기</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-16 text-center">
+        <a href="{% url 'routine:select' %}" class="inline-flex items-center gap-2 bg-gray-700 text-gray-300 px-6 py-3 rounded-full shadow-md hover:bg-gray-600 transition-all"><i class="bi bi-arrow-left-circle"></i><span>다른 루틴 만들기</span></a>
+    </div>
+</div>
+{% endblock %}
