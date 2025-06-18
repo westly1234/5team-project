@@ -1,0 +1,305 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latest News - 클릭으로 보기</title>
+<style>
+  #news-1-uLCYYlLqoy .mbr-section-title.display-2 {
+    font-size: 2rem; 
+    margin-bottom: 2rem;
+  }
+
+  #news-1-uLCYYlLqoy > .container { 
+    max-width: 1140px; 
+  }
+
+  /* "Latest News" 제목을 포함하는 row 스타일 */
+  #news-1-uLCYYlLqoy .news-title-row {
+    cursor: pointer; /* 클릭 가능함을 암시 */
+    margin-bottom: 1rem; /* 제목과 나타날 카드 내용 사이 간격 */
+    /* 사용자가 클릭할 영역임을 명확히 하기 위해 약간의 시각적 피드백을 줄 수 있습니다. */
+    /* 예: padding: 0.5rem; background-color: #f8f9fa; border-radius: 5px; */
+  }
+
+  /* 뉴스 카드들을 담고 있는 row 초기 상태 (JavaScript로 제어) */
+  #news-1-uLCYYlLqoy .news-cards-row {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out, 
+                max-height 0.7s ease-in-out, 
+                visibility 0s linear 0.7s; /* visibility는 transition-delay로 조절 */
+    /* Flexbox 기본 속성 */
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -8px; 
+    margin-right: -8px;
+  }
+
+  /* JavaScript로 .active 클래스가 추가되었을 때의 스타일 */
+  #news-1-uLCYYlLqoy .news-cards-row.active {
+    opacity: 1;
+    max-height: 1500px; /* 카드 내용이 충분히 들어갈 수 있는 최대 높이. 실제 콘텐츠에 따라 조절. */
+    visibility: visible;
+    transition: opacity 0.5s ease-in-out, 
+                max-height 0.7s ease-in-out, 
+                visibility 0s linear 0s; /* visibility 지연 없이 즉시 적용 */
+  }
+
+  /* --- 나머지 기존 카드 스타일 --- */
+  #news-1-uLCYYlLqoy .item.features-image {
+    padding-left: 8px; 
+    padding-right: 8px;
+    margin-bottom: 16px; 
+    display: flex; 
+    flex-direction: column;
+    align-self: flex-start; /* 내용물 높이만큼만 차지하도록 시도 */
+  }
+
+  #news-1-uLCYYlLqoy .item-wrapper {
+    background-color: #fff; 
+    border-radius: 10px; 
+    box-shadow: 0.4px 10px rgba(0,0,0,0.06); 
+    overflow: hidden; 
+    display: flex; 
+    flex-direction: column; 
+    width: 100%;
+    padding:0px;
+  }
+
+  #news-1-uLCYYlLqoy .item-img {
+    width: 100%;
+    position: relative; 
+    padding-top: 60%; /* 예시: 16:10 비율, 기존 400%는 매우 김 */
+    /* padding-top: 400%; */ /* 원래 값 유지하려면 이 줄 주석 해제하고 위 줄 주석 처리 */
+    margin-bottom: 0; 
+    line-height: 0; 
+    padding:0px;
+  }
+
+  #news-1-uLCYYlLqoy .item-img img {
+    position: absolute;   
+    top: 0;               
+    left: 0;              
+    width: 100%;          
+    height: 100%;         
+    object-fit: cover;  /* 이미지가 컨테이너를 꽉 채우도록 */
+    object-position: center center; 
+    display: block; 
+  }
+
+  #news-1-uLCYYlLqoy .item-content {
+    padding: 0.25rem 0.7rem 0.7rem 0.7rem; 
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* 버튼이 하단에 오도록 유지 */
+  }
+  #news-1-uLCYYlLqoy .item-content > div:not(.item-footer) {
+      margin-bottom: 0.5rem; 
+  }
+
+  #news-1-uLCYYlLqoy .item-title.display-5 {
+    font-size: 0.9rem; 
+    font-weight: 600; 
+    margin-top: 0; 
+    margin-bottom: 0.1rem; 
+    line-height: 1.25; 
+  }
+
+  #news-1-uLCYYlLqoy .mbr-text.display-7 {
+    font-size: 0.7rem; 
+    line-height: 1.35;
+    color: #666; 
+  }
+  
+  #news-1-uLCYYlLqoy .mbr-text.display-7:nth-of-type(1) { /* 날짜 */
+      margin-bottom: 0.25rem; 
+      color: #888; 
+      font-size: 0.65rem; 
+  }
+
+  #news-1-uLCYYlLqoy .item-footer {
+      margin-top: auto; /* 내용이 적어도 버튼은 항상 하단에 위치 */
+  }
+
+  #news-1-uLCYYlLqoy .btn.display-7 {
+    padding: 0.25rem 0.7rem; 
+    font-size: 0.65rem; 
+  }
+
+  /* --- 반응형 스타일 --- */
+  @media (max-width: 991.98px) { 
+    #news-1-uLCYYlLqoy > .container {
+        max-width: 720px; 
+    }
+  }
+
+  @media (max-width: 767.98px) { 
+    #news-1-uLCYYlLqoy > .container {
+        max-width: 540px; 
+         padding-left: 10px;
+         padding-right: 10px;
+    }
+    #news-1-uLCYYlLqoy .mbr-section-title.display-2 {
+      font-size: 1.6rem;
+    }
+    #news-1-uLCYYlLqoy .item-title.display-5 {
+      font-size: 1rem;
+    }
+    /* 모바일에서는 클릭/터치 인터랙션을 유지하거나, 또는 항상 펼쳐 보이도록 할 수 있습니다. */
+    /* 현재는 데스크탑과 동일하게 클릭/터치로 제어됩니다. */
+    /* 만약 모바일에서 항상 펼쳐 보이게 하려면 아래 주석을 해제하고,
+       .news-cards-row.active 관련 스타일을 이 미디어쿼리 밖으로 옮기거나 조정해야 합니다. */
+    /*
+    #news-1-uLCYYlLqoy .news-cards-row {
+        opacity: 1;
+        max-height: none; 
+        visibility: visible;
+        overflow: visible;
+    }
+    */
+  }
+</style>
+</head>
+<body>
+
+<section data-bs-version="5.1" class="features03 cid-uLCYYlLqoy" id="news-1-uLCYYlLqoy">
+  <div class="container"> 
+    <!-- "Latest News" 제목을 포함하는 row (클래스 추가) -->
+    <div class="row justify-content-center mb-3 news-title-row"> 
+      <div class="col-12 content-head">
+        <div class="mbr-section-head">
+          <h4 class="mbr-section-title mbr-fonts-style align-center mb-0 display-2">
+            <strong>최근 뉴스 빠르게 보기</strong>
+          </h4>
+        </div>
+      </div>
+    </div>
+    <!-- 뉴스 카드들을 포함하는 row (클래스 추가) -->
+    <div class="row justify-content-center news-cards-row">
+      <div class="item features-image col-12 col-md-6 col-lg-3 active">
+        <div class="item-wrapper">
+          <div class="item-img">
+            <img src="{% static 'images/photo-1584735935682-2f2b69dff9d2.jpeg' %}" alt="AI Fitness Boost" title="">
+          </div>
+          <div class="item-content align-left">
+            <div>
+              <h5 class="item-title mbr-fonts-style mt-0 display-5">
+                <strong>AI Fitness Boost!</strong>
+              </h5>
+              <p class="mbr-text mbr-fonts-style display-7">May 19, 2025</p>
+              <p class="mbr-text mbr-fonts-style display-7">New research shows AI-driven fitness plans yield 30% better results. Read about it here.</p>
+            </div>
+            <div class="mbr-section-btn item-footer">
+              <a href="#" class="btn item-btn btn-primary display-7">Go</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="item features-image col-12 col-md-6 col-lg-3">
+        <div class="item-wrapper">
+          <div class="item-img">
+            <img src="{% static 'images/photo-1552674605-db6ffd4facb5.jpeg' %}" alt="Gyms Embrace AI" title="">
+          </div>
+          <div class="item-content align-left">
+            <div>
+              <h5 class="item-title mbr-fonts-style mt-0 display-5">
+                <strong>Gyms Embrace AI</strong>
+              </h5>
+              <p class="mbr-text mbr-fonts-style display-7">May 12, 2025</p>
+              <p class="mbr-text mbr-fonts-style display-7">Local gym, 'Fitness First' integrates AI Trainer for personalized member experiences.</p>
+            </div>
+            <div class="mbr-section-btn item-footer">
+              <a href="#" class="btn item-btn btn-primary display-7">Go</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="item features-image col-12 col-md-6 col-lg-3">
+        <div class="item-wrapper">
+          <div class="item-img">
+            <img src="{% static 'images/photo-1583454110551-21f2fa2afe61.png' %}" alt="Meal Plan Upgrade" title="">
+          </div>
+          <div class="item-content align-left">
+            <div>
+              <h5 class="item-title mbr-fonts-style mt-0 display-5">
+                <strong>Meal Plan Upgrade</strong>
+              </h5>
+              <p class="mbr-text mbr-fonts-style display-7">May 05, 2025</p>
+              <p class="mbr-text mbr-fonts-style display-7">Nutritionist Sarah Johnson partners with us to refine our meal recommendations.</p>
+            </div>
+            <div class="mbr-section-btn item-footer">
+              <a href="#" class="btn item-btn btn-primary display-7">Go</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="item features-image col-12 col-md-6 col-lg-3">
+        <div class="item-wrapper">
+          <div class="item-img">
+            <img src="{% static 'images/photo-1483721310020-03333e577078.png' %}" alt="Success Story" title="">
+            </div>
+            <div class="item-content align-left">
+              <div>
+                <h5 class="item-title mbr-fonts-style mt-0 display-5">
+                  <strong>Success Story</strong>
+                </h5>
+                <p class="mbr-text mbr-fonts-style display-7">Apr 29, 2025</p>
+                <p class="mbr-text mbr-fonts-style display-7">User Mark Olsen shares his success story, losing 20 pounds in 2 months!</p>
+              </div>
+              <div class="mbr-section-btn item-footer">
+                <a href="#" class="btn item-btn btn-primary display-7">Go</a>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const newsTitleRow = document.querySelector('#news-1-uLCYYlLqoy .news-title-row');
+    const newsCardsRow = document.querySelector('#news-1-uLCYYlLqoy .news-cards-row');
+
+    if (newsTitleRow && newsCardsRow) {
+      newsTitleRow.addEventListener('click', function () {
+        newsCardsRow.classList.toggle('active');
+
+        // (선택 사항) 접근성 향상을 위해 ARIA 속성 추가/제거
+        if (newsCardsRow.classList.contains('active')) {
+          newsTitleRow.setAttribute('aria-expanded', 'true');
+          newsCardsRow.setAttribute('aria-hidden', 'false');
+        } else {
+          newsTitleRow.setAttribute('aria-expanded', 'false');
+          newsCardsRow.setAttribute('aria-hidden', 'true');
+        }
+      });
+
+      // 초기 ARIA 상태 설정
+      newsTitleRow.setAttribute('aria-expanded', 'false');
+      newsCardsRow.setAttribute('aria-hidden', 'true');
+      // newsCardsRow에 ID가 있다면 aria-controls로 연결할 수 있습니다.
+      // 예: newsTitleRow.setAttribute('aria-controls', 'newsCardsContent');
+      // newsCardsRow.id = 'newsCardsContent';
+
+      // (선택 사항) 카드 영역 밖을 클릭하면 닫히도록 하는 기능
+      // document.addEventListener('click', function(event) {
+      //   const isClickInsideTitle = newsTitleRow.contains(event.target);
+      //   const isClickInsideCards = newsCardsRow.contains(event.target);
+      //
+      //   if (!isClickInsideTitle && !isClickInsideCards && newsCardsRow.classList.contains('active')) {
+      //     newsCardsRow.classList.remove('active');
+      //     newsTitleRow.setAttribute('aria-expanded', 'false');
+      //     newsCardsRow.setAttribute('aria-hidden', 'true');
+      //   }
+      // });
+    }
+  });
+</script>
+
+</body>
+</html>

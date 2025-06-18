@@ -1,0 +1,275 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합 히어로 섹션</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f4f8; /* 페이지 기본 배경색 */
+        }
+
+        /* --- 통합 히어로 섹션 (하늘 배경) --- */
+        #unified-hero-section {
+            background-image: url('https://images.unsplash.com/photo-1560801019-2246401b00dd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80'); /* 고화질 하늘/구름 이미지 URL */
+            background-size: cover;
+            background-position: center;
+            padding: 60px 20px 80px; /* 상하 패딩 */
+            color: white; /* 기본 텍스트 색상 (통계 부분에 주로 적용) */
+            position: relative;
+            text-align: center; /* 내부 요소들 기본 중앙 정렬 */
+        }
+
+        #unified-hero-section::before { /* 배경에 은은한 오버레이 */
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(80, 150, 220, 0.2) 0%, rgba(30, 80, 150, 0.5) 100%);
+            z-index: 1;
+        }
+
+        .content-wrapper { /* 실제 콘텐츠를 담을 래퍼, 오버레이 위에 위치 */
+            position: relative;
+            z-index: 2;
+            max-width: 1140px;
+            margin: 0 auto;
+        }
+
+        /* --- Testimonials 부분 (통합 섹션 상단) --- */
+        .testimonials-part {
+            margin-bottom: 70px; /* 하단 통계 부분과의 간격 */
+        }
+        .testimonials-part .content-head {
+            margin-bottom: 40px;
+        }
+        .testimonials-part .mbr-section-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #ffffff; /* 하늘 배경 위이므로 흰색 계열 */
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .testimonials-part .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: -15px;
+            margin-right: -15px;
+            justify-content: center;
+        }
+        .testimonials-part .item {
+            padding-left: 15px;
+            padding-right: 15px;
+            margin-bottom: 30px;
+            width: calc(33.333% - 30px); /* 3열 그리드 */
+            box-sizing: border-box;
+        }
+        .testimonials-part .item-wrapper {
+            background-color: rgba(255, 255, 255, 0.9); /* 약간 투명한 흰색 카드 배경 */
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            text-align: left; /* 카드 내부 텍스트는 왼쪽 정렬 */
+        }
+        .testimonials-part .card-text {
+            font-size: 0.95rem; /* 약간 작게 조정 */
+            color: #333; /* 카드 배경이 밝으므로 어두운 글씨 */
+            line-height: 1.6;
+            margin-bottom: 15px;
+            flex-grow: 1;
+        }
+        .testimonials-part .img-wrapper {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .testimonials-part .img-wrapper img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ddd;
+        }
+        .testimonials-part .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #222;
+            text-align: center;
+        }
+
+        /* --- 하단 통계 부분 (통합 섹션 하단, Headspace 스타일) --- */
+        .stats-part {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding-top: 30px; /* Testimonials와의 간격 */
+            border-top: 1px solid rgba(255,255,255,0.2); /* 구분선 (선택 사항) */
+        }
+        .stat-item-sky {
+            text-align: center;
+            color: white;
+            width: 220px;
+            margin: 15px 10px;
+        }
+        .stat-item-sky .icon-area-sky {
+            margin-bottom: 10px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .stat-item-sky .stars-sky img {
+            width: 26px; height: 26px; margin: 0 2px;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+        }
+        .stat-item-sky .award-icons-sky img {
+            width: 35px; height: 35px; margin: 0 5px; opacity: 0.9;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
+        }
+        .stat-item-sky .stat-value-sky {
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: block;
+            line-height: 1.1;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .stat-item-sky .stat-label-sky {
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.95;
+        }
+
+        /* 반응형 스타일 */
+        @media (max-width: 992px) {
+            .testimonials-part .item {
+                width: calc(50% - 30px); /* 2열 그리드 */
+            }
+            .testimonials-part .mbr-section-title { font-size: 2.4rem; }
+        }
+        @media (max-width: 768px) {
+            #unified-hero-section { padding-top: 40px; padding-bottom: 50px; }
+            .testimonials-part .mbr-section-title {
+                font-size: 2rem;
+            }
+            .testimonials-part .item {
+                width: calc(100% - 30px); /* 1열 그리드 */
+                max-width: 380px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .stats-part {
+                flex-direction: column;
+                align-items: center;
+                border-top: none;
+                padding-top: 10px;
+            }
+            .stat-item-sky {
+                width: 100%;
+                max-width: 280px;
+                margin: 10px 0;
+            }
+            .stat-item-sky .stat-value-sky { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <section id="unified-hero-section">
+        <div class="content-wrapper">
+            <!-- Testimonials 부분 -->
+            <div class="testimonials-part">
+                <div class="content-head">
+                    <h3 class="mbr-section-title mbr-fonts-style align-center">
+                        <strong>Testimonials</strong>
+                    </h3>
+                </div>
+                <div class="row">
+                    {% for testimonial in testimonials_list %} {# 실제 데이터로 대체 필요 #}
+                    <div class="item features-without-image col-12 col-md-6 col-lg-4">
+                        <div class="item-wrapper">
+                            <div class="card-box align-left">
+                                <p class="card-text mbr-fonts-style display-7">{{ testimonial.text }}</p>
+                                <div class="img-wrapper mt-4 mb-3">
+                                    <img src="{{ testimonial.image_url }}" alt="{{ testimonial.name }}">
+                                </div>
+                                <h5 class="card-title mbr-fonts-style display-7">
+                                    <strong>{{ testimonial.name }}</strong>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <!-- 기본 Testimonial 아이템들 -->
+                    <div class="item features-without-image col-12 col-md-6 col-lg-4">
+                        <div class="item-wrapper">
+                            <div class="card-box align-left">
+                                <p class="card-text mbr-fonts-style display-7">AI Trainer helped me lose 20 pounds!</p>
+                                <div class="img-wrapper mt-4 mb-3">
+                                    <img src="{% static 'images/photo-1679746584014-fb31d4eb0a5e.jpeg' %}" alt="Robert Smith">
+                                </div>
+                                <h5 class="card-title mbr-fonts-style display-7"><strong>Robert Smith</strong></h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item features-without-image col-12 col-md-6 col-lg-4">
+                        <div class="item-wrapper">
+                            <div class="card-box align-left">
+                                <p class="card-text mbr-fonts-style display-7">The meal plans are easy and delicious.</p>
+                                <div class="img-wrapper mt-4 mb-3">
+                                    <img src="{% static 'images/photo-1589571894960-20bbe2828d0a.jpeg' %}" alt="Emily Johnson">
+                                </div>
+                                <h5 class="card-title mbr-fonts-style display-7"><strong>Emily Johnson</strong></h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item features-without-image col-12 col-md-6 col-lg-4">
+                        <div class="item-wrapper">
+                            <div class="card-box align-left">
+                                <p class="card-text mbr-fonts-style display-7">I love the personalized workout plans!</p>
+                                <div class="img-wrapper mt-4 mb-3">
+                                    <img src="{% static 'images/photo-1626899798511-c3eaacb02846.jpeg' %}" alt="Michael Brown">
+                                </div>
+                                <h5 class="card-title mbr-fonts-style display-7"><strong>Michael Brown</strong></h5>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 나머지 3개 카드도 여기에 추가 (제공해주신 HTML 참고) -->
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 하단 통계 부분 -->
+            <div class="stats-part">
+                <div class="stat-item-sky">
+                    <div class="icon-area-sky stars-sky">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='gold' width='24px' height='24px'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E" alt="star"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='gold' width='24px' height='24px'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E" alt="star"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='gold' width='24px' height='24px'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E" alt="star"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='gold' width='24px' height='24px'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E" alt="star"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='gold' width='24px' height='24px'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E" alt="star">
+                    </div>
+                    <span class="stat-label-sky">App Store Rating</span>
+                </div>
+                <div class="stat-item-sky">
+                    <span class="stat-value-sky">3,000+</span>
+                    <span class="stat-label-sky">Active users</span>
+                </div>
+                <div class="stat-item-sky">
+                    <span class="stat-value-sky">1,500+</span>
+                    <span class="stat-label-sky">Daily workouts</span>
+                </div>
+                <div class="stat-item-sky">
+                    <div class="icon-area-sky award-icons-sky">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' width='35' height='35' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3C/svg%3E" alt="award">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' width='35' height='35' viewBox='0 0 24 24'%3E%3Crect width='20' height='20' x='2' y='2' rx='5'/%3E%3C/svg%3E" alt="award">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' width='35' height='35' viewBox='0 0 24 24'%3E%3Cpath d='M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 18.896l-7.416 4.517 1.48-8.279L0 9.306l8.332-1.151z'/%3E%3C/svg%3E" alt="award">
+                    </div>
+                    <span class="stat-label-sky">Selected Awards</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

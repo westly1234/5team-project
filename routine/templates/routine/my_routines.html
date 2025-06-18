@@ -1,0 +1,179 @@
+{% extends 'web/dashboard_sliding_base.html' %}
+
+{% block title %}내 운동 루틴 대시보드{% endblock %}
+
+{% block page_content %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* 1. 호버 관련 스타일 */
+    .exercise-list {
+        /* 평소에는 높이를 0으로 만들어 완전히 숨김 */
+        max-height: 0;
+        overflow: hidden;
+        /* 배경색을 지정하여 뒤에 있는 카드가 비치지 않도록 함 */
+        background-color: #262f3e; /* bg-gray-800 보다 살짝 밝게 */
+        
+        /* 부드러운 애니메이션 효과 */
+        transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+        
+        /* 둥근 모서리를 카드와 맞춤 */
+        border-radius: 0 0 1rem 1rem;
+    }
+
+    .routine-card:hover .exercise-list {
+        /* 호버 시, 높이를 충분히 주어 펼침 */
+        max-height: 1000px;
+        /* 패딩을 추가하여 내용이 자연스럽게 보이도록 함 */
+        padding: 1.5rem;
+    }
+    
+    .card-footer {
+        transition: opacity 0.3s ease-in-out;
+    }
+    .routine-card:hover .card-footer {
+        /* 호버 시 '상세 정보 보기' 텍스트 숨기기 (선택사항) */
+        opacity: 0;
+        height: 0;
+        padding: 0;
+        border: none;
+        margin: 0;
+    }
+
+    .reveal-icon {
+        transition: transform 0.3s ease-in-out;
+    }
+    .routine-card:hover .reveal-icon {
+        transform: rotate(180deg);
+    }
+    
+    /* 2. 모달 관련 CSS (기존과 동일) */
+    .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; z-index: 50; opacity: 0; transition: opacity 0.3s ease-in-out; pointer-events: none; }
+    .modal-overlay.visible { opacity: 1; pointer-events: auto; }
+    .modal-content { background: #1f2937; border-radius: 1rem; padding: 2rem; width: 90%; max-width: 48rem; max-height: 90vh; overflow-y: auto; transform: scale(0.95); transition: transform 0.3s ease-in-out; }
+    .modal-overlay.visible .modal-content { transform: scale(1); }
+</style>
+
+<div class="p-4 sm:p-8">
+    <header class="text-left mb-12">
+        <div class="border-l-4 border-violet-400 pl-4">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">My Routine Vault</h1>
+            <p class="text-md text-gray-400 mt-2">{{ user.username }}님의 모든 운동 기록 보관소입니다.</p>
+        </div>
+    </header>
+
+    {% if routines %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for routine in routines %}
+                <div class="routine-card flex flex-col bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg transition-all duration-300 hover:border-violet-500/50 hover:shadow-2xl hover:shadow-violet-500/10">
+                    <div class="p-6 flex-grow">
+                        <div class="flex justify-between items-start">
+                            <h2 class="text-xl font-bold text-white mb-2">{{ routine.name }}</h2>
+                            <form id="delete-form-{{ routine.id }}" method="post" action="{% url 'routine:delete_routine' routine.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="button" onclick="confirmDelete('{{ routine.id }}')" class="text-gray-500 hover:text-red-400 transition-colors" title="삭제하기"><i class="bi bi-trash3"></i></button>
+                            </form>
+                        </div>
+                        <p class="text-sm text-gray-400">총 <span class="font-bold text-violet-400">{{ routine.exercises.count }}</span>개의 운동 포함<span class="mx-2 text-gray-600">·</span><span class="text-xs">{{ routine.created_at|date:"y.m.d" }}</span></p>
+                    </div>
+
+                    <div class="exercise-list">
+                        <ul class="space-y-4">
+                            {% for re in routine.routineexercise_set.all %}
+                            <li class="border-t border-white/10 pt-4 first:border-t-0 first:pt-0 cursor-pointer hover:bg-white/5 p-2 rounded-lg"
+                                onclick="openExerciseModal(
+                                    '{{ re.exercise.name|escapejs }}', 
+                                    '{{ re.exercise.muscle_group|escapejs }}', 
+                                    '{{ re.exercise.gif_url }}',
+                                    '{{ re.description|escapejs|linebreaksbr }}',
+                                    '{{ re.precautions|escapejs|linebreaksbr }}'
+                                )">
+                                <div class="flex items-center gap-4 text-sm">
+                                    <img src="{{ re.exercise.gif_url }}" alt="{{ re.exercise.name }}" class="w-12 h-12 object-cover rounded-md border border-gray-600 flex-shrink-0">
+                                    <div class="flex-grow">
+                                        <span class="font-semibold text-gray-200">{{ re.exercise.name }}</span>
+                                        <div class="text-xs text-gray-400 mt-1">
+                                            {% if re.exercise.exercise_type == 'cardio' %}{{ re.duration_minutes }} 분{% else %}{{ re.sets }} sets × {{ re.reps }} reps / {{ re.weight }} kg{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="card-footer text-center mt-auto p-6 pt-4 border-t border-white/10">
+                        <span class="text-xs text-gray-500"> 상세 정보 보기 <i class="bi bi-chevron-down reveal-icon inline-block"></i></span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- 루틴 없을 때의 화면 (기존과 동일) -->
+    {% endif %}
+</div>
+
+<!-- 모달을 위한 HTML 구조 -->
+<div id="exerciseModal" class="modal-overlay">
+    <div class="modal-content relative">
+        <button onclick="closeExerciseModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-3xl transition-colors">
+            <i class="bi bi-x-circle-fill"></i>
+        </button>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<!-- 최종 JavaScript (API 호출 없음, 호버 제어 없음) -->
+<script>
+// --- 삭제 확인 기능 ---
+function confirmDelete(routineId) {
+    if (confirm("정말로 이 루틴을 삭제하시겠습니까?")) {
+        document.getElementById(`delete-form-${routineId}`).submit();
+    }
+}
+
+// --- 모달 기능 ---
+const modal = document.getElementById('exerciseModal');
+const modalBody = document.getElementById('modalBody');
+
+// DB 데이터를 인자로 받아 모달을 즉시 여는 함수
+function openExerciseModal(name, muscle_group, gif_url, description, precautions) {
+    event.stopPropagation(); // 이벤트 전파 방지
+    modal.classList.add('visible');
+    
+    modalBody.innerHTML = `
+        <div class="flex flex-col md:flex-row gap-8">
+            <div class="flex-shrink-0 md:w-1/3"><img src="${gif_url}" alt="${name}" class="w-full rounded-lg border-2 border-gray-700"></div>
+            <div class="flex-grow">
+                <p class="text-sm font-semibold text-violet-400">${muscle_group}</p>
+                <h2 class="text-3xl font-bold text-white mb-6">${name}</h2>
+                <div class="space-y-6 text-gray-300">
+                    <div>
+                        <h3 class="font-semibold text-lg text-white mb-2 flex items-center gap-2"><i class="bi bi-activity text-cyan-400"></i>상세 설명 및 팁</h3>
+                        <p class="leading-relaxed whitespace-pre-line">${description || '상세 설명 정보가 없습니다.'}</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg text-white mb-2 flex items-center gap-2"><i class="bi bi-exclamation-triangle-fill text-amber-400"></i>핵심 주의사항</h3>
+                        <p class="leading-relaxed whitespace-pre-line">${precautions || '주의사항 정보가 없습니다.'}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function closeExerciseModal() {
+    modal.classList.remove('visible');
+    modalBody.innerHTML = '';
+}
+
+modal.addEventListener('click', (event) => {
+    if (event.target === modal) closeExerciseModal();
+});
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal.classList.contains('visible')) {
+        closeExerciseModal();
+    }
+});
+</script>
+
+{% endblock %}

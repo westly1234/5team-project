@@ -1,0 +1,664 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 페이지별 고유 제목이 이 블록을 대체합니다 -->
+    <title>{% block title %}HealthWise{% endblock %}</title>
+    
+    <!-- 모든 스타일이 여기에 포함되어 있습니다 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* 로딩 화면 */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .loading-logo {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #ffe66d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse 1.5s ease-in-out infinite;
+            margin-bottom: 30px;
+        }
+
+        .loading-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            animation: loading 2s ease-in-out;
+            transform-origin: left;
+        }
+
+        @keyframes loading {
+            0% { transform: scaleX(0); }
+            100% { transform: scaleX(1); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* 진행률 바 */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1001;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+
+        /* 네비게이션 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 50px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-container {
+            /* max-width: 1400px;  <- 이 줄을 삭제하거나 주석 처리 */
+            /* margin: 0 auto;       <- 이 줄을 삭제하거나 주석 처리 */
+            display: flex;
+            justify-content: space-between; /* 양쪽 끝으로 정렬 */
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 35px;
+            margin-left: auto;
+        }
+
+        .nav-menu a.nav-item {
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 5px 0;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-menu a.nav-item::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4ecdc4;
+            transition: width 0.3s ease;
+        }
+
+        .nav-menu a.nav-item:hover {
+            color: #fff;
+        }
+
+        .nav-menu a.nav-item:hover::after {
+            width: 100%;
+        }
+
+        /* 히어로 섹션 */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative; 
+            overflow: hidden; 
+            background-color: #050505;
+        }
+
+        .hero-background-pinterest {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex; 
+            z-index: 1; 
+            overflow: hidden; 
+        }
+
+        .pinterest-bg-half {
+            flex: 1; 
+            height: 100%;
+            overflow: hidden; 
+            position: relative; 
+            background-color: #000;
+        }
+
+        .pinterest-bg-half a[data-pin-do="embedPin"] {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: absolute; 
+            top: 0;
+            left: 0;
+        }
+        
+        .pinterest-bg-half .PinterestEmbed,
+        .pinterest-bg-half .PinterestEmbed iframe {
+            box-sizing: border-box !important;
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            overflow: hidden !important;
+            object-fit: contain !important;
+            position: absolute !important; 
+            top: 0 !important;
+            left: 0 !important;
+            transform: none !important;
+        }
+
+        .hero .parallax-elements {
+            position: absolute; 
+            width: 100%;
+            height: 100%;
+            z-index: 3; 
+        }
+        .hero .hero-content {
+            position: relative; 
+            z-index: 4; 
+            text-align: center;
+        }
+
+        .parallax-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(78, 205, 196, 0.1) 0%, transparent 70%);
+            filter: blur(40px);
+            will-change: transform;
+            transition: transform 0.5s ease-out;
+        }
+        .parallax-circle-1 { width: 600px; height: 600px; top: -200px; left: -200px; animation: float 20s ease-in-out infinite; }
+        .parallax-circle-2 { width: 400px; height: 400px; bottom: -100px; right: -100px; background: radial-gradient(circle, rgba(255, 107, 107, 0.1) 0%, transparent 70%); animation: float 15s ease-in-out infinite reverse; }
+        .parallax-circle-3 { width: 300px; height: 300px; top: 50%; right: 10%; background: radial-gradient(circle, rgba(255, 230, 109, 0.1) 0%, transparent 70%); animation: float 25s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        .hero h1 {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #ffe66d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 3s ease-in-out infinite;
+        }
+        @keyframes glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+        .hero p {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 40px;
+        }
+        .hero-btn {
+            padding: 15px 40px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .hero-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+        }
+        .hero-btn + .hero-btn {
+            margin-left: 20px; 
+        }
+
+        /* 스티키 스크롤 컨테이너 */
+        .main-container {
+            position: relative;
+            display: flex;
+            background: #0a0a0a;
+            transition: background 0.6s ease;
+        }
+        .main-container.section-1 { background: linear-gradient(135deg, #0a0a0a 0%, #1a0f1f 100%); }
+        .main-container.section-2 { background: linear-gradient(135deg, #0f0a1a 0%, #1f1a0f 100%); }
+        .main-container.section-3 { background: linear-gradient(135deg, #1a0f0a 0%, #0f1f1a 100%); }
+        .main-container.section-4 { background: linear-gradient(135deg, #0a1a1f 0%, #1f0f1a 100%); }
+
+        .text-side { flex: 1; padding-left: 150px; padding-right: 100px; }
+        .text-section { min-height: 100vh; display: flex; align-items: center; justify-content: flex-end; position: relative; }
+        .text-section:first-child .text-content { opacity: 1; transform: translateY(0); }
+        .text-content { max-width: 500px; opacity: 0; transform: translateY(30px); transition: opacity 0.15s ease, transform 0.15s ease; will-change: opacity, transform; }
+        .text-content.active { opacity: 1; transform: translateY(0); }
+        .section-number { font-size: 8rem; font-weight: 900; background: linear-gradient(90deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; opacity: 0.3; position: absolute; top: 50%; left: 0; transform: translateY(-50%); z-index: -1; }
+        .text-content h2 { font-size: 3rem; margin-bottom: 20px; background: linear-gradient(90deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .text-content p { font-size: 1.2rem; line-height: 1.8; color: rgba(255, 255, 255, 0.8); margin-bottom: 30px; }
+        .feature-list { list-style: none; }
+        .feature-list li { padding: 10px 0; color: rgba(255, 255, 255, 0.7); position: relative; padding-left: 30px; }
+        .feature-list li::before { content: '✓'; position: absolute; left: 0; color: #4ecdc4; font-weight: bold; }
+
+        .image-side { flex: 1; position: sticky; position: -webkit-sticky; top: 0; align-self: flex-start; height: 100vh; }
+        .image-wrapper { position: relative; width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .image-box { position: relative; width: 600px; height: 700px; border-radius: 30px; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5); background-color: #111; overflow: hidden; }
+        .sticky-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.2s ease; will-change: opacity; pointer-events: none; }
+        .sticky-image:first-child { opacity: 1; pointer-events: auto; }
+        .sticky-image.active { opacity: 1; z-index: 2; pointer-events: auto; }
+
+        .image-indicators { position: absolute; right: 30px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 20px; z-index: 100; }
+        .indicator { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.3); cursor: pointer; transition: all 0.3s ease; position: relative; }
+        .indicator::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 0; height: 0; border-radius: 50%; background: #4ecdc4; transition: all 0.3s ease; }
+        .indicator.active { background: rgba(78, 205, 196, 0.3); border-color: #4ecdc4; }
+        .indicator.active::before { width: 6px; height: 6px; }
+        .indicator:hover { transform: scale(1.2); border-color: #4ecdc4; }
+
+        .page-number { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); padding: 10px 25px; border-radius: 30px; display: flex; align-items: center; gap: 10px; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.1); z-index: 50; }
+        .current-page { font-size: 1.5rem; color: #4ecdc4; }
+        .divider { color: rgba(255, 255, 255, 0.3); font-size: 1.2rem; }
+        .total-pages { color: rgba(255, 255, 255, 0.6); font-size: 1.2rem; }
+        
+        .swipe-hint { position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); display: none; flex-direction: column; align-items: center; gap: 10px; color: rgba(255, 255, 255, 0.5); font-size: 0.9rem; animation: bounce 2s ease-in-out infinite; z-index: 50; }
+        .swipe-icon { width: 30px; height: 30px; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 50%; position: relative; }
+        .swipe-icon::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid rgba(255, 255, 255, 0.5); }
+        @keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-10px); } }
+
+        .cursor-glow { position: fixed; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(78, 205, 196, 0.15) 0%, transparent 50%); pointer-events: none; z-index: 9998; filter: blur(40px); transform: translate(-50%, -50%); transition: opacity 0.3s ease, transform 0s; opacity: 0; }
+        .cursor-dot { position: fixed; width: 20px; height: 20px; border-radius: 50%; background: rgba(78, 205, 196, 0.8); pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); mix-blend-mode: difference; transition: transform 0.15s ease, background-color 0.15s ease; }
+        .cursor-dot.hover { transform: translate(-50%, -50%) scale(2.5); background: rgba(255, 107, 107, 0.8); }
+        button, a, .indicator { cursor: pointer; }
+
+        .floating-shapes { position: fixed; width: 100%; height: 100%; top:0; left:0; pointer-events: none; z-index: 1; }
+        .floating-shape { position: absolute; opacity: 0.03; will-change: transform; }
+        .shape-1 { width: 300px; height: 300px; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; top: 10%; left: 5%; animation: morph 20s ease-in-out infinite; animation-play-state: paused; }
+        .floating-shape.animate { animation-play-state: running; }
+        .shape-2 { width: 200px; height: 200px; background: linear-gradient(135deg, #4ecdc4, #ffe66d); border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; bottom: 20%; right: 10%; animation: morph 15s ease-in-out infinite reverse; animation-play-state: paused; }
+        .shape-3 { width: 150px; height: 150px; background: linear-gradient(225deg, #ffe66d, #ff6b6b); border-radius: 50% 50% 30% 70% / 30% 70% 30% 70%; top: 50%; right: 30%; animation: morph 25s ease-in-out infinite; animation-play-state: paused; }
+        @keyframes morph { 0%, 100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(0deg) scale(1); } 25% { border-radius: 70% 30% 50% 50% / 30% 70% 50% 50%; transform: rotate(90deg) scale(1.1); } 50% { border-radius: 50% 50% 30% 70% / 70% 30% 70% 30%; transform: rotate(180deg) scale(0.9); } 75% { border-radius: 30% 70% 30% 70% / 70% 30% 30% 70%; transform: rotate(270deg) scale(1.05); } }
+
+        footer { padding: 100px 50px 50px; background: #000; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        footer h2 { font-size: 3rem; margin-bottom: 20px; background: linear-gradient(90deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        footer p { font-size: 1.2rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 40px; }
+        .footer-btn { padding: 15px 50px; background: transparent; border: 2px solid #4ecdc4; border-radius: 50px; color: #4ecdc4; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .footer-btn:hover { background: #4ecdc4; color: #000; transform: translateY(-3px); }
+
+        @media (max-width: 1200px) { /* 반응형 스타일 추가 */ }
+        @media (max-width: 1024px) { .pinterest-bg-half { min-height: 30vh; } }
+        @media (max-width: 768px) { .hero h1 {font-size: 3rem;} .pinterest-bg-half { min-height: 50vh; } }
+    </style>
+</head>
+<body>
+    <!-- 모든 페이지에 공통으로 들어가는 요소들 -->
+    <div class="cursor-glow"></div>
+    <div class="cursor-dot"></div>
+
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">💊 HealthWise</div>
+            <div class="loading-bar"><div class="loading-progress"></div></div>
+        </div>
+    </div>
+
+    <div class="floating-shapes">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+    </div>
+
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+
+    <!-- 모든 페이지 공통 네비게이션 -->
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo" style="text-decoration: none;">💊 HealthWise</a>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-item">홈</a></li>
+                <li><a href="#" class="nav-item">고객지원</a></li>
+                <!-- Django 로그인/로그아웃 분기 처리 -->
+                {% if user.is_authenticated %}
+                    <li style="padding: 5px 0; color: rgba(255, 255, 255, 0.85); font-weight: 500;"> {{ user.username }}님</li>
+                    <li>
+                        <form id="logout-form" method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-item" style="background: none; border: none; color: rgba(255, 255, 255, 0.85); cursor: pointer; padding: 5px 0; font-size: 1rem; font-weight: 500; font-family: inherit;">로그아웃</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'accounts:login' %}" class="nav-item">로그인</a></li>
+                    <li><a href="{% url 'accounts:signup' %}" class="nav-item">회원가입</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- [매우 중요] 이 블록이 각 페이지(home.html, services.html 등)의 실제 내용으로 교체됩니다. -->
+    {% block content %}{% endblock %}
+
+    <!-- 모든 페이지 공통 푸터 -->
+    <footer>
+        <h2>지금 시작하세요</h2>
+        <p>AI와 함께 더 건강한 내일을 만들어가세요</p>
+        <button class="footer-btn">무료 체험 시작</button>
+    </footer>
+
+    <!-- 모든 페이지 공통 JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => { 
+            console.log('[DEBUG] DOMContentLoaded');
+            const textContents = document.querySelectorAll('.text-content');
+            const stickyImages = document.querySelectorAll('.image-box > .sticky-image');
+            const indicators = document.querySelectorAll('.indicator');
+            const mainContainer = document.querySelector('.main-container');
+            const progressFill = document.querySelector('.progress-fill');
+            const currentPageElement = document.querySelector('.current-page');
+            const totalSections = textContents.length;
+            let currentSection = 0;
+            let isScrolling = false; 
+
+            const cursorGlow = document.querySelector('.cursor-glow');
+            const cursorDot = document.querySelector('.cursor-dot');
+            let targetCursorX = 0, targetCursorY = 0, currentCursorX = 0, currentCursorY = 0;
+
+            const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+            const animationObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => entry.target.classList.toggle('animate', entry.isIntersecting));
+            }, observerOptions);
+            document.querySelectorAll('.floating-shape').forEach(shape => animationObserver.observe(shape));
+
+            function handleMouseMove(e) {
+                targetCursorX = e.clientX; targetCursorY = e.clientY;
+                if (cursorDot) cursorDot.style.transform = `translate(${targetCursorX}px, ${targetCursorY}px) translate(-50%, -50%)`;
+                if (cursorGlow && cursorGlow.style.opacity !== '1') cursorGlow.style.opacity = '1';
+            }
+
+            function updateCursorGlow() {
+                currentCursorX += (targetCursorX - currentCursorX) * 0.1; 
+                currentCursorY += (targetCursorY - currentCursorY) * 0.1;
+                if (cursorGlow) cursorGlow.style.transform = `translate(${currentCursorX}px, ${currentCursorY}px) translate(-50%, -50%)`;
+                requestAnimationFrame(updateCursorGlow);
+            }
+            if (cursorGlow) updateCursorGlow();
+
+            function updateMouseParallax() {
+                const centerX = window.innerWidth / 2, centerY = window.innerHeight / 2;
+                const distanceX = (targetCursorX - centerX) / centerX;
+                const distanceY = (targetCursorY - centerY) / centerY;
+                document.querySelectorAll('.parallax-circle').forEach((el, index) => {
+                    const speed = 15 + (index * 8);
+                    const baseTransform = el.style.animationName ? getComputedStyle(el).transform.replace(/none|matrix.*\(1, 0, 0, 1, 0, 0\)|matrix3d.*\(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1\)/, '').replace(/translate\([^)]+\)\s*/, '') : '';
+                    el.style.transform = `translate(${distanceX * speed}px, ${distanceY * speed}px) ${baseTransform}`;
+                });
+                document.querySelectorAll('.floating-shape.animate').forEach((el, index) => {
+                    const speed = 10 + (index * 5);
+                    const currentTransform = getComputedStyle(el).transform;
+                    let baseRotateScale = '';
+                    if(currentTransform && currentTransform !== 'none'){
+                        const match = currentTransform.match(/(rotate\([^)]+\)\s*scale\([^)]+\)|rotate\([^)]+\)|scale\([^)]+\))/);
+                        if(match) baseRotateScale = match[0];
+                    }
+                    el.style.transform = `translate(${-distanceX * speed}px, ${-distanceY * speed}px) ${baseRotateScale}`;
+                });
+                requestAnimationFrame(updateMouseParallax); 
+            }
+            if (document.querySelector('.parallax-circle') || document.querySelector('.floating-shape')) requestAnimationFrame(updateMouseParallax); 
+
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseleave', () => { if (cursorGlow) cursorGlow.style.opacity = '0'; });
+            document.querySelectorAll('button, a, .indicator').forEach(el => {
+                el.addEventListener('mouseenter', () => cursorDot?.classList.add('hover'));
+                el.addEventListener('mouseleave', () => cursorDot?.classList.remove('hover'));
+            });
+
+            window.addEventListener('load', () => {
+                console.log('[DEBUG] Window load');
+                setTimeout(() => {
+                    const loadingScreen = document.getElementById('loadingScreen');
+                    if (loadingScreen) loadingScreen.classList.add('hidden');
+                }, 2000); 
+                const buildHeroPins = () => {
+                    if (window.PinUtils) {
+                        const heroPinterestWrapper = document.querySelector('.hero-background-pinterest');
+                        if (heroPinterestWrapper) {
+                            console.log('[DEBUG] Building hero Pinterest pins.');
+                            try {
+                                window.PinUtils.build(heroPinterestWrapper);
+                                console.log('[DEBUG] Hero Pinterest pins build command issued.');
+                            } catch (e) {
+                                console.error('[DEBUG] Error building hero Pinterest pins:', e);
+                            }
+                        } else {
+                            console.warn('[DEBUG] Hero Pinterest wrapper not found for building.');
+                        }
+                    } else {
+                        console.warn('[DEBUG] PinUtils not available yet, retrying hero pin build shortly...');
+                        setTimeout(buildHeroPins, 500);
+                    }
+                };
+                setTimeout(buildHeroPins, 100);
+            });
+
+            function updateSection(sectionIndex, smoothScroll = false) {
+                if (sectionIndex < 0 || sectionIndex >= totalSections || (currentSection === sectionIndex && !smoothScroll && sectionIndex !== 0 )) {
+                    return;
+                }
+                console.log(`[DEBUG] updateSection (sticky scroll): from ${currentSection} to ${sectionIndex}`);
+                currentSection = sectionIndex;
+            
+                textContents.forEach((text, idx) => text.classList.toggle('active', idx === currentSection));
+                stickyImages.forEach((img, idx) => { 
+                    img.classList.toggle('active', idx === currentSection);
+                });
+            
+                indicators.forEach((indicator, idx) => indicator.classList.toggle('active', idx === currentSection));
+                if (currentPageElement) currentPageElement.textContent = currentSection + 1; 
+                if (mainContainer) mainContainer.className = `main-container section-${currentSection + 1}`;
+            }
+            
+            function scrollToSectionById(targetId) {
+                console.log(`[DEBUG] scrollToSectionById: ${targetId}`);
+                if (isScrolling) return;
+                isScrolling = true;
+
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    if (targetId === 'hero') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        if (totalSections > 0) updateSection(0); 
+                    } else {
+                        let sectionIndex = -1;
+                        document.querySelectorAll('.text-section').forEach((el, idx) => { if (el.id === targetId) sectionIndex = idx; });
+                        if (sectionIndex !== -1) {
+                            updateSection(sectionIndex, true); 
+                            targetElement.scrollIntoView({ behavior: 'smooth'});
+                        } else {
+                            targetElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                }
+                setTimeout(() => { isScrolling = false; console.log('[DEBUG] isScrolling: false (timeout)'); }, 1000); 
+            }
+
+            document.querySelectorAll('.nav-menu a.nav-item').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href && href.startsWith('#') && href.length > 1) {
+                        e.preventDefault();
+                        scrollToSectionById(href.substring(1));
+                    }
+                });
+            });
+            
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', () => {
+                    if (isScrolling) return;
+                    if (index < totalSections) {
+                        const targetTextSection = document.querySelectorAll('.text-section')[index];
+                        if(targetTextSection?.id) scrollToSectionById(targetTextSection.id);
+                    }
+                });
+            });
+
+            let scrollTicking = false;
+            function handleScroll() {
+                if (!scrollTicking && !isScrolling) { 
+                    window.requestAnimationFrame(() => {
+                        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+                        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                        if (progressFill && docHeight > 0) progressFill.style.width = `${(scrollY / docHeight) * 100}%`;
+
+                        if (mainContainer && mainContainer.offsetTop <= scrollY + window.innerHeight * 0.5) {
+                            let newActiveSection = -1;
+                            const mainContainerTop = mainContainer.offsetTop || 0;
+                            document.querySelectorAll('.text-section').forEach((sectionEl, index) => {
+                                const sectionTopDoc = sectionEl.offsetTop + mainContainerTop;
+                                const sectionBottomDoc = sectionTopDoc + sectionEl.offsetHeight;
+                                const viewportCenter = scrollY + window.innerHeight / 2;
+                                if (viewportCenter >= sectionTopDoc && viewportCenter < sectionBottomDoc) newActiveSection = index;
+                            });
+                            if (newActiveSection !== -1 && newActiveSection !== currentSection) updateSection(newActiveSection);
+                        }
+                        scrollTicking = false;
+                    });
+                    scrollTicking = true;
+                } else if (isScrolling) {
+                    scrollTicking = false;
+                }
+            }
+            window.addEventListener('scroll', handleScroll);
+
+            document.addEventListener('keydown', (e) => {
+                if (isScrolling) return;
+                let targetSectionIndex = -1;
+                if (e.key.startsWith('Arrow')) {
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') targetSectionIndex = Math.min(currentSection + 1, totalSections - 1);
+                    else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') targetSectionIndex = Math.max(currentSection - 1, 0);
+                } else if (e.key === 'Home') { scrollToSectionById('hero'); return; }
+                else if (e.key === 'End') targetSectionIndex = totalSections - 1;
+                else if (e.key >= '1' && e.key <= String(totalSections)) targetSectionIndex = parseInt(e.key) - 1;
+
+                if (targetSectionIndex !== -1 && targetSectionIndex < totalSections) {
+                    e.preventDefault();
+                    const targetId = document.querySelectorAll('.text-section')[targetSectionIndex]?.id;
+                    if (targetId) scrollToSectionById(targetId);
+                }
+            });
+
+            let touchStartY = 0, touchStartTime = 0;
+            const imageWrapperForTouch = document.querySelector('.image-wrapper'); 
+            if (imageWrapperForTouch) {
+                imageWrapperForTouch.addEventListener('touchstart', (e) => {
+                    if (isScrolling) return; 
+                    touchStartY = e.touches[0].clientY; touchStartTime = Date.now();
+                }, { passive: true });
+                imageWrapperForTouch.addEventListener('touchend', (e) => {
+                    if (isScrolling) return; 
+                    const touchEndY = e.changedTouches[0].clientY;
+                    const distance = touchStartY - touchEndY;
+                    const timeElapsed = Date.now() - touchStartTime;
+                    let targetSectionIndex = -1;
+                    if (Math.abs(distance) > 50 && timeElapsed < 500) { 
+                        if (distance > 0 && currentSection < totalSections - 1) targetSectionIndex = currentSection + 1;
+                        else if (distance < 0 && currentSection > 0) targetSectionIndex = currentSection - 1;
+                        if (targetSectionIndex !== -1 && targetSectionIndex < totalSections) {
+                            const targetId = document.querySelectorAll('.text-section')[targetSectionIndex]?.id;
+                            if (targetId) scrollToSectionById(targetId);
+                        }
+                    }
+                }, { passive: true });
+            }
+            
+            const heroBtn = document.querySelector('.hero-btn');
+            if(heroBtn) {
+                heroBtn.addEventListener('click', () => {
+                    if (isScrolling) return;
+                    const firstStickySection = document.querySelector('#section-1'); 
+                    if (firstStickySection) scrollToSectionById(firstStickySection.id);
+                });
+            }
+            
+            if (textContents.length > 0) { 
+                console.log('[DEBUG] Initializing section 0 (sticky).');
+                updateSection(0); 
+            }
+            if (mainContainer) mainContainer.className = 'main-container section-1'; 
+        });
+    </script>
+    <!-- Pinterest 핀 생성을 위한 스크립트 -->
+    <script async defer src="//assets.pinterest.com/js/pinit.js"></script>
+</body>
+</html>

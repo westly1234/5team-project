@@ -1,0 +1,247 @@
+{% extends 'web/dashboard_sliding_base.html' %}
+{% load static %}
+
+{% block title %}AI 식단 분석 - HealthWise{% endblock %}
+
+{% block page_content %}
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    /* 로더 애니메이션 */
+    .loader {
+        border: 4px solid #4a5568; /* 어두운 회색 */
+        border-radius: 50%;
+        border-top: 4px solid #4ecdc4; /* HealthWise 포인트 컬러 */
+        width: 48px;
+        height: 48px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* 활성화된 버튼 스타일 */
+    .meal-btn.active {
+        background-color: #4ecdc4;
+        color: #1a202c;
+        border-color: #4ecdc4;
+        font-weight: 600;
+    }
+</style>
+
+<div class="p-6 sm:p-10 min-h-full flex flex-col">
+    <!-- 1. 헤더 -->
+    <header class="text-left mb-10">
+        <div class="border-l-4 border-[#4ecdc4] pl-4">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">AI 식단 분석</h1>
+            <p class="text-md text-gray-400 mt-2">사진이나 텍스트로 식단을 기록하고, AI의 전문적인 피드백을 받아보세요.</p>
+        </div>
+    </header>
+
+    <!-- 2. 메인 콘텐츠 (2단 그리드) -->
+    <div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+        <!-- 2-1. 좌측: 입력 워크스페이스 -->
+        <div class="bg-gray-800/50 backdrop-blur-sm border border-white/10 p-8 rounded-2xl shadow-lg flex flex-col relative" id="analysis-workspace">
+            <form method="post" enctype="multipart/form-data" id="diet-form" class="flex flex-col flex-grow">
+                {% csrf_token %}
+                
+                <div class="flex-grow space-y-8">
+                    <!-- 이미지 업로드 영역 -->
+                    <div>
+                        <label class="block text-lg font-medium text-gray-300 mb-3">1. 식단 사진</label>
+                        <div id="drop-zone" class="relative block w-full h-64 rounded-lg border-2 border-dashed border-gray-600 p-6 text-center cursor-pointer transition-colors duration-200 ease-in-out hover:border-gray-400">
+                            <!-- 파일 업로드 전 상태 -->
+                            <div id="upload-prompt" class="flex flex-col items-center justify-center h-full">
+                                <svg class="mx-auto h-12 w-12 text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                <p class="mt-2 text-sm text-gray-400">
+                                    <span class="font-semibold text-[#4ecdc4]">클릭하여 업로드</span> 또는 파일을 드래그하세요
+                                </p>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF (최대 10MB)</p>
+                            </div>
+                            <!-- 이미지 미리보기 -->
+                            <div id="image-preview" class="hidden absolute inset-0 p-2">
+                                <img src="" alt="Image preview" class="h-full w-full object-contain rounded-md">
+                                <button type="button" id="remove-image-btn" class="absolute top-3 right-3 bg-gray-900/50 text-white rounded-full p-1.5 hover:bg-gray-900/80 transition-colors">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        {{ form.image }} <!-- 실제 input(hidden) -->
+                    </div>
+
+                    <!-- 식사 시간 선택 (신규 기능) -->
+                    <div>
+                        <label class="block text-lg font-medium text-gray-300 mb-3">2. 식사 시간</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="meal-time-selector">
+                            <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="아침">아침 ☀️</button>
+                            <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="점심 🏙️">점심 🏙️</button>
+                            <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="저녁 🌙">저녁 🌙</button>
+                            <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="간식 🍰">간식 🍰</button>
+                        </div>
+                        <input type="hidden" name="meal_time" id="meal_time_input">
+                    </div>
+
+                    <!-- 텍스트 입력 영역 -->
+                    <div>
+                        <label for="{{ form.text_input.id_for_label }}" class="block text-lg font-medium text-gray-300 mb-3">3. 추가 정보 (선택)</label>
+                        {{ form.text_input }}
+                    </div>
+                </div>
+
+                <!-- 제출 버튼 -->
+                <div class="mt-12">
+                    <button type="submit" id="submit-button" class="w-full flex justify-center bg-[#4ecdc4] text-gray-900 font-bold py-3.5 rounded-lg text-lg transition-all duration-300 hover:bg-[#65e9dd] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                        분석하기
+                    </button>
+                </div>
+            </form>
+            
+            <!-- 로딩 오버레이 -->
+            <div id="loading-overlay" class="hidden absolute inset-0 bg-gray-900/80 backdrop-blur-sm flex flex-col items-center justify-center rounded-2xl z-10">
+                <div class="loader"></div>
+                <p class="text-white mt-4 font-semibold text-lg">AI가 식단을 분석하고 있습니다.</p>
+                <p class="text-gray-300 text-sm">결과 페이지로 곧 이동합니다...</p>
+            </div>
+        </div>
+
+        <!-- 2-2. 우측: 가이드 패널 -->
+        <div class="hidden lg:flex flex-col justify-center bg-gray-800/30 p-8 rounded-2xl border border-white/10">
+            <div class="text-center">
+                 <svg class="w-20 h-20 mx-auto text-[#4ecdc4]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.25 12l.813-2.846a2.25 2.25 0 00-1.54-2.733L15 6.25l-2.523.72a2.25 2.25 0 00-1.54 2.733L11.75 12l-1.187.337a2.25 2.25 0 00-1.54 2.733L9.25 18l2.523-.72a2.25 2.25 0 001.54-2.733L14.25 12l1.187-.337a2.25 2.25 0 001.54-2.733L17.75 6l2.523.72a2.25 2.25 0 001.54 2.733L21.75 12l-1.187.337a2.25 2.25 0 00-1.54 2.733L18.75 18l-2.523-.72a2.25 2.25 0 00-1.54-2.733L13.25 12l1.187-.337a2.25 2.25 0 001.54-2.733L15.75 6l2.523.72a2.25 2.25 0 001.54 2.733L19.75 12l1.187.337a2.25 2.25 0 001.54 2.733L22.75 18l-2.523-.72a2.25 2.25 0 00-1.54-2.733L18.25 12z" />
+                </svg>
+                <h2 class="mt-6 text-xl font-bold text-white">AI 분석 정확도 높이는 팁!</h2>
+                <p class="mt-2 text-gray-400">더 정확한 피드백을 위해 아래 팁을 참고해주세요.</p>
+            </div>
+            <ul class="mt-8 space-y-4 text-gray-300">
+                <li class="flex items-start">
+                    <span class="text-green-400 mr-3 mt-1">✓</span>
+                    <span><strong>선명한 사진:</strong> 음식이 잘 보이도록 위에서, 밝은 곳에서 촬영한 사진이 분석에 가장 좋아요.</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-green-400 mr-3 mt-1">✓</span>
+                    <span><strong>자세한 설명:</strong> 사진에 보이지 않는 소스, 드레싱, 음료나 사용된 기름 종류를 텍스트로 추가하면 AI가 더 똑똑해져요.</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-green-400 mr-3 mt-1">✓</span>
+                    <span><strong>정확한 식사 시간:</strong> 식사 시간을 정확히 선택하면, 하루 전체의 영양 균형을 파악하는 데 큰 도움이 됩니다.</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('diet-form');
+    const imageInput = document.getElementById('{{ form.image.id_for_label }}');
+    const textInput = document.getElementById('{{ form.text_input.id_for_label }}');
+    const mealTimeInput = document.getElementById('meal_time_input');
+    
+    const dropZone = document.getElementById('drop-zone');
+    const uploadPrompt = document.getElementById('upload-prompt');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImg = imagePreview.querySelector('img');
+    const removeImageBtn = document.getElementById('remove-image-btn');
+    const mealTimeSelector = document.getElementById('meal-time-selector');
+
+    // 드래그 & 드롭 이벤트 처리
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-gray-400');
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-gray-400');
+    });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-gray-400');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+
+    // 클릭으로 파일 선택
+    dropZone.addEventListener('click', () => {
+        if (!imageInput.value) { // 이미지가 없을 때만 input 클릭
+            imageInput.click();
+        }
+    });
+    imageInput.addEventListener('change', () => {
+        if (imageInput.files.length > 0) {
+            handleFile(imageInput.files[0]);
+        }
+    });
+
+    // 파일 처리 및 미리보기 함수
+    function handleFile(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                uploadPrompt.classList.add('hidden');
+                imagePreview.classList.remove('hidden');
+                imageInput.files = new DataTransfer().files; // 기존 파일 목록 초기화
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                imageInput.files = dataTransfer.files; // 새 파일 설정
+            };
+            reader.readAsDataURL(file);
+        } else {
+            alert('이미지 파일만 업로드할 수 있습니다.');
+        }
+    }
+
+    // 이미지 제거 버튼
+    removeImageBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // 부모(dropZone)의 클릭 이벤트 방지
+        imageInput.value = ''; // input 값 초기화
+        previewImg.src = '';
+        uploadPrompt.classList.remove('hidden');
+        imagePreview.classList.add('hidden');
+    });
+
+    // 식사 시간 선택
+    mealTimeSelector.addEventListener('click', (e) => {
+        const button = e.target.closest('.meal-btn');
+        if (button) {
+            // 모든 버튼에서 active 클래스 제거
+            mealTimeSelector.querySelectorAll('.meal-btn').forEach(btn => btn.classList.remove('active'));
+            // 클릭된 버튼에 active 클래스 추가
+            button.classList.add('active');
+            // 숨겨진 input에 값 설정
+            mealTimeInput.value = button.dataset.value;
+        }
+    });
+
+    // 폼 전송 이벤트
+    form.addEventListener('submit', function(event) {
+        // 유효성 검사
+        if (!imageInput.value && !textInput.value.trim()) {
+            alert('사진을 올리거나 글로 식단을 작성해주세요.');
+            event.preventDefault();
+            return;
+        }
+        if (!mealTimeInput.value) {
+            alert('식사 시간을 선택해주세요.');
+            event.preventDefault();
+            return;
+        }
+
+        // 로딩 오버레이 표시
+        document.getElementById('submit-button').disabled = true;
+        document.getElementById('loading-overlay').classList.remove('hidden');
+    });
+
+    // Django 폼 위젯에 Tailwind CSS 클래스 추가
+    document.addEventListener('DOMContentLoaded', function() {
+        // 이미지 input은 숨김 처리
+        imageInput.style.display = 'none';
+
+        // 텍스트 input 스타일링
+        textInput.classList.add('w-full', 'bg-gray-700', 'border', 'border-gray-600', 'text-gray-300', 'rounded-lg', 'p-3', 'focus:ring-2', 'focus:ring-blue-500', 'focus:border-blue-500', 'transition', 'min-h-[120px]');
+        textInput.placeholder = '예시) 밥 한 공기, 김치찌개, 계란후라이 2개\n소스나 음료 등 사진에 없는 정보도 알려주시면 더 정확해요!';
+    });
+</script>
+{% endblock %}
