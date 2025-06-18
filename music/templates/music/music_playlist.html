@@ -1,198 +1,505 @@
 {% extends "web/dashboard_sliding_base.html" %}
 {% load static %}
 
-{% block title %}AI 음악 추천 - HealthWise{% endblock %}
+{% block title %}AI 뮤직 허브 - HealthWise{% endblock %}
 
 {% block page_content %}
 <style>
-    /* 음악 추천 앱 전용 스타일 */
-    .music-app-wrapper {
+    /*
+      ✨ Spotify-Inspired Music Hub UI/UX
+      - 사용자의 피드백을 기반으로 전면 재설계
+      - 헤더 영역(65px)을 침범하지 않는 완벽한 레이아웃
+    */
+
+    /* --- 1. 기본 레이아웃 및 페이지 설정 --- */
+    .page-main-content {
+        padding: 0 !important;
+        height: calc(100vh - 65px) !important;
+        overflow: hidden !important; /* 내부에서 스크롤을 제어하므로 부모 스크롤은 비활성화 */
+    }
+
+    .music-hub-wrapper {
         display: flex;
         height: 100%;
         width: 100%;
+        background: #000;
+        color: #fff;
     }
-    .music-sidebar {
-        width: 280px;
-        background: #121212;
-        padding: 30px 20px;
+
+    /* --- 2. 좌측 내비게이션 사이드바 (컨트롤 패널) --- */
+    .music-nav-sidebar {
+        width: 320px;
+        flex-shrink: 0;
+        background: #000;
+        padding: 24px 8px 24px 24px;
         display: flex;
         flex-direction: column;
-        flex-shrink: 0;
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .music-sidebar h3 {
-        font-size: 1.5rem; margin-bottom: 30px; font-weight: 700;
-        background: linear-gradient(90deg, #ff6b6b, #4ecdc4) !important;
-        -webkit-background-clip: text !important; background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
+    .sidebar-block {
+        background: #121212;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 8px;
     }
-    .form-group { margin-bottom: 25px; }
-    label { display: block; margin-bottom: 8px; font-weight: 500; color: rgba(255, 255, 255, 0.7); }
-    select {
-      width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2);
-      background-color: rgba(255, 255, 255, 0.05); color: #fff; font-size: 14px; outline: none; transition: all 0.2s;
+    .sidebar-block .block-title {
+        color: #b3b3b3;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 16px;
+        padding: 0 8px;
     }
-    select:hover { border-color: #4ecdc4; }
-    select option { background: #282828; color: #fff; }
-    .music-sidebar button {
-      padding: 12px; border-radius: 8px; background-color: #4ecdc4;
-      color: #000; font-weight: bold; border: none; cursor: pointer;
-      transition: all 0.2s ease; width: 100%;
+    .sidebar-options-list .option-item {
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
-    .music-sidebar button:hover { background-color: #5ff5e1; transform: scale(1.02); }
-    .music-sidebar button:disabled { background-color: #555; color: #999; cursor: not-allowed; }
-    .music-main-content {
-      flex: 1; padding: 30px 40px; overflow-y: auto;
+    .sidebar-options-list .option-item:hover {
+        background-color: #2a2a2a;
     }
-    .section-title {
-      font-size: 2rem; margin-bottom: 25px; color: #fff;
-      font-weight: 800; border-left: 4px solid #4ecdc4; padding-left: 15px;
+    .sidebar-options-list .option-item.selected {
+        background-color: #2a2a2a;
+        color: #fff;
+        font-weight: 700;
     }
-    .grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 24px; margin-bottom: 50px;
+    .sidebar-options-list .option-item.selected .icon {
+        color: #4ecdc4; /* HealthWise 테마 컬러로 강조 */
     }
-    .card {
-      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 16px; border-radius: 12px; text-align: left; transition: all 0.3s ease;
-    }
-    .card a { text-decoration: none; }
-    .card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.05); border-color: rgba(78, 205, 196, 0.5); }
-    .card img { width: 100%; border-radius: 8px; aspect-ratio: 1 / 1; object-fit: cover; margin-bottom: 12px; }
-    .card-title {
-      font-size: 1rem; color: #fff; font-weight: 600; white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis;
-    }
-    .card-sub {
-      font-size: 0.9rem; color: rgba(255, 255, 255, 0.6); margin-top: 6px;
-      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
-      -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; min-height: 40px;
+    .sidebar-options-list .option-item .icon {
+        font-size: 1.2rem;
+        color: #b3b3b3;
+        width: 24px;
+        text-align: center;
     }
     
-    /* 이 페이지의 메인 콘텐츠 영역에서 모든 패딩을 제거하여 전체 화면을 사용하도록 함 */
-    .page-main-content {
-        box-sizing: border-box !important;
-        padding: 0 !important;
-        height: calc(100vh - 65px) !important;
+    .sidebar-footer {
+        margin-top: auto; /* 하단에 고정 */
+        background: #121212;
+        border-radius: 8px;
+        padding: 16px;
     }
+    .action-btn {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 50px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .action-btn:hover {
+        transform: scale(1.03);
+    }
+    .action-btn.recommend {
+        background: #4ecdc4;
+        color: #000;
+        margin-bottom: 12px;
+    }
+    .action-btn.recommend:disabled {
+        background: #535353;
+        color: #a7a7a7;
+        cursor: not-allowed;
+        transform: none;
+    }
+    .action-btn.reset {
+        background: #333;
+        color: #fff;
+        display: none; /* 초기에는 숨김 */
+    }
+
+
+    /* --- 3. 우측 메인 콘텐츠 뷰 --- */
+    .music-main-view {
+        flex-grow: 1;
+        background: #121212;
+        border-radius: 8px 0 0 8px;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    /* Spotify 스타일 그라데이션 헤더 */
+    .main-view-header {
+        position: sticky;
+        top: 0;
+        height: 340px;
+        background: linear-gradient(180deg, #1f4e4a 0%, #121212 100%);
+        transition: background 0.5s ease;
+        z-index: 1;
+        padding: 24px 32px;
+        display: flex;
+        align-items: flex-end;
+    }
+    .main-view-header h1 {
+        font-size: 4rem;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+    }
+    .main-view-content {
+        padding: 0 32px 32px 32px;
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* 콘텐츠 섹션 헤더 */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    .show-all-link {
+        color: #b3b3b3;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+    .show-all-link:hover {
+        text-decoration: underline;
+    }
+
+    /* --- 4. Spotify 스타일 카드 디자인 --- */
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+    .spotify-card {
+        background: #181818;
+        padding: 16px;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+        position: relative; /* 오버레이 기준 */
+    }
+    .spotify-card:hover {
+        background: #282828;
+    }
+    .spotify-card a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+    }
+    .card-img-wrapper {
+        position: relative;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .card-img-wrapper img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    .spotify-card.artist .card-img-wrapper img {
+        border-radius: 50%; /* 아티스트는 원형 이미지 */
+    }
+    .card-title {
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .card-subtitle {
+        color: #b3b3b3;
+        font-size: 0.9rem;
+        margin-top: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* 호버 시 나타나는 재생 버튼 오버레이 */
+    .play-icon-overlay {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 48px;
+        height: 48px;
+        background: #1ed760; /* Spotify Green! */
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .spotify-card:hover .play-icon-overlay {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .play-icon-overlay i {
+        font-size: 1.5rem;
+        color: #000;
+    }
+
+    /* 로딩 스피너 */
+    .loader-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 300px;
+    }
+    .loader {
+        width: 50px; height: 50px;
+        border: 4px solid #535353;
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
-<div class="music-app-wrapper">
-    <div class="music-sidebar">
-        <h3>AI 추천 설정</h3>
-        <div class="form-group">
-            <label for="exercise">운동 종류</label>
-            <select id="exercise">
-                <option value="헬스">헬스</option>
-                <option value="요가 또는 필라테스">요가/필라테스</option>
-                <option value="조깅">조깅</option>
-                <option value="고강도 인터벌 트레이닝 (HIIT)">HIIT</option>
-                <option value="가벼운 산책">산책</option>
-            </select>
+<div class="music-hub-wrapper">
+    <!-- 좌측 컨트롤 패널 -->
+    <aside class="music-nav-sidebar">
+        <div class="sidebar-block">
+            <h2 class="block-title">AI 뮤직 큐레이션</h2>
+            <div id="ai-controls">
+                <div id="exercise-group" class="sidebar-options-list">
+                    <div class="option-item" data-value="헬스"><i class="bi bi-person-arms-up icon"></i> 헬스</div>
+                    <div class="option-item" data-value="요가 또는 필라테스"><i class="bi bi-peace icon"></i> 요가/필라테스</div>
+                    <div class="option-item" data-value="조깅"><i class="bi bi-person-walking icon"></i> 조깅</div>
+                    <div class="option-item" data-value="고강도 인터벌 트레이닝 (HIIT)"><i class="bi bi-fire icon"></i> HIIT</div>
+                </div>
+                <hr style="border-color: #2a2a2a; margin: 16px 0;">
+                <div id="mood-group" class="sidebar-options-list">
+                    <div class="option-item" data-value="최고로 집중해서"><i class="bi bi-headphones icon"></i> 집중 모드</div>
+                    <div class="option-item" data-value="지치지만 이겨내고 싶을 때"><i class="bi bi-rocket-takeoff icon"></i> 한계 돌파</div>
+                    <div class="option-item" data-value="에너지 넘치게"><i class="bi bi-lightning-charge icon"></i> 에너지 폭발</div>
+                    <div class="option-item" data-value="편안하고 차분하게"><i class="bi bi-cup-hot icon"></i> 편안한 휴식</div>
+                </div>
+                 <hr style="border-color: #2a2a2a; margin: 16px 0;">
+                <div id="genre-group" class="sidebar-options-list">
+                    <div class="option-item" data-value="신나는 K-Pop"><i class="bi bi-mic icon"></i> K-Pop</div>
+                    <div class="option-item" data-value="힙합"><i class="bi bi-boombox icon"></i> 힙합</div>
+                    <div class="option-item" data-value="EDM"><i class="bi bi-speaker icon"></i> EDM</div>
+                    <div class="option-item" data-value="팝송"><i class="bi bi-globe-americas icon"></i> 팝송</div>
+                    <div class="option-item" data-value="락"><i class="bi bi-music-note-beamed icon"></i> 락</div>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="mood">오늘의 기분</label>
-            <select id="mood">
-                <option value="최고로 집중해서">최고로 집중해서</option>
-                <option value="지치지만 이겨내고 싶을 때">지치지만 이겨내고 싶을 때</option>
-                <option value="에너지 넘치게">에너지 넘치게</option>
-                <option value="편안하고 차분하게">편안하고 차분하게</option>
-            </select>
+        <div class="sidebar-footer">
+            <button id="request-ai-btn" class="action-btn recommend">AI 추천 받기</button>
+            <button id="reset-btn" class="action-btn reset">초기화</button>
         </div>
-        <button id="ai-button" onclick="requestAIMusic()">AI 추천 받기</button>
-    </div>
-    <div class="music-main-content">
-        <div class="section-title">오늘의 핫리스트</div>
-        <div class="grid" id="hotlist-grid"></div>
+    </aside>
 
-        <div class="section-title">AI 추천 플레이리스트</div>
-        <div class="grid" id="results"></div>
-    </div>
+    <!-- 우측 메인 뷰 -->
+    <main class="music-main-view">
+        <div class="main-view-header">
+            <h1 id="main-view-title">오늘의 트렌딩 믹스</h1>
+        </div>
+        <div class="main-view-content">
+            <!-- AI 추천 결과 섹션 (초기에는 숨김) -->
+            <section id="ai-results-section" style="display: none;">
+                <div class="card-grid" id="results-grid"></div>
+            </section>
+            
+            <!-- 트렌딩 믹스 섹션 (기본으로 보임) -->
+            <section id="trending-section">
+                <div class="card-grid" id="hotlist-grid"></div>
+            </section>
+        </div>
+    </main>
 </div>
 
 {% csrf_token %}
 <script>
+document.addEventListener('DOMContentLoaded', () => {
     const youtubeKey = "{{ youtube_api_key }}";
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const aiButton = document.getElementById('ai-button');
 
-    async function loadHotlists() {
-        const hotlistPlaylistIds = [
-            'PL4fGSI1pDJn5kI81J1fYC0_B5P5vIqSD_', // K-Hitlist
-            'PL4fGSI1pDJn5Fh5bT4I4r0n3429_m82s2', // BEAT ON (댄스)
-            'PL4fGSI1pDJn4J4b9I5B-g-ajG_i8Z_5D_', // 감성촉촉 발라드
-            'PL4fGSI1pDJn5r_42M4u4-l5iSTa2H4V8a'  // Pop on the Rise
-        ];
-        const hotlistContainer = document.getElementById('hotlist-grid');
-        hotlistContainer.innerHTML = '<p style="color: #aaa; grid-column: 1 / -1;">핫리스트를 불러오는 중...</p>';
-        try {
-            const idsString = hotlistPlaylistIds.join(',');
-            const res = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${idsString}&key=${youtubeKey}`);
-            const data = await res.json();
-            if (data.error) {
-                console.error("⛔️ YouTube API Error:", data.error.message);
-                hotlistContainer.innerHTML = "<p style='color: #aaa; grid-column: 1 / -1;'>핫리스트를 불러오지 못했습니다. API 키 또는 할당량을 확인해주세요.</p>";
-                return;
-            }
-            hotlistContainer.innerHTML = '';
-            data.items.forEach(playlist => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `<a href="https://www.youtube.com/playlist?list=${playlist.id}" target="_blank"><img src="${playlist.snippet.thumbnails.high.url}" alt="${playlist.snippet.title}" /><div class="card-title">${playlist.snippet.title}</div><div class="card-sub">${playlist.snippet.description}</div></a>`;
-                hotlistContainer.appendChild(card);
-            });
-        } catch (error) {
-            console.error("네트워크 또는 코드 실행 오류:", error);
-            hotlistContainer.innerHTML = "<p style='color: #aaa; grid-column: 1 / -1;'>핫리스트를 불러오는 데 실패했습니다.</p>";
-        }
-    }
+    // --- DOM 요소 ---
+    const controls = document.getElementById('ai-controls');
+    const requestBtn = document.getElementById('request-ai-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    
+    const mainViewHeader = document.querySelector('.main-view-header');
+    const mainViewTitle = document.getElementById('main-view-title');
+    const trendingSection = document.getElementById('trending-section');
+    const aiResultsSection = document.getElementById('ai-results-section');
+    const resultsGrid = document.getElementById('results-grid');
+    const hotlistGrid = document.getElementById('hotlist-grid');
 
-    async function requestAIMusic() {
-      const exercise = document.getElementById('exercise').value;
-      const mood = document.getElementById('mood').value;
-      const resultsContainer = document.getElementById('results');
-      aiButton.disabled = true;
-      aiButton.textContent = 'AI 분석 중...';
-      resultsContainer.innerHTML = '';
-      try {
-        const res = await fetch('/music/api/ai-keywords/', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-          body: JSON.stringify({ exercise, mood })
-        });
-        const data = await res.json();
-        if (data.error) {
-          alert('AI 추천 실패: ' + data.error);
-          return;
-        }
-        if (!data.keywords || data.keywords.length === 0) {
-            resultsContainer.innerHTML = '<p style="color: #aaa;">추천 키워드를 찾지 못했습니다.</p>';
+    // --- 상태 변수 ---
+    let selectedExercise = null, selectedMood = null, selectedGenre = null;
+
+    // --- 로더 HTML ---
+    const loaderHTML = `<div class="loader-wrapper"><div class="loader"></div></div>`;
+
+    // --- 이벤트 리스너 설정 ---
+    controls.addEventListener('click', (e) => {
+        const item = e.target.closest('.option-item');
+        if (!item) return;
+
+        const group = item.parentElement;
+        // 같은 그룹 내 다른 선택 해제
+        group.querySelector('.selected')?.classList.remove('selected');
+        // 현재 아이템 선택
+        item.classList.add('selected');
+
+        // 상태 업데이트
+        const groupID = group.id;
+        if (groupID === 'exercise-group') selectedExercise = item.dataset.value;
+        else if (groupID === 'mood-group') selectedMood = item.dataset.value;
+        else if (groupID === 'genre-group') selectedGenre = item.dataset.value;
+    });
+
+    requestBtn.addEventListener('click', handleAIRequest);
+    resetBtn.addEventListener('click', handleReset);
+
+    // --- 핵심 기능 함수 ---
+    async function handleAIRequest() {
+        if (!selectedExercise || !selectedMood) {
+            alert('운동과 분위기를 모두 선택해주세요!');
             return;
         }
-        const promises = data.keywords.map(keyword => 
-            fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(keyword)}&type=video&key=${youtubeKey}`).then(response => response.json())
-        );
-        const ytResults = await Promise.all(promises);
-        ytResults.forEach((ytData, index) => {
-            if (ytData.items && ytData.items.length > 0) {
-                const v = ytData.items[0];
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `<a href="https://www.youtube.com/watch?v=${v.id.videoId}" target="_blank"><img src="${v.snippet.thumbnails.high.url}" alt="${v.snippet.title}" /><div class="card-title">${v.snippet.title}</div><div class="card-sub">${v.snippet.channelTitle}</div><div class="card-sub" style="font-size:11px; color:#888; margin-top: 8px;">🔎 ${data.keywords[index]}</div></a>`;
-                resultsContainer.appendChild(card);
+
+        setLoadingState(true);
+        try {
+            const res = await fetch('/music/api/ai-keywords/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({
+                    exercise: selectedExercise,
+                    mood: selectedMood,
+                    genres: selectedGenre ? [selectedGenre] : [] // 장르는 단일 선택
+                })
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || 'AI 키워드 생성 실패');
+
+            await fetchMusicFromKeywords(data.keywords);
+
+        } catch (error) {
+            console.error("AI 요청 오류:", error);
+            resultsGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center;">추천 음악을 가져오는 데 실패했습니다.</p>`;
+        } finally {
+            setLoadingState(false);
+        }
+    }
+    
+    async function fetchMusicFromKeywords(keywords) {
+        try {
+            const searchPromises = keywords.map(keyword =>
+                fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(keyword)}&type=video&key=${youtubeKey}`)
+                .then(res => res.ok ? res.json() : Promise.reject(new Error(`YouTube API Error: ${res.status}`)))
+            );
+            
+            const ytResults = await Promise.all(searchPromises);
+            
+            resultsGrid.innerHTML = ''; // 로더 제거
+            ytResults.forEach((ytData, index) => {
+                if (ytData.items && ytData.items.length > 0) {
+                    const video = ytData.items[0];
+                    const card = createSpotifyCard(video, `키워드: ${keywords[index]}`);
+                    resultsGrid.appendChild(card);
+                }
+            });
+
+            if (resultsGrid.innerHTML === '') {
+                resultsGrid.innerHTML = '<p style="color: #aaa; text-align: center;">추천 음악을 찾지 못했습니다.</p>';
             }
-        });
-      } catch (error) {
-        console.error("Error fetching AI music:", error);
-        alert("오류가 발생했습니다.");
-      } finally {
-        aiButton.disabled = false;
-        aiButton.textContent = 'AI 추천 받기';
-      }
+        } catch(error) {
+            console.error("YouTube 검색 오류:", error);
+            throw error; // 상위 catch 블록으로 에러 전파
+        }
+    }
+    
+    function setLoadingState(isLoading) {
+        requestBtn.disabled = isLoading;
+        requestBtn.innerHTML = isLoading ? '<span class="spinner-border spinner-border-sm"></span> 분석 중...' : 'AI 추천 받기';
+
+        if (isLoading) {
+            trendingSection.style.display = 'none';
+            aiResultsSection.style.display = 'block';
+            resultsGrid.innerHTML = loaderHTML;
+            mainViewTitle.textContent = '당신을 위한 플레이리스트';
+            mainViewHeader.style.background = 'linear-gradient(180deg, #503158 0%, #121212 100%)';
+            resetBtn.style.display = 'block';
+        }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => { loadHotlists(); }, 100); 
-    });
+    function handleReset() {
+        // 선택 초기화
+        controls.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+        selectedExercise = null;
+        selectedMood = null;
+        selectedGenre = null;
+
+        // UI 초기화
+        trendingSection.style.display = 'block';
+        aiResultsSection.style.display = 'none';
+        resultsGrid.innerHTML = '';
+        mainViewTitle.textContent = '오늘의 트렌딩 믹스';
+        mainViewHeader.style.background = 'linear-gradient(180deg, #1f4e4a 0%, #121212 100%)';
+        resetBtn.style.display = 'none';
+    }
+
+
+    // --- 유틸리티 함수 ---
+    function createSpotifyCard(item, subtitleText) {
+        const isPlaylist = item.kind === 'youtube#playlist';
+        const id = isPlaylist ? item.id : item.id.videoId;
+        const url = isPlaylist ? `https://www.youtube.com/playlist?list=${id}` : `https://www.youtube.com/watch?v=${id}`;
+        const thumbnailUrl = item.snippet.thumbnails.high.url;
+        const title = item.snippet.title;
+        const cardSubtitle = subtitleText || item.snippet.channelTitle;
+
+        const card = document.createElement('div');
+        card.className = 'spotify-card';
+        card.innerHTML = `
+            <a href="${url}" target="_blank">
+                <div class="card-img-wrapper">
+                    <img src="${thumbnailUrl}" alt="${title}" loading="lazy">
+                    <div class="play-icon-overlay"><i class="bi bi-play-fill"></i></div>
+                </div>
+                <div class="card-title">${title}</div>
+                <div class="card-subtitle">${cardSubtitle}</div>
+            </a>`;
+        return card;
+    }
+
+    async function loadTrendingMixes() {
+        hotlistGrid.innerHTML = loaderHTML;
+        const playlistIds = [
+            'PL4fGSI1pDJn5kI81J1fYC0_B5P5vIqSD_', // K-Hitlist
+            'PL4fGSI1pDJn5Fh5bT4I4r0n3429_m82s2', // BEAT ON (댄스)
+            'PL4fGSI1pDJn4J4b9I5B-g-ajG_i8Z_5D_', // 감성 발라드
+            'PL4fGSI1pDJn5r_42M4u4-l5iSTa2H4V8a'  // Pop on the Rise
+        ];
+        
+        try {
+            const res = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistIds.join(',')}&key=${youtubeKey}`);
+            const data = await res.json();
+            if (data.error) throw new Error(data.error.message);
+            
+            hotlistGrid.innerHTML = '';
+            data.items.forEach(playlist => {
+                const card = createSpotifyCard(playlist, "YouTube 공식 플레이리스트");
+                hotlistGrid.appendChild(card);
+            });
+        } catch (error) {
+            console.error("트렌딩 믹스 로딩 실패:", error);
+            hotlistGrid.innerHTML = `<p style="color:#ff6b6b;">트렌딩 믹스를 불러오지 못했습니다.</p>`;
+        }
+    }
+
+    // --- 초기화 ---
+    loadTrendingMixes();
+});
 </script>
 {% endblock %}

@@ -47,6 +47,17 @@ class BodyCompositionRecord(models.Model):
 # User 모델이 생성/저장될 때마다 Profile 모델도 함께 생성/저장되도록 하는 시그널
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
+    """
+    User 객체가 생성되거나 저장될 때 Profile 객체를 확인하고,
+    없으면 생성합니다.
+    """
     if created:
+        # User가 새로 생성되었을 때 Profile 생성
         Profile.objects.create(user=instance)
-    instance.profile.save()
+    else:
+        # 기존 User가 업데이트 될 때 (예: 로그인 시 last_login 업데이트)
+        # Profile이 있는지 확인하고, 없으면 생성 (이 부분이 핵심!)
+        try:
+            instance.profile.save()
+        except Profile.DoesNotExist:
+            Profile.objects.create(user=instance)
