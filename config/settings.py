@@ -24,7 +24,8 @@ INSTALLED_APPS = [
     'music',
     'place',
     'routine',
-    'diet'
+    'diet',
+    'chatbot.apps.ChatbotConfig', 
 ]
 
 MIDDLEWARE = [
@@ -120,3 +121,17 @@ KAKAO_MAP_API_KEY = '3ea46ac465e9b3c9306c90ba3b3f2c5b'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# 챗봇 설정 (Chatbot Settings)
+# =============================================================================
+# 벡터 DB 경로 (프로젝트 루트에 'project_data' 폴더를 만든다고 가정)
+VECTORSTORE_PATH = os.path.join(BASE_DIR, 'project_data', 'vectorstore_food_and_healthy')
+
+# 임베딩 모델 이름
+EMBEDDING_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+
+# 임시 이미지 저장 경로 (프로젝트 루트의 'media' 폴더 내에 'temp_images' 폴더를 사용)
+TEMP_IMAGE_DIR = os.path.join(MEDIA_ROOT, 'temp_images')
+
+# TEMP_IMAGE_DIR이 존재하지 않으면 생성
+os.makedirs(TEMP_IMAGE_DIR, exist_ok=True)
