@@ -557,6 +557,9 @@
     </div>
   </div>
   <script>
+    const userProfileImage = "{% if user.profile.image %}{{ user.profile.image.url }}{% else %}/static/chatbot_images/avatar-user.png{% endif %}";
+  </script>
+  <script>
     let currentDialogId = null;
     const DEFAULT_USER_AVATAR = "/static/chatbot_images/avatar-default.jpeg";
     let domReady = false;
@@ -604,7 +607,7 @@
       avatarWrapper.className = "avatar-wrapper";
       const avatarImg = document.createElement("img");
       avatarImg.className = "avatar";
-      avatarImg.src = sender === "user" ? (localStorage.getItem('userAvatar') || "/static/chatbot_images/avatar-user.png") : "/static/chatbot_images/avatar-bot.png";
+      avatarImg.src = sender === "user" ? userProfileImage : "/static/chatbot_images/avatar-bot.png";
       avatarImg.alt = sender === "user" ? "User" : "Bot";
       avatarImg.onerror = function() { this.onerror = null; this.src = DEFAULT_USER_AVATAR; };
       avatarWrapper.appendChild(avatarImg);

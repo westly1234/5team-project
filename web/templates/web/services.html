@@ -235,7 +235,11 @@
             <a href="{% url 'accounts:profile_edit' %}" class="dashboard-card profile-card profile-link-card">
                  <div class="card-content">
                     <div class="profile-info">
-                        <img src="{% if user.profile.image and user.profile.image.url %}{{ user.profile.image.url }}{% else %}{% static 'web/images/default_avatar.png' %}{% endif %}" alt="User Avatar" class="avatar">
+                        {% if user.profile.image %}
+                            <img src="{{ user.profile.image.url }}" alt="User Avatar" class="avatar">
+                        {% else %}
+                            <img src="/media/profile_pics/avatar-default.jpeg" alt="Default Avatar" class="avatar">
+                        {% endif %}
                         <div class="username">{{ user.first_name|default:user.username }}</div>
                         <div class="user-email">{{ user.email }}</div>
                     </div>
