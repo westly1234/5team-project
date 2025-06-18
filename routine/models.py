@@ -27,6 +27,15 @@ class Exercise(models.Model):
     # 이 운동이 '근력'인지 '유산소'인지 구분하는 타입 필드
     exercise_type = models.CharField(max_length=20, choices=EXERCISE_TYPES, default='strength', help_text="운동의 종류 (근력/유산소)")
 
+    description = models.TextField(
+        blank=True, null=True, 
+        help_text="운동의 주요 자극 부위 및 방법에 대한 상세 설명"
+    )
+    precautions = models.TextField(
+        blank=True, null=True, 
+        help_text="운동 시 주의해야 할 점이나 흔한 실수"
+    )
+
     # 관리자 페이지 등에서 객체를 쉽게 식별하기 위한 문자열 표현
     def __str__(self):
         return f"{self.name} ({self.get_exercise_type_display()})"
@@ -80,6 +89,8 @@ class RoutineExercise(models.Model):
     # --- 유산소 운동용 필드 ---
     # 근력 운동일 경우 이 값은 비어있을(NULL) 수 있습니다.
     duration_minutes = models.PositiveIntegerField("운동 시간 (분)", null=True, blank=True)
+    description = models.TextField(blank=True, null=True, help_text="AI가 생성한 운동 상세 설명")
+    precautions = models.TextField(blank=True, null=True, help_text="AI가 생성한 운동 주의사항")
     
     class Meta:
         # 하나의 루틴 안에서 같은 운동이 중복으로 추가되는 것을 방지합니다.
