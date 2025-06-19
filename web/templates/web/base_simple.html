@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HealthWise{% endblock %}</title>
+    
+    <style>
+        /* 기본 body 스타일 */
+        body {
+            background-color: #0a0a0a;
+            color: #fff;
+            font-family: 'Pretendard', sans-serif; /* 폰트는 base.html과 통일 */
+            margin: 0;
+            padding-top: 85px; /* ✅ 헤더가 fixed이므로, 헤더 높이만큼 상단에 여백을 주어 내용이 가려지지 않게 함 */
+        }
+
+        /* ✅ [추가] 제공해주신 네비게이션 스타일을 여기에 모두 붙여넣습니다. */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0; /* ✅ left: 0 추가하여 왼쪽 정렬 보장 */
+            width: 100%;
+            padding: 20px 50px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-sizing: border-box; /* ✅ padding이 너비에 영향을 주지 않도록 설정 */
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px; /* ✅ 다른 페이지와 일관성을 위해 추가 */
+            margin: 0 auto;    /* ✅ 다른 페이지와 일관성을 위해 추가 */
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none; /* ✅ a 태그의 밑줄 제거 */
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 35px;
+            margin: 0; /* ✅ 기본 마진 제거 */
+            padding: 0; /* ✅ 기본 패딩 제거 */
+        }
+
+        .nav-menu a.nav-item,
+        .nav-menu button.nav-item {
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 5px 0;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-menu a.nav-item::after,
+        .nav-menu button.nav-item::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4ecdc4;
+            transition: width 0.3s ease;
+        }
+
+        .nav-menu a.nav-item:hover,
+        .nav-menu button.nav-item:hover {
+            color: #fff;
+        }
+
+        .nav-menu a.nav-item:hover::after,
+        .nav-menu button.nav-item:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    {# 헤더 포함 부분은 그대로 둡니다. #}
+    {% include 'web/_header.html' %}
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>

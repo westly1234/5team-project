@@ -26,7 +26,8 @@ INSTALLED_APPS = [
     'place',
     'routine',
     'diet',
-    'chatbot.apps.ChatbotConfig', 
+    'chatbot.apps.ChatbotConfig',
+    'store',
 ]
 
 MIDDLEWARE = [

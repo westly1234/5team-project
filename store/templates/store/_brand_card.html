@@ -1,0 +1,17 @@
+{# store/templates/store/_brand_card.html #}
+<a href="{{ brand.link }}" target="_blank" rel="noopener noreferrer" class="product-card">
+    <div class="thumbnail-wrapper">
+        {% if brand.thumbnail %}
+            <img src="{{ brand.thumbnail.url }}" alt="{{ brand.name }} 로고">
+        {% else %}
+            <span style="font-size: 3rem; font-weight: 700; color: rgba(0,0,0,0.6);">{{ brand.name|first }}</span>
+        {% endif %}
+        <span class="category-tag">{{ brand.get_category_display }}</span>
+    </div>
+    <div class="card-body">
+        <h3 class="product-name">{{ brand.name }}</h3>
+        {% if brand.short_description %}
+            <p class="product-desc">{{ brand.short_description }}</p>
+        {% endif %}
+    </div>
+</a>
