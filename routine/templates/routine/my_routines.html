@@ -6,33 +6,12 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
     /* 1. 호버 관련 스타일 */
-    .exercise-list {
-        max-height: 0;
-        overflow: hidden;
-        background-color: #262f3e;
-        transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
-        border-radius: 0 0 1rem 1rem;
-    }
-    .routine-card:hover .exercise-list {
-        max-height: 1000px;
-        padding: 1.5rem;
-    }
-    .card-footer {
-        transition: opacity 0.3s ease-in-out;
-    }
-    .routine-card:hover .card-footer {
-        opacity: 0;
-        height: 0;
-        padding: 0;
-        border: none;
-        margin: 0;
-    }
-    .reveal-icon {
-        transition: transform 0.3s ease-in-out;
-    }
-    .routine-card:hover .reveal-icon {
-        transform: rotate(180deg);
-    }
+    .exercise-list { max-height: 0; overflow: hidden; background-color: #262f3e; transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out; border-radius: 0 0 1rem 1rem; }
+    .routine-card:hover .exercise-list { max-height: 1000px; padding: 1.5rem; }
+    .card-footer { transition: opacity 0.3s ease-in-out; }
+    .routine-card:hover .card-footer { opacity: 0; height: 0; padding: 0; border: none; margin: 0; }
+    .reveal-icon { transition: transform 0.3s ease-in-out; }
+    .routine-card:hover .reveal-icon { transform: rotate(180deg); }
     
     /* 2. 모달 관련 CSS */
     .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; z-index: 50; opacity: 0; transition: opacity 0.3s ease-in-out; pointer-events: none; }
@@ -53,23 +32,25 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {% for routine in routines %}
                 <div class="routine-card flex flex-col bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg transition-all duration-300 hover:border-violet-500/50 hover:shadow-2xl hover:shadow-violet-500/10">
-                    <div class="p-6 flex-grow">
+                    {# ✅ 1. 카드 상단 부분을 a 태그로 감싸서 링크를 만듭니다. #}
+                    <a href="{% url 'routine:routine_plan_detail' routine.id %}" class="block p-6 flex-grow no-underline">
                         <div class="flex justify-between items-start">
                             <h2 class="text-xl font-bold text-white mb-2">{{ routine.name }}</h2>
                             <form id="delete-form-{{ routine.id }}" method="post" action="{% url 'routine:delete_routine' routine.id %}" class="inline">
                                 {% csrf_token %}
+                                {# ✅ 2. 삭제 버튼 클릭 시, a 태그의 링크 이동을 막기 위해 onclick에 event를 전달합니다. #}
                                 <button type="button" onclick="confirmDelete(event, '{{ routine.id }}')" class="text-gray-500 hover:text-red-400 transition-colors" title="삭제하기"><i class="bi bi-trash3"></i></button>
                             </form>
                         </div>
                         <p class="text-sm text-gray-400">총 <span class="font-bold text-violet-400">{{ routine.exercises.count }}</span>개의 운동 포함<span class="mx-2 text-gray-600">·</span><span class="text-xs">{{ routine.created_at|date:"y.m.d" }}</span></p>
-                    </div>
+                    </a>
 
-                    <div class="exercise-list">
+                    {# ✅ 3. 펼쳐지는 운동 목록 부분은 링크 영역 밖에 둡니다. #}
+                    <div class="exercise-list" onclick="stopPropagation(event)">
                         <ul class="space-y-4">
                             {% for re in routine.routineexercise_set.all %}
-                            {# ✅ [수정] onclick 핸들러를 단순화하고 data-* 속성으로 모든 데이터를 이전합니다. #}
                             <li class="border-t border-white/10 pt-4 first:border-t-0 first:pt-0 cursor-pointer hover:bg-white/5 p-2 rounded-lg"
-                                onclick="openExerciseModal(this, event)"
+                                onclick="openExerciseModal(this)"
                                 data-name="{{ re.exercise.name }}"
                                 data-muscle-group="{{ re.exercise.muscle_group }}"
                                 data-gif-url="{{ re.exercise.gif_url }}"
@@ -110,9 +91,7 @@
 <!-- 모달을 위한 HTML 구조 -->
 <div id="exerciseModal" class="modal-overlay">
     <div class="modal-content relative">
-        <button onclick="closeExerciseModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-3xl transition-colors">
-            <i class="bi bi-x-circle-fill"></i>
-        </button>
+        <button onclick="closeExerciseModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-3xl transition-colors"><i class="bi bi-x-circle-fill"></i></button>
         <div id="modalBody"></div>
     </div>
 </div>
@@ -120,23 +99,26 @@
 <script>
 // --- 삭제 확인 기능 ---
 function confirmDelete(event, routineId) {
-    // 이벤트가 상위로 전파되는 것을 막습니다. (카드 클릭 이벤트 등)
+    // a 태그의 링크 이동을 막기 위해 이벤트 전파를 중단합니다.
+    event.preventDefault(); 
     event.stopPropagation();
+    
     if (confirm("정말로 이 루틴을 삭제하시겠습니까?")) {
         document.getElementById(`delete-form-${routineId}`).submit();
     }
+}
+
+// ✅ 4. 펼쳐진 목록 클릭 시 페이지 이동을 막는 함수
+function stopPropagation(event) {
+    event.stopPropagation();
 }
 
 // --- 모달 기능 ---
 const modal = document.getElementById('exerciseModal');
 const modalBody = document.getElementById('modalBody');
 
-// ✅ [수정] 함수가 클릭된 HTML 요소(element)를 직접 받도록 변경
-function openExerciseModal(element, event) {
-    event.stopPropagation(); // 다른 클릭 이벤트가 실행되는 것을 방지
-
-    // element.dataset을 통해 data-* 속성에 저장된 값을 안전하게 읽어옵니다.
-    // data-muscle-group -> dataset.muscleGroup (camelCase로 자동 변환)
+function openExerciseModal(element) {
+    // data-* 속성에서 값 읽어오기
     const name = element.dataset.name;
     const muscleGroup = element.dataset.muscleGroup;
     const gifUrl = element.dataset.gifUrl;

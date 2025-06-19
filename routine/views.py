@@ -11,6 +11,7 @@ from .models import Exercise, Routine, RoutineExercise
 import json
 import re
 import requests
+import random
 
 # 1. 메인 루틴 선택 페이지
 @login_required
@@ -27,51 +28,158 @@ def parse_number(value):
     else: return (int(match[0]) + int(match[1])) // 2
 
 # 2. GPT 기반 추천 루틴 생성
+import random
+
+# 2. GPT 기반 추천 루틴 생성 (무게 보정 기능 추가)
 @login_required
 def gpt_plan_view(request):
     level = request.GET.get('level', '초급')
     part = request.GET.get('part', '하체')
+    
+    available_exercises = list(Exercise.objects.filter(muscle_group=part))
+    if not available_exercises:
+        context = {
+            'routine_title': "루틴 생성 불가", 'routine': [],
+            'error': f"'{part}' 부위에 해당하는 운동이 데이터베이스에 등록되어 있지 않습니다. 관리자에게 문의하세요.",
+            'active_menu': 'routine'
+        }
+        return render(request, 'routine/routine_plan_with_details.html', context)
+
+    exercise_names_str = ", ".join([ex.name for ex in available_exercises])
     client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
+    # ✅ 1. 프롬프트 강화: 무게 항목에 숫자만 사용하도록 더욱 명확하게 지시
     prompt = f"""
-    # ... (프롬프트 내용은 기존과 동일) ...
-    # 출력 형식
-    한 줄에 아래 형식으로 출력하고, 총 4~6줄을 반드시 지켜라.
-    "운동이름::세트::반복횟수::추천무게(kg)::상세 설명 및 꿀팁::핵심 주의사항"
+    # 역할
+    당신은 사용 가능한 운동 목록을 기반으로 최적의 운동 루틴을 생성하는 전문 트레이너 'Jay'입니다.
+
+    # 지침
+    1.  **반드시 "사용 가능한 운동 목록"에 있는 운동 이름만 사용하세요.** 목록에 없는 운동은 절대로 추천하지 마세요.
+    2.  '{part}' 부위를 '{level}' 수준에 맞게 단련할 **4개에서 6개의 운동**을 선택하세요.
+    3.  결과는 반드시 아래 <출력형식>의 예시와 같이, 각 운동을 `<운동>` 태그로 감싸고, 전체를 `<운동목록>` 태그로 감싸서 응답해야 합니다.
+    4.  **무게(kg) 항목에는 반드시 숫자만 기입하세요. (예: "20", "40") 텍스트 설명은 절대 넣지 마세요.**
+
+    # 사용 가능한 운동 목록
+    {exercise_names_str}
+
+    # <출력형식>
+    <운동목록>
+    <운동>"운동이름1::세트::반복횟수::무게(kg)::설명::주의사항"</운동>
+    <운동>"운동이름2::세트::반복횟수::무게(kg)::설명::주의사항"</운동>
+    </운동목록>
     """
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}]
-        )
-        content = response.choices[0].message.content
-        gpt_lines = [line.strip().strip('"') for line in content.split('\n') if line.strip() and line.count('::') == 5]
+    MAX_ATTEMPTS = 3
+    final_valid_exercises = []
 
-        if not 4 <= len(gpt_lines) <= 6: raise ValueError("GPT가 4~6개 사이의 운동을 생성하지 못했습니다.")
+    for attempt in range(MAX_ATTEMPTS):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}]
+            )
+            content = response.choices[0].message.content
+            lines_from_gpt = re.findall(r'<운동>"([^"]+)"</운동>', content)
+            
+            validated_this_attempt = []
+            found_exercise_pks = set()
 
-        new_routine = Routine.objects.create(user=request.user, name=f"AI 추천 루틴: {part} ({level})")
-
-        for line in gpt_lines:
-            parts = line.split('::')
-            if len(parts) == 6:
+            for line in lines_from_gpt:
+                if line.count('::') != 5: continue
+                
+                parts = line.split('::')
                 name, sets, reps, weight, desc, prec = parts
-                # DB에 없으면 이름으로 생성, 있으면 가져오기
-                exercise, _ = Exercise.objects.get_or_create(
-                    name=name.strip(),
-                    defaults={'muscle_group': part, 'exercise_type': 'strength', 'gif_url': ''}
-                )
-                RoutineExercise.objects.create(
-                    routine=new_routine, exercise=exercise,
-                    sets=parse_number(sets), reps=parse_number(reps), weight=parse_number(weight),
-                    description=desc.strip(), precautions=prec.strip()
-                )
-        
-        messages.success(request, f"'{new_routine.name}' 루틴이 성공적으로 생성되었습니다!")
-        return redirect('routine:routine_plan_detail', routine_id=new_routine.id)
+                exercise_name_from_gpt = name.strip()
 
+                exercise_match = None
+                for db_exercise in available_exercises:
+                    if db_exercise.name in exercise_name_from_gpt:
+                        exercise_match = db_exercise
+                        break
+                
+                if exercise_match and exercise_match.pk not in found_exercise_pks:
+                    # ✅ 2. 코드 레벨에서 무게 보정 로직 추가
+                    weight_val = parse_number(weight)
+                    if weight_val == 0:
+                        if level == '초급':
+                            weight_val = 10
+                        elif level == '중급':
+                            weight_val = 25
+                        else: # '고급'
+                            weight_val = 40
+                    
+                    validated_this_attempt.append({
+                        'exercise': exercise_match, 'sets': parse_number(sets),
+                        'reps': parse_number(reps), 'weight': weight_val, # 보정된 무게 값 사용
+                        'description': desc.strip(), 'precautions': prec.strip()
+                    })
+                    found_exercise_pks.add(exercise_match.pk)
+            
+            if len(validated_this_attempt) >= 4:
+                final_valid_exercises = validated_this_attempt
+                break
+        
+        except Exception as e:
+            print(f"🚨 AI API 호출 오류 (시도 {attempt + 1}): {e}")
+
+    # --- 결과 보정 및 최종 처리 (기존과 동일) ---
+    if len(final_valid_exercises) > 6:
+        final_valid_exercises = final_valid_exercises[:6]
+
+    if 0 < len(final_valid_exercises) < 4:
+        existing_pks = {ex['exercise'].pk for ex in final_valid_exercises}
+        needed = 4 - len(final_valid_exercises)
+        pool = [ex for ex in available_exercises if ex.pk not in existing_pks]
+        random.shuffle(pool)
+        for i in range(min(needed, len(pool))):
+            new_ex = pool[i]
+            # 보충되는 운동에도 레벨에 맞는 기본 무게 설정
+            default_weight = 10 if level == '초급' else (25 if level == '중급' else 40)
+            final_valid_exercises.append({
+                'exercise': new_ex, 'sets': 3, 'reps': 12, 'weight': default_weight,
+                'description': new_ex.description or "기본 설명입니다.", 
+                'precautions': new_ex.precautions or "기본 주의사항입니다."
+            })
+
+    if not final_valid_exercises:
+        context = {
+            'routine_title': "AI 루틴 생성 실패", 'routine': [],
+            'error': "AI가 여러 번 시도했지만 루틴을 생성하지 못했습니다. 잠시 후 다시 시도하거나, 직접 루틴을 구성해주세요.",
+            'active_menu': 'routine'
+        }
+        return render(request, 'routine/routine_plan_with_details.html', context)
+
+    # --- DB 저장 및 결과 페이지 렌더링 (기존과 동일) ---
+    try:
+        new_routine = Routine.objects.create(user=request.user, name=f"AI 추천 루틴: {part} ({level})")
+        
+        routine_details_for_template = []
+        for item in final_valid_exercises:
+            RoutineExercise.objects.create(
+                routine=new_routine, exercise=item['exercise'],
+                sets=item['sets'], reps=item['reps'], weight=item['weight'],
+                description=item['description'], precautions=item['precautions']
+            )
+            routine_details_for_template.append({
+                'name': item['exercise'].name, 'muscle_group': item['exercise'].muscle_group,
+                'gif_url': item['exercise'].gif_url, 'exercise_type': item['exercise'].exercise_type,
+                'sets': item['sets'], 'reps': item['reps'], 'weight': item['weight'],
+                'description': item['description'], 'precautions': item['precautions']
+            })
+
+        messages.success(request, f"'{new_routine.name}' 루틴이 성공적으로 생성되었습니다!")
+        context = {
+            'routine_obj': new_routine, 'routine_title': new_routine.name,
+            'routine': routine_details_for_template, 'active_menu': 'routine',
+            'all_muscle_groups': Exercise.objects.values_list('muscle_group', flat=True).distinct()
+        }
+        return render(request, 'routine/routine_plan_with_details.html', context)
     except Exception as e:
-        messages.error(request, f"AI 루틴 생성 중 오류가 발생했습니다: {e}")
-        return redirect('routine:select')
+        context = {
+            'routine_title': "루틴 저장 실패", 'routine': [],
+            'error': f"루틴을 데이터베이스에 저장하는 중 오류가 발생했습니다: {e}",
+            'active_menu': 'routine'
+        }
+        return render(request, 'routine/routine_plan_with_details.html', context)
 
 # 3. 사용자가 직접 구성한 루틴 생성
 @login_required

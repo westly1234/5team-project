@@ -1,14 +1,14 @@
 # MYSITE/web/views.py
 
 import json
-import re # 정규표현식 모듈
+import re
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.db.models import Sum
+from collections import OrderedDict # ✅ 날짜 순서를 유지하며 중복을 제거하기 위해 import
 
 # --- 다른 앱의 모델 import ---
 try:
@@ -21,21 +21,17 @@ try:
 except ImportError:
     Meal = None
     
-# ✅ 인바디 그래프를 위해 새로 추가한 모델을 import 합니다.
 try:
     from accounts.models import BodyCompositionRecord
 except ImportError:
     BodyCompositionRecord = None
 
-# --- 헬퍼 함수 (기존과 동일) ---
+# --- 헬퍼 함수 ---
 def parse_nutrition_value(value_str):
-    """'50g', '450kcal' 같은 문자열에서 숫자만 추출하는 헬퍼 함수"""
-    if isinstance(value_str, (int, float)):
-        return value_str
+    if isinstance(value_str, (int, float)): return value_str
     if isinstance(value_str, str):
         numbers = re.findall(r'\d+\.?\d*', value_str)
-        if numbers:
-            return float(numbers[0])
+        if numbers: return float(numbers[0])
     return 0
 
 # --- 기존 뷰 함수들은 그대로 유지 ---
@@ -72,13 +68,12 @@ def start_trial(request):
     return render(request, 'web/start_trial.html')
 
 
-# --- 대시보드 뷰 함수 (수정된 버전) ---
+# --- 대시보드 뷰 함수 (핵심 수정) ---
 @login_required
 def services_page(request):
     user = request.user
     today = timezone.now().date()
     
-    # context 딕셔너리에 필요한 모든 데이터를 담습니다.
     context = {
         'user': user,
         'active_menu': 'dashboard',
@@ -92,9 +87,7 @@ def services_page(request):
             exercises_in_routine = []
             for routine_ex in latest_routine.routineexercise_set.all()[:5]:
                 exercise_detail = {
-                    'name': routine_ex.exercise.name,
-                    'sets': routine_ex.sets,
-                    'reps': routine_ex.reps
+                    'name': routine_ex.exercise.name, 'sets': routine_ex.sets, 'reps': routine_ex.reps
                 }
                 exercises_in_routine.append(exercise_detail)
             latest_routine.exercises_list = exercises_in_routine
@@ -115,24 +108,34 @@ def services_page(request):
                 today_diet_summary['fat'] += parse_nutrition_value(nutrition.get('fat', 0))
     context['today_diet_summary'] = today_diet_summary
 
-    # --- 3. ✅ 인바디 스타일 그래프 데이터 준비 (수정된 부분) ---
+    # --- 3. ✅ 인바디 스타일 그래프 데이터 준비 (수정된 로직) ---
     inbody_chart_data = {
-        'labels': [],
-        'weights': [],
-        'muscles': [],
-        'fats': [],
+        'labels': [], 'weights': [], 'muscles': [], 'fats': [],
     }
     if BodyCompositionRecord:
-        # 현재 사용자의 기록을 날짜순으로 가져옵니다 (최대 30개).
-        records = BodyCompositionRecord.objects.filter(user=user).order_by('created_at')[:30]
-        
-        # Chart.js가 사용할 데이터 형식으로 가공합니다.
-        inbody_chart_data['labels'] = [rec.created_at.strftime('%m/%d') for rec in records]
-        inbody_chart_data['weights'] = [rec.weight for rec in records]
-        inbody_chart_data['muscles'] = [rec.skeletal_muscle_mass for rec in records]
-        inbody_chart_data['fats'] = [rec.body_fat_mass for rec in records]
+        # 사용자의 모든 기록을 시간 순으로 가져옵니다.
+        all_records = BodyCompositionRecord.objects.filter(user=user).order_by('created_at')
 
-    # JSON으로 변환하여 context에 추가합니다.
+        # 날짜별 마지막 기록만 저장할 OrderedDict를 사용합니다.
+        daily_last_records = OrderedDict()
+        for record in all_records:
+            date_key = record.created_at.date()
+            # 딕셔너리에 계속 덮어쓰면, 자연스럽게 그날의 마지막 기록만 남게 됩니다.
+            daily_last_records[date_key] = record
+
+        # 딕셔너리의 값(최종 레코드 객체 리스트)을 가져옵니다.
+        final_records_list = list(daily_last_records.values())
+        
+        # 차트 가독성을 위해 최근 30개의 데이터만 사용합니다.
+        if len(final_records_list) > 30:
+            final_records_list = final_records_list[-30:]
+
+        # 최종 필터링된 데이터로 차트용 리스트를 만듭니다.
+        inbody_chart_data['labels'] = [rec.created_at.strftime('%m/%d') for rec in final_records_list]
+        inbody_chart_data['weights'] = [rec.weight for rec in final_records_list]
+        inbody_chart_data['muscles'] = [rec.skeletal_muscle_mass for rec in final_records_list]
+        inbody_chart_data['fats'] = [rec.body_fat_mass for rec in final_records_list]
+
     context['inbody_chart_data'] = json.dumps(inbody_chart_data)
 
     # --- 4. 식단 구성 도넛 차트 데이터 준비 ---
@@ -143,4 +146,5 @@ def services_page(request):
     }
     context['diet_chart_data'] = json.dumps(diet_chart_data)
     
+    # 템플릿 파일 이름을 'web/services.html'로 사용하고 있으므로 그대로 둡니다.
     return render(request, 'web/services.html', context)
