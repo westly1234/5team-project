@@ -1,17 +1,20 @@
 {# store/templates/store/_brand_card.html #}
+
 <a href="{{ brand.link }}" target="_blank" rel="noopener noreferrer" class="product-card">
     <div class="thumbnail-wrapper">
         {% if brand.thumbnail %}
+            {# ✅ 로고 이미지가 있는 경우 #}
             <img src="{{ brand.thumbnail.url }}" alt="{{ brand.name }} 로고">
         {% else %}
-            <span style="font-size: 3rem; font-weight: 700; color: rgba(0,0,0,0.6);">{{ brand.name|first }}</span>
+            {# ✅ 로고가 없는 경우, 브랜드 이름의 첫 글자를 보여주는 플레이스홀더 #}
+            <div class="thumbnail-placeholder">
+                <span>{{ brand.name|first }}</span>
+            </div>
         {% endif %}
-        <span class="category-tag">{{ brand.get_category_display }}</span>
     </div>
     <div class="card-body">
         <h3 class="product-name">{{ brand.name }}</h3>
-        {% if brand.short_description %}
-            <p class="product-desc">{{ brand.short_description }}</p>
-        {% endif %}
+        {# ✅ 카테고리 태그를 카드 본문 안으로 이동시켜 디자인 개선 #}
+        <span class="category-tag">{{ brand.get_category_display }}</span>
     </div>
 </a>

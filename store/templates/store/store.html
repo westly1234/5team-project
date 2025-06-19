@@ -1,10 +1,10 @@
-{# store/templates/store/store.html #}
 {% extends 'web/base_simple.html' %}
 {% load static %}
 {% block title %}스토어 - 추천 브랜드{% endblock %}
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
+    /* ... (기존 .store-container, .store-header, .filter-search-bar 등의 스타일은 그대로 둡니다) ... */
     .store-container { max-width: 1200px; margin: 4rem auto; padding: 0 2rem; color: #fff; }
     .store-header { text-align: center; margin-bottom: 3rem; }
     .store-header h1 { font-size: 2.5rem; font-weight: 700; background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #ffe66d); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
@@ -21,14 +21,61 @@
     .search-input:focus { border-color: #4ecdc4; box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.3); }
     .search-btn { background-color: #4ecdc4; border: none; color: #0a0a0a; padding: 0 20px; font-size: 1.2rem; border-radius: 0 8px 8px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
-    .product-card { display: flex; flex-direction: column; text-decoration: none; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; position: relative; }
-    .product-card:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3); border-color: rgba(78, 205, 196, 0.7); }
-    .thumbnail-wrapper { width: 100%; padding-top: 75%; position: relative; background-color: #fff; display: flex; align-items: center; justify-content: center; }
-    .thumbnail-wrapper img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; padding: 1rem; }
-    .card-body { padding: 1.25rem; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-    .product-name { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.5rem; }
-    .product-desc { font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); line-height: 1.4; }
-    .category-tag { position: absolute; top: 10px; right: 10px; background-color: rgba(0,0,0,0.6); color: #fff; font-size: 0.75rem; font-weight: 600; padding: 4px 8px; border-radius: 6px; }
+    .product-card { display: flex; flex-direction: column; text-decoration: none; background: #1a1a1a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; position: relative; }
+    .product-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); border-color: #4ecdc4; }
+    
+    /* ✅ [핵심 수정] 썸네일 컨테이너 스타일 */
+    .thumbnail-wrapper {
+        width: 100%;
+        height: 180px; /* 고정된 높이를 주어 모든 카드의 높이를 통일합니다. */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff; /* 로고가 잘 보이도록 흰색 배경을 유지합니다. */
+        transition: background-color 0.3s ease;
+    }
+    
+    /* ✅ [핵심 수정] 이미지 스타일 */
+    .thumbnail-wrapper img {
+        display: block;
+        max-width: 80%;   /* 로고의 최대 너비를 제한하여 여백을 확보합니다. */
+        max-height: 80%;  /* 로고의 최대 높이를 제한하여 여백을 확보합니다. */
+        object-fit: contain; /* 이미지 비율을 유지하면서 컨테이너 안에 맞춥니다. */
+        transition: transform 0.3s ease;
+    }
+    
+    /* ✅ [신규] 로고가 없을 때 보여줄 플레이스홀더 스타일 */
+    .thumbnail-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+    .thumbnail-placeholder span {
+        font-size: 4rem;
+        font-weight: 800;
+        color: rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 카드에 마우스를 올렸을 때 로고가 살짝 커지는 효과 */
+    .product-card:hover .thumbnail-wrapper img {
+        transform: scale(1.05);
+    }
+    
+    .card-body { padding: 1.25rem; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background-color: #242424; }
+    .product-name { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.75rem; }
+    
+    /* ✅ [핵심 수정] 카테고리 태그 스타일 */
+    .category-tag {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 20px; /* 둥근 알약 모양 */
+        background-color: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8);
+    }
+
     .pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 4rem; }
     .pagination a, .pagination span { color: rgba(255, 255, 255, 0.7); text-decoration: none; padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; transition: all 0.2s ease; }
     .pagination a:hover { background-color: #4ecdc4; color: #0a0a0a; border-color: #4ecdc4; }
@@ -37,7 +84,7 @@
 </style>
 <div class="store-container">
     <header class="store-header"><h1>HealthWise Store</h1><p>엄선된 헬스 & 피트니스 브랜드를 만나보세요.</p></header>
-    {% if featured_brands %}<div class="featured-section"><h2 class="section-title"><i class="bi bi-stars icon"></i>추천 브랜드</h2><div class="product-grid">{% for brand in featured_brands %}{% include 'store/_brand_card.html' %}{% endfor %}</div></div>{% endif %}
+    {% if featured_brands %}<div class="featured-section"><h2 class="section-title"><i class="bi bi-stars icon"></i>추천 브랜드</h2><div class="product-grid">{% for brand in featured_brands %}{% include 'store/_brand_card.html' with brand=brand %}{% endfor %}</div></div>{% endif %}
     <div class="filter-search-bar">
         <div class="filter-group"><a href="{% url 'store:home' %}" class="filter-btn {% if not current_category %}active{% endif %}">전체 카테고리</a>{% for value, name in categories %}<a href="?category={{ value }}" class="filter-btn {% if current_category == value %}active{% endif %}">{{ name }}</a>{% endfor %}</div><hr style="border-color: rgba(255, 255, 255, 0.1);">
         <div class="filter-group"><a href="{% url 'store:home' %}{% if current_category %}?category={{ current_category }}{% endif %}" class="filter-btn {% if not current_filter %}active{% endif %}">전체</a>{% for letter in alphabet %}<a href="?starts_with={{ letter }}{% if current_category %}&category={{ current_category }}{% endif %}" class="filter-btn {% if current_filter == letter %}active{% endif %}">{{ letter }}</a>{% endfor %}<a href="?starts_with=0-9{% if current_category %}&category={{ current_category }}{% endif %}" class="filter-btn {% if current_filter == '0-9' %}active{% endif %}">0-9</a></div>

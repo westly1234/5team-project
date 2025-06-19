@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import os
+import re
 from urllib.parse import urlparse
 
 from django.core.management.base import BaseCommand
@@ -11,18 +12,21 @@ from django.core.files.base import ContentFile
 from django.db.models import Q
 from store.models import Brand
 
-# Selenium (동적 페이지 로딩용)
+# Selenium
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
-# ✅ [수정] SVG 변환을 위해 cairosvg 대신 svglib와 reportlab를 사용합니다.
-from svglib.svglib import svg2rlg
-from reportlab.graphics import renderPM
+# SVG to PNG
+import cairosvg
 
 class Command(BaseCommand):
-    help = 'Scrapes dynamic pages to categorize brands and download logos as PNG using svglib.'
+    help = 'The definitive scraper: Uses Selenium to categorize brands and download logos as PNG.'
 
     def handle(self, *args, **kwargs):
         # 키워드 목록
@@ -58,15 +62,24 @@ class Command(BaseCommand):
                 self.stdout.write(f'--- Processing "{brand.name}" ---')
                 try:
                     driver.get(brand.link)
-                    time.sleep(2)
+                    
+                    # ✅ [업그레이드] 상품 목록(.list-box) 또는 브랜드 설명(.brand_txt) 중 하나라도 나타나면 통과
+                    try:
+                        wait = WebDriverWait(driver, 7)
+                        wait.until(EC.presence_of_element_located(
+                            (By.CSS_SELECTOR, ".list-box, .brand_txt")
+                        ))
+                    except TimeoutException:
+                        self.stdout.write(self.style.WARNING(f'  [!] Key elements not found for "{brand.name}". Proceeding with what is available.'))
+
                     page_source = driver.page_source
                     soup = BeautifulSoup(page_source, 'html.parser')
                     needs_save = False
 
-                    # 로고 이미지 스크레이핑 및 저장
+                    # 로고 이미지 스크레이핑
                     if not brand.thumbnail:
-                        logo_img_tag = soup.find('img', src=lambda s: s and '/brand/white_logo_img/' in s)
-                        if logo_img_tag:
+                        logo_img_tag = soup.find('img', src=re.compile(r'/brand/.*_logo_img/'))
+                        if logo_img_tag and logo_img_tag.get('src'):
                             logo_url = logo_img_tag['src']
                             if logo_url.startswith('//'): logo_url = 'https:' + logo_url
                             
@@ -75,35 +88,41 @@ class Command(BaseCommand):
                                 file_content = img_response.content
                                 original_filename = os.path.basename(urlparse(logo_url).path)
                                 
-                                # ✅ [수정] SVG인 경우 svglib를 사용해 PNG로 변환합니다.
                                 if original_filename.lower().endswith('.svg'):
                                     try:
-                                        drawing = svg2rlg(ContentFile(file_content))
-                                        png_content = renderPM.drawToString(drawing, fmt='PNG')
+                                        png_content = cairosvg.svg2png(bytestring=file_content, output_height=200)
                                         file_content = png_content
                                         original_filename = os.path.splitext(original_filename)[0] + '.png'
-                                        self.stdout.write(self.style.SUCCESS(f'  [+] SVG logo converted to PNG.'))
                                     except Exception as e:
                                         self.stderr.write(self.style.ERROR(f'  [!] SVG conversion failed: {e}'))
                                 
-                                logo_file = ContentFile(file_content)
-                                brand.thumbnail.save(original_filename, logo_file, save=False)
+                                brand.thumbnail.save(original_filename, ContentFile(file_content), save=False)
                                 needs_save = True
                                 self.stdout.write(self.style.SUCCESS(f'  [+] Logo found and saved: {original_filename}'))
 
                     # 카테고리 분류
                     if brand.category == 'ETC':
-                        page_text = soup.body.get_text(separator=' ', strip=True)
+                        # ✅ [업그레이드] 분석할 텍스트를 여러 군데에서 안전하게 가져옵니다.
+                        list_box = soup.find('div', class_='list-box')
+                        description_box = soup.find('p', class_='brand_txt')
+                        
+                        product_text = list_box.get_text(separator=' ', strip=True) if list_box else ''
+                        description_text = description_box.get_text(separator=' ', strip=True) if description_box else ''
+                        
+                        # 두 텍스트를 합쳐서 분석의 정확도를 높입니다.
+                        combined_text = product_text + " " + description_text
+                        
                         assigned = False
-                        for category, keywords in CATEGORY_KEYWORDS.items():
-                            for keyword in keywords:
-                                if keyword in page_text:
-                                    brand.category = category
-                                    needs_save = True
-                                    self.stdout.write(self.style.SUCCESS(f'  [+] Category assigned: {brand.get_category_display()}'))
-                                    assigned = True
-                                    break
-                            if assigned: break
+                        if combined_text.strip():
+                            for category, keywords in CATEGORY_KEYWORDS.items():
+                                for keyword in keywords:
+                                    if keyword in combined_text:
+                                        brand.category = category
+                                        needs_save = True
+                                        self.stdout.write(self.style.SUCCESS(f'  [+] Category assigned: {brand.get_category_display()}'))
+                                        assigned = True
+                                        break
+                                if assigned: break
                         if not assigned: self.stdout.write(self.style.WARNING('  [-] Could not determine category.'))
 
                     if needs_save:
@@ -112,9 +131,9 @@ class Command(BaseCommand):
                     else:
                         self.stdout.write('  [-] No changes needed.')
                 except Exception as e:
-                    self.stderr.write(self.style.ERROR(f'  [!] An error occurred: {e}'))
-                time.sleep(0.5)
-        
+                    self.stderr.write(self.style.ERROR(f'  [!] An error occurred during "{brand.name}" processing: {e}'))
+                
+                time.sleep(1) # 서버 부하 감소를 위한 1초 대기
         finally:
             driver.quit()
 
