@@ -83,19 +83,19 @@
                         {% with nutrition=meal.analysis_result.total_nutrition %}
                         <div class="text-center p-2">
                             <p class="text-sm text-gray-400 mb-1">총 칼로리</p>
-                            <p class="text-3xl font-bold text-[#65e9dd] tracking-tighter"><span class="counter" data-target="{{ nutrition.calories|default:'0'|slice:":-3" }}">0</span><span class="text-xl ml-1">kcal</span></p>
+                            <p class="text-3xl font-bold text-[#65e9dd] tracking-tighter"><span class="counter" data-target="{{ nutrition.calories|default:'0' }}">0</span><span class="text-xl ml-1">kcal</span></p>
                         </div>
                         <div class="text-center p-2">
                             <p class="text-sm text-gray-400 mb-1">탄수화물</p>
-                            <p class="text-3xl font-bold text-blue-400 tracking-tighter"><span class="counter" data-target="{{ nutrition.carbohydrate|default:'0'|slice:":-1" }}">0</span><span class="text-xl ml-1">g</span></p>
+                            <p class="text-3xl font-bold text-blue-400 tracking-tighter"><span class="counter" data-target="{{ nutrition.carbohydrate|default:'0' }}">0</span><span class="text-xl ml-1">g</span></p>
                         </div>
                         <div class="text-center p-2">
                             <p class="text-sm text-gray-400 mb-1">단백질</p>
-                            <p class="text-3xl font-bold text-red-400 tracking-tighter"><span class="counter" data-target="{{ nutrition.protein|default:'0'|slice:":-1" }}">0</span><span class="text-xl ml-1">g</span></p>
+                            <p class="text-3xl font-bold text-red-400 tracking-tighter"><span class="counter" data-target="{{ nutrition.protein|default:'0' }}">0</span><span class="text-xl ml-1">g</span></p>
                         </div>
                         <div class="text-center p-2">
                             <p class="text-sm text-gray-400 mb-1">지방</p>
-                            <p class="text-3xl font-bold text-yellow-400 tracking-tighter"><span class="counter" data-target="{{ nutrition.fat|default:'0'|slice:":-1" }}">0</span><span class="text-xl ml-1">g</span></p>
+                            <p class="text-3xl font-bold text-yellow-400 tracking-tighter"><span class="counter" data-target="{{ nutrition.fat|default:'0' }}">0</span><span class="text-xl ml-1">g</span></p>
                         </div>
                         {% endwith %}
                     </div>
@@ -143,7 +143,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // --- 데이터 파싱 ---
-    const parseValue = (value) => value ? parseFloat(value.match(/(\d+\.?\d*)/)?.[1] || 0) : 0;
+    const parseValue = (value) => value ? parseFloat(value.toString().match(/(\d+\.?\d*)/)?.[1] || 0) : 0;
+    
     const carbGrams = parseValue("{{ meal.analysis_result.total_nutrition.carbohydrate }}");
     const proteinGrams = parseValue("{{ meal.analysis_result.total_nutrition.protein }}");
     const fatGrams = parseValue("{{ meal.analysis_result.total_nutrition.fat }}");
@@ -151,9 +152,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- 1. 카운터 애니메이션 ---
     const counters = document.querySelectorAll('.counter');
     counters.forEach(counter => {
-        const target = +counter.dataset.target;
+        const target = parseValue(counter.dataset.target);
+        if (isNaN(target)) return;
+        
         const duration = 1500;
-        const increment = target / (duration / 16);
+        const frameRate = 60;
+        const totalFrames = Math.round(duration / (1000 / frameRate));
+        const increment = target / totalFrames;
         let current = 0;
 
         const timer = setInterval(() => {
@@ -162,8 +167,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 current = target;
                 clearInterval(timer);
             }
-            counter.innerText = Math.ceil(current).toLocaleString();
-        }, 16);
+            counter.innerText = Math.round(current).toLocaleString();
+        }, 1000 / frameRate);
     });
 
     // --- 2. 영양소 비율 Polar Area 차트 ---
@@ -171,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(chartCtx, {
         type: 'polarArea',
         data: {
-            labels: [`탄수화물 (${carbGrams}g)`, `단백질 (${proteinGrams}g)`, `지방 (${fatGrams}g)`],
+            labels: [`탄수화물 (${carbGrams.toFixed(1)}g)`, `단백질 (${proteinGrams.toFixed(1)}g)`, `지방 (${fatGrams.toFixed(1)}g)`],
             datasets: [{
                 data: [carbGrams, proteinGrams, fatGrams],
                 backgroundColor: [
@@ -207,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => `${context.label.split('(')[0]}: ${context.raw}g`
+                        label: (context) => `${context.label.split('(')[0].trim()}: ${context.raw.toFixed(1)}g`
                     }
                 }
             }
