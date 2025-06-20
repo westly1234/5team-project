@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now # created_at 기본값 설정을 위해 추가
+from django.conf import settings
+
 
 class ChatConversation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

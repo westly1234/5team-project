@@ -4,7 +4,10 @@ from django.views.static import serve
 from . import views
 from django.conf.urls.static import static
 
+app_name = 'chatbot'
+
 urlpatterns = [
+    path('ui/', views.chatbot_ui, name='ui'),
     path('api/', views.chatbot_api, name='chatbot_api'),
     path('new/', views.new_dialog_api, name='new_dialog_api'),
     path('list/', views.dialog_list_api, name='dialog_list_api'),

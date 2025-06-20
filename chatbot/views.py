@@ -720,7 +720,7 @@ def chatbot_ui(request: HttpRequest):
         # 👇 초기 대화 ID를 템플릿에 전달합니다. 없으면 None.
         'initial_dialog_id': latest_dialog.id if latest_dialog else None
     }
-    return render(request, "chatbot_test/chatbot.html", context)
+    return render(request, "chatbot/chatbot.html", context)
 
 @login_required
 @csrf_exempt

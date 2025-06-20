@@ -1,19 +1,41 @@
 # store/admin.py
 
 from django.contrib import admin
-from .models import Product, Brand
+from .models import Brand, Tag, Review, Product
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
-    # ✅ 리스트에 표시할 필드를 추가합니다.
-    list_display = ('name', 'category', 'is_featured', 'link', 'created_at')
-    # ✅ 필터링 옵션을 추가하여 관리를 쉽게 합니다.
-    list_filter = ('category', 'is_featured')
-    search_fields = ('name', 'short_description')
-    # ✅ 관리자 페이지에서 직접 수정할 수 있는 필드
-    list_editable = ('category', 'is_featured')
+    list_display = ('name', 'category', 'is_featured', 'promotion_info', 'created_at')
+    list_filter = ('category', 'is_featured', 'tags')
+    search_fields = ('name', 'description', 'detailed_description')
+    # ManyToManyField를 관리자 페이지에서 편하게 선택할 수 있도록 해줍니다.
+    filter_horizontal = ('tags', 'favorited_by')
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'category', 'link', 'is_featured')
+        }),
+        ('설명', {
+            'fields': ('description', 'detailed_description')
+        }),
+        ('이미지 및 프로모션', {
+            'fields': ('thumbnail', 'promotion_info')
+        }),
+        ('연관 데이터 (선택)', {
+            'classes': ('collapse',),
+            'fields': ('tags', 'favorited_by'),
+        }),
+    )
 
-@admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'product_link', 'created_at')
-    search_fields = ('name', 'description')
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('brand', 'user', 'rating', 'created_at')
+    list_filter = ('rating', 'created_at')
+    search_fields = ('brand__name', 'user__username', 'content')
+    autocomplete_fields = ('brand', 'user') # ForeignKey 필드를 검색으로 찾기 쉽게 해줍니다.
+
+# Product 모델도 등록합니다.
+admin.site.register(Product)

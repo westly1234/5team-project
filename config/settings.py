@@ -21,13 +21,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "accounts.apps.AccountsConfig",
-    'achievements'
+    'achievements',
     'web.apps.WebConfig',
     'music',
     'place',
     'routine',
     'diet',
-    'chatbot.apps.ChatbotConfig',
+    'chatbot',
     'store',
 ]
 

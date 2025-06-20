@@ -131,10 +131,26 @@
             </div>
         </div>
         
+<<<<<<< HEAD
         <!-- 수정 모드 전용 버튼들 (폼 안에 위치) -->
         <div class="mt-16 text-center space-x-4 edit-mode-item">
             <button type="button" onclick="toggleEditMode(false)" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full transition-colors">취소</button>
             <button type="button" onclick="saveRoutine()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-full transition-colors">수정 완료</button>
+=======
+        <div class="mt-16 text-center space-x-4">
+            <div class="view-mode-item inline-block">
+                <a href="{% url 'routine:my_routines' %}" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full transition-colors">목록으로</a>
+                {% if routine_obj %}<button type="button" onclick="toggleEditMode(true)" class="bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 px-8 rounded-full transition-colors">루틴 수정하기</button>
+                <form action="{% url 'routine:complete_workout' routine_id=routine_obj.id %}" method="post" class="inline-block">
+                    {% csrf_token %}
+                </form>
+                {% endif %}
+            </div>
+            <div class="edit-mode-item inline-block">
+                <button type="button" onclick="toggleEditMode(false)" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full transition-colors">취소</button>
+                <button type="button" onclick="saveRoutine()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-full transition-colors">수정 완료</button>
+            </div>
+>>>>>>> bcee5b2 (store뺴고 다)
         </div>
     </div>
 </form> <!-- ✨✨✨ 수정 폼은 여기서 종료됩니다. ✨✨✨ -->

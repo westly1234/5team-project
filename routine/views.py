@@ -406,18 +406,21 @@ def delete_routine_view(request, routine_id):
 # ✅ 8. '운동 완료'를 처리하는 새로운 뷰 추가
 @require_POST
 @login_required
-def complete_workout_view(request, routine_id):
+def workout_complete_view(request, routine_id): # 함수 이름을 URL 설정과 일치시킵니다.
     """'이 루틴 완료하기' 버튼을 눌렀을 때 호출되어 운동 기록을 남기고 업적을 확인합니다."""
     routine = get_object_or_404(Routine, id=routine_id, user=request.user)
     
     # 운동 완료 기록(WorkoutLog) 생성
-    workout_log = WorkoutLog.objects.create(user=request.user, routine=routine)
+    # user와 routine을 명시적으로 전달합니다.
+    workout_log = WorkoutLog.objects.create(user=request.user, routine=routine, completed_at=timezone.now())
     
-    # 운동 완료 관련 업적 트리거 함수 호출
-    trigger_workout_completion_achievements(request, workout_log)
+    # 운동 완료 관련 업적 트리거 함수가 있다면 호출합니다.
+    # 이 함수는 request와 workout_log 객체를 인자로 받습니다.
+    if callable(trigger_workout_completion_achievements):
+        trigger_workout_completion_achievements(request, workout_log)
     
     messages.success(request, f"'{routine.name}' 운동을 완료했습니다! 오늘도 수고하셨습니다.")
-    return redirect('routine:my_routines')
+    return redirect('routine:my_routines') # 완료 후 내 루틴 목록으로 이동
 
 
 # 9. 운동 목록 API

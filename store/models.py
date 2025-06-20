@@ -1,55 +1,77 @@
 # store/models.py
 
 from django.db import models
+from django.conf import settings # Django의 User 모델을 참조하기 위해 import
+from django.db.models import Avg # 평균 평점을 계산하기 위해 import
+
+# ✅ [기능 추가] 태그 모델
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True, verbose_name="태그명")
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name = "핵심 태그"
+        verbose_name_plural = "핵심 태그 목록"
 
 class Brand(models.Model):
-    # 카테고리 선택지를 미리 정의합니다.
+    # 카테고리 선택지를 업데이트합니다.
     CATEGORY_CHOICES = [
-        ('APPAREL', '의류'),
-        ('EQUIPMENT', '장비'),
-        ('SUPPLEMENTS', '보충제'),
-        ('ACCESSORIES', '액세서리'),
-        ('ETC', '기타'),
+        ('NUTRITION', '보충제'),
+        ('CLOTHING', '의류'),
+        ('EQUIPMENT', '용품'),
+        ('FOOD', '식품'),
     ]
 
-    name = models.CharField(max_length=100, verbose_name="브랜드명", unique=True)
-    link = models.URLField(verbose_name="브랜드 링크")
-    thumbnail = models.ImageField(upload_to='brand_thumbnails/', verbose_name="썸네일", blank=True, null=True)
-    
-    category = models.CharField(
-        max_length=20,
-        choices=CATEGORY_CHOICES,
-        default='ETC', # 기본값은 '기타'로 설정
-        verbose_name="카테고리"
-    )
-    short_description = models.CharField(
-        max_length=150,
-        blank=True, # 비워둬도 괜찮음
-        verbose_name="간단 설명"
-    )
-    is_featured = models.BooleanField(
-        default=False,
-        verbose_name="추천 브랜드 지정"
-    )
+    name = models.CharField(max_length=100, unique=True, verbose_name="브랜드명")
+    link = models.URLField(verbose_name="공식 사이트 링크")
+    thumbnail = models.ImageField(upload_to='brand_thumbnails/', blank=True, null=True, verbose_name="썸네일 이미지")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="카테고리")
+    description = models.CharField(max_length=200, blank=True, verbose_name="짧은 설명 (카드 표시용)")
+    detailed_description = models.TextField(blank=True, verbose_name="상세 설명 (모달 표시용)")
+    is_featured = models.BooleanField(default=False, verbose_name="추천 브랜드 여부")
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
-    
-    # ✅ [핵심 변경] 퀵 뷰를 위한 상세 설명 필드를 추가합니다.
-    detailed_description = models.TextField(
-        blank=True, 
-        null=True, 
-        verbose_name="상세 설명 (퀵 뷰용)"
-    )
+    # ✅ [기능 추가] 프로모션, 태그, 찜하기 필드
+    promotion_info = models.CharField(max_length=50, blank=True, verbose_name="프로모션 정보 (예: '20% 할인')")
+    tags = models.ManyToManyField(Tag, blank=True, related_name='brands', verbose_name="핵심 태그")
+    favorited_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='favorite_brands', blank=True, verbose_name="찜한 사용자")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
-    class Meta:
-        verbose_name = "추천 브랜드"
-        verbose_name_plural = "추천 브랜드 목록"
-        ordering = ['name']
+    # ✅ [기능 추가] 평균 평점을 계산하는 메서드
+    def get_average_rating(self):
+        return self.reviews.aggregate(Avg('rating'))['rating__avg'] or 0
 
-# Product 모델은 그대로 둡니다.
+    class Meta:
+        ordering = ['name']
+        verbose_name = "브랜드"
+        verbose_name_plural = "브랜드 목록"
+
+
+# ✅ [기능 추가] 리뷰 모델
+class Review(models.Model):
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='reviews', verbose_name="브랜드")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews', verbose_name="작성자")
+    rating = models.PositiveSmallIntegerField(choices=[(i, f'{i}점') for i in range(1, 6)], verbose_name="평점")
+    content = models.TextField(verbose_name="리뷰 내용")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ('brand', 'user') # 한 브랜드에 유저당 하나의 리뷰만 작성 가능
+        verbose_name = "브랜드 리뷰"
+        verbose_name_plural = "브랜드 리뷰 목록"
+
+    def __str__(self):
+        return f'{self.user.username}의 {self.brand.name} 리뷰'
+
+# Product 모델은 현재 시나리오에서 직접 사용되지 않으므로 그대로 두거나 제거해도 됩니다.
 class Product(models.Model):
     name = models.CharField(max_length=100, verbose_name="상품명")
     description = models.TextField(verbose_name="설명", blank=True)
