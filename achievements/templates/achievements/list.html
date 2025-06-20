@@ -13,6 +13,39 @@
     .achievement-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); flex-shrink: 0; }
     .header-title { display: flex; align-items: center; gap: 15px; font-size: 2.5rem; font-weight: 700; color: #fff; }
     .header-title i { font-size: 2.2rem; color: #ffd700; }
+    .progress-container {
+        flex-grow: 1; /* 제목과 필터 사이 공간을 모두 차지 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        min-width: 200px;
+        padding: 0 30px;
+    }
+    .progress-bar-overall {
+        width: 100%;
+        max-width: 500px;
+        height: 20px;
+        background-color: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px; /* 긴 타원형 모양 */
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .progress-bar-completed {
+        height: 100%;
+        background: linear-gradient(90deg, #4ECDC4 0%, #3a9a92 100%);
+        border-radius: 10px;
+        transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+    }
+    .progress-percentage {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
     .achievement-filter select { background-color: #2a2a2e; color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 10px 15px; font-size: 1rem; cursor: pointer; }
     .achievement-grid-wrapper { flex-grow: 1; overflow-y: auto; padding: 5px; }
     .achievement-grid-wrapper::-webkit-scrollbar { width: 8px; }
@@ -48,6 +81,20 @@
             <i class="bi bi-award-fill"></i>
             <span>나의 업적</span>
         </div>
+        {% with achieved_count=achieved_ids|length total_count=all_achievements|length %}
+            {% if total_count > 0 %}
+                
+                {% widthratio achieved_count total_count 100 as progress_percent %}
+                
+                <div class="progress-container">
+                <div class="progress-bar-overall">
+                    <div class="progress-bar-completed" style="width: {{ progress_percent }}%;"></div>
+                </div>
+                <span class="progress-percentage">{{ progress_percent }}%</span>
+                </div>
+
+            {% endif %}
+        {% endwith %}
         <div class="achievement-filter">
             <select id="achievement-filter">
                 <option value="all">전체 보기</option>
