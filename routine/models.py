@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 
 # ==============================================================================
 # 1. Exercise (운동) 모델
@@ -100,3 +101,27 @@ class RoutineExercise(models.Model):
 
     def __str__(self):
         return f"{self.routine.name}: {self.exercise.name}"
+    
+
+class WorkoutLog(models.Model):
+    # 이 운동 기록의 주인
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='workout_logs')
+    
+    # 어떤 루틴을 기반으로 운동했는지 (선택 사항, 직접 운동도 가능)
+    # on_delete=models.SET_NULL: 원본 루틴이 삭제되어도 운동 기록은 남습니다.
+    routine = models.ForeignKey(Routine, on_delete=models.SET_NULL, null=True, blank=True, related_name='logs')
+    
+    # 운동을 완료한 날짜와 시간
+    completed_at = models.DateTimeField(default=timezone.now)
+    
+    # 총 운동 시간 (분) - (선택적 필드)
+    total_duration_minutes = models.PositiveIntegerField(null=True, blank=True, help_text="실제 총 운동 시간(분)")
+
+    # 사용자의 간단한 메모 (선택적 필드)
+    memo = models.TextField(blank=True, null=True, help_text="오늘 운동 어땠나요?")
+
+    class Meta:
+        ordering = ['-completed_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.completed_at.strftime('%Y-%m-%d %H:%M')} 운동 완료"

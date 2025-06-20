@@ -21,3 +21,10 @@ class ChatConversation(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.summary_title or '제목 없음'}"
+    
+class ChatbotInteractionLog(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} at {self.created_at}"

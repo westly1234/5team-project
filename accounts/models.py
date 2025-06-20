@@ -7,7 +7,7 @@ from django.dispatch import receiver
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='profile_pics/', default='default_avatar.png')
+    image = models.ImageField(upload_to='profile_pics/', default='profile_pics/avatar-default.jpeg')
     height = models.FloatField(null=True, blank=True)
     current_weight = models.FloatField(null=True, blank=True)
     target_weight = models.FloatField(null=True, blank=True)

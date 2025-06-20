@@ -5,7 +5,6 @@ import markdown, pandas as pd, requests, fitz, torch
 from docx import Document as DocxDocument
 from PIL import Image
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -22,6 +21,9 @@ from openai import OpenAI
 from .models import ChatConversation
 from numpy.linalg import norm
 import numpy as np
+
+from achievements.services import check_and_award_achievement
+from .models import ChatbotInteractionLog
 
 # --- 설정 ---
 VECTORSTORE_PATH = getattr(settings, 'VECTORSTORE_PATH', r"C:\Users\Admin\5team_web_project\5team_project\project_data\vectorstore_food_and_healthy")
@@ -515,7 +517,28 @@ def chatbot_api(request: HttpRequest):
         dialog_id_str = request.POST.get("id")
         uploaded_file = request.FILES.get("file", None)
         print(f"[입력] 대화 ID: {dialog_id_str}, 메시지: '{user_input_text}', 파일: {uploaded_file.name if uploaded_file else '없음'}")
+        ChatbotInteractionLog.objects.create(user=user)
 
+         # 첫 대화 업적
+        check_and_award_achievement(request, user, 'first_ai_chat')
+
+        # 누적 대화 업적
+        chat_count = ChatbotInteractionLog.objects.filter(user=user).count()
+        if chat_count >= 10: check_and_award_achievement(request, user, 'ai_advisor_bronze')
+        if chat_count >= 50: check_and_award_achievement(request, user, 'ai_advisor_silver')
+        if chat_count >= 150: check_and_award_achievement(request, user, 'ai_advisor_gold')
+
+        # 특정 질문 및 행동 기반 업적
+        if user_input_text:
+            lower_message = user_input_text.lower()
+            if '업적' in lower_message or '칭호' in lower_message:
+                check_and_award_achievement(request, user, 'curious_about_achievements')
+            if '그려줘' in lower_message or '만들어줘' in lower_message:
+                check_and_award_achievement(request, user, 'creative_spark')
+        
+        if uploaded_file:
+            check_and_award_achievement(request, user, 'data_provider')
+        
         if not user_input_text and not uploaded_file:
             return JsonResponse({"response": "질문이나 파일을 입력해주세요.", "type": "error"}, status=400)
 
@@ -697,7 +720,7 @@ def chatbot_ui(request: HttpRequest):
         # 👇 초기 대화 ID를 템플릿에 전달합니다. 없으면 None.
         'initial_dialog_id': latest_dialog.id if latest_dialog else None
     }
-    return render(request, "chatbot/chatbot.html", context)
+    return render(request, "chatbot_test/chatbot.html", context)
 
 @login_required
 @csrf_exempt

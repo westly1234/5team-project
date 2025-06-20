@@ -20,7 +20,8 @@ urlpatterns = [
     path('', web_views.home, name='home'),
     path('diet/', include('diet.urls')),
     path('chatbot/', include('chatbot.urls')),
-    path('store/', include('store.urls'))
+    path('achievments', include('achievements.urls')),
+    path('store/', include('store.urls')),
 ]
 
 # 사용자가 업로드한 이미지를 개발 서버에서 볼 수 있도록 설정

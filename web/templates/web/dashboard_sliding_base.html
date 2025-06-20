@@ -89,7 +89,8 @@
             
             <li><a href="{% url 'place:search' %}" class="nav-item {% if active_menu == 'place' %}active{% endif %}"><i class="bi bi-geo-alt-fill icon"></i> 운동 장소</a></li>
             <li><a href="{% url 'music:music_playlist' %}" class="nav-item {% if active_menu == 'music' %}active{% endif %}"><i class="bi bi-music-note-beamed icon"></i> AI 음악 추천</a></li>
-            <li><a href="#" class="nav-item {% if active_menu == 'chatbot' %}active{% endif %}"><i class="bi bi-chat-dots-fill icon"></i> AI 챗봇 상담</a></li>
+            <li><a href="{% url 'chatbot_ui' %}" class="nav-item {% if active_menu == 'chatbot' %}active{% endif %}"><i class="bi bi-chat-dots-fill icon"></i> AI 챗봇 상담</a></li>
+            <li><a href="{% url 'achievements:list' %}" class="nav-item {% if active_menu == 'achievements' %}active{% endif %}"><i class="bi bi-award-fill icon"></i> 나의 업적</a></li>
         </ul>
     </aside>
     <div class="sidebar-handle">
@@ -101,4 +102,7 @@
 <div class="page-main-content">
     {% block page_content %}{% endblock %}
 </div>
+{% block footer %}
+    {{ block.super }}
+{% endblock footer %}
 {% endblock %}
