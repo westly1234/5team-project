@@ -193,7 +193,11 @@
             <li><a href="{% url 'diet:diet_analysis' %}" class="nav-item {% if active_menu == 'diet_analysis' %}active{% endif %}"><i class="bi bi-camera-fill icon"></i> 식단 기록하기</a></li>
             <li><a href="{% url 'place:search' %}" class="nav-item {% if active_menu == 'place' %}active{% endif %}"><i class="bi bi-geo-alt-fill icon"></i> 운동 장소</a></li>
             <li><a href="{% url 'music:music_playlist' %}" class="nav-item {% if active_menu == 'music' %}active{% endif %}"><i class="bi bi-music-note-beamed icon"></i> AI 음악 추천</a></li>
+<<<<<<< HEAD
             <li><a href="#" class="nav-item {% if active_menu == 'chatbot' %}active{% endif %}"><i class="bi bi-chat-dots-fill icon"></i> AI 챗봇 상담</a></li>
+=======
+            <li><a href="{% url 'chatbot:ui' %}" class="nav-item {% if active_menu == 'chatbot' %}active{% endif %}"><i class="bi bi-chat-dots-fill icon"></i> AI 챗봇 상담</a></li>
+>>>>>>> cb2875bc9088ad8945f6629884e5e6fa96475ed9
         </ul>
     </aside>
 
@@ -235,12 +239,18 @@
             <a href="{% url 'accounts:profile_edit' %}" class="dashboard-card profile-card profile-link-card">
                  <div class="card-content">
                     <div class="profile-info">
-                        {% if user.profile.image %}
-                            <img src="{{ user.profile.image.url }}" alt="User Avatar" class="avatar">
-                        {% else %}
-                            <img src="/media/profile_pics/avatar-default.jpeg" alt="Default Avatar" class="avatar">
-                        {% endif %}
+                        <img src="{% if user.profile.image and user.profile.image.url %}{{ user.profile.image.url }}{% else %}{% static 'web/images/default_avatar.png' %}{% endif %}" alt="User Avatar" class="avatar">
                         <div class="username">{{ user.first_name|default:user.username }}</div>
+                        <div class="user-title-container" style="display: flex; align-items: center; justify-content: center; margin-top: 4px; margin-bottom: 12px; cursor: pointer;" id="edit-title-btn">
+                            {# active_title 객체가 존재하고, 그 안의 achievement에 title_reward가 있을 경우 표시 #}
+                            <span id="active-title-display" style="color: #4ecdc4; font-weight: 600;">
+                                {% if active_title and active_title.achievement.title_reward %}
+                                    {{ active_title.achievement.title_reward }}
+                                {% else %}
+                                    칭호 없음
+                                {% endif %}
+                            </span>
+                        </div>
                         <div class="user-email">{{ user.email }}</div>
                     </div>
                     <div class="profile-stats">
@@ -454,4 +464,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+{% block footer %}
+    {{ block.super }}
+{% endblock footer %}
 {% endblock %}

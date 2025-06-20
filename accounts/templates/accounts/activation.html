@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이메일 인증 완료</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 15vh;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .activation-complete-container {
+            background-color: #ffffff;
+            padding: 35px 45px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 580px;
+        }
+        .activation-complete-container h1 {
+            color: #27ae60;
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .activation-complete-container p {
+            color: #555;
+            font-size: 17px;
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+        .login-button {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .login-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="activation-complete-container">
+        <h1>이메일 인증 완료!</h1>
+        <p>이메일 인증이 완료되었습니다. 이제 로그인할 수 있습니다.</p>
+        <a href="{% url 'accounts:login' %}" class="login-button">로그인 페이지로 이동</a>
+    </div>
+</body>
+</html>
