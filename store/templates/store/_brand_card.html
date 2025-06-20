@@ -1,20 +1,23 @@
 {# store/templates/store/_brand_card.html #}
 
-<a href="{{ brand.link }}" target="_blank" rel="noopener noreferrer" class="product-card">
-    <div class="thumbnail-wrapper">
+{# ✅ [핵심 변경] 클릭 이벤트를 위해 전체를 div로 감쌉니다. #}
+<div class="product-card">
+    <a href="{{ brand.link }}" target="_blank" rel="noopener noreferrer" class="thumbnail-wrapper">
         {% if brand.thumbnail %}
-            {# ✅ 로고 이미지가 있는 경우 #}
             <img src="{{ brand.thumbnail.url }}" alt="{{ brand.name }} 로고">
         {% else %}
-            {# ✅ 로고가 없는 경우, 브랜드 이름의 첫 글자를 보여주는 플레이스홀더 #}
             <div class="thumbnail-placeholder">
                 <span>{{ brand.name|first }}</span>
             </div>
         {% endif %}
-    </div>
+    </a>
     <div class="card-body">
         <h3 class="product-name">{{ brand.name }}</h3>
-        {# ✅ 카테고리 태그를 카드 본문 안으로 이동시켜 디자인 개선 #}
         <span class="category-tag">{{ brand.get_category_display }}</span>
+        
+        {# ✅ [핵심 변경] '자세히 보기' 버튼을 추가합니다. brand.id를 데이터 속성으로 전달합니다. #}
+        <button class="quick-view-btn" data-brandid="{{ brand.id }}">
+            자세히 보기
+        </button>
     </div>
-</a>
+</div>

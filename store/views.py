@@ -1,9 +1,12 @@
 # store/views.py
 
+import os # ✅ [핵심 변경] 파일 시스템 경로를 다루기 위해 os 모듈을 import 합니다.
 from django.shortcuts import render
 from .models import Brand
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+from django.conf import settings # ✅ [핵심 변경] settings를 import 합니다.
 
 def store_page_view(request):
     starts_with = request.GET.get('starts_with', None)
@@ -39,3 +42,25 @@ def store_page_view(request):
         'active_menu': 'store',
     }
     return render(request, 'store/store.html', context)
+
+def brand_detail_api(request, brand_id):
+    try:
+        brand = Brand.objects.get(pk=brand_id)
+
+        thumbnail_url = ''
+        if brand.thumbnail:
+            # ✅ [핵심 확인] 이 로직이 정확한지 확인
+            file_path = os.path.join(settings.MEDIA_ROOT, str(brand.thumbnail))
+            if os.path.exists(file_path):
+                thumbnail_url = brand.thumbnail.url
+        
+        data = {
+            'id': brand.id,
+            'name': brand.name,
+            'link': brand.link,
+            'thumbnail_url': thumbnail_url,
+            'detailed_description': brand.detailed_description,
+        }
+        return JsonResponse(data)
+    except Brand.DoesNotExist:
+        return JsonResponse({'error': 'Brand not found'}, status=404)
