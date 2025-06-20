@@ -4,7 +4,7 @@
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
-    /* ... (기존 .store-container, .store-header, .filter-search-bar 등의 스타일은 그대로 둡니다) ... */
+    /* ... (다른 스타일은 대부분 그대로 유지) ... */
     .store-container { max-width: 1200px; margin: 4rem auto; padding: 0 2rem; color: #fff; }
     .store-header { text-align: center; margin-bottom: 3rem; }
     .store-header h1 { font-size: 2.5rem; font-weight: 700; background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #ffe66d); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
@@ -20,31 +20,31 @@
     .search-input { flex-grow: 1; background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 12px 16px; border-radius: 8px 0 0 8px; font-size: 1rem; outline: none; }
     .search-input:focus { border-color: #4ecdc4; box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.3); }
     .search-btn { background-color: #4ecdc4; border: none; color: #0a0a0a; padding: 0 20px; font-size: 1.2rem; border-radius: 0 8px 8px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    
     .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
-    .product-card { display: flex; flex-direction: column; text-decoration: none; background: #1a1a1a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; position: relative; }
+    .product-card { display: flex; flex-direction: column; text-decoration: none; background: #2a2a2e; /* 카드 전체 배경색을 어둡게 통일 */ border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; }
     .product-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); border-color: #4ecdc4; }
     
     /* ✅ [핵심 수정] 썸네일 컨테이너 스타일 */
     .thumbnail-wrapper {
         width: 100%;
-        height: 180px; /* 고정된 높이를 주어 모든 카드의 높이를 통일합니다. */
+        height: 180px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #fff; /* 로고가 잘 보이도록 흰색 배경을 유지합니다. */
-        transition: background-color 0.3s ease;
+        background-color: #1c1c20; /* 어두운 배경색으로 변경하여 흰색 로고가 잘 보이게 함 */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* 하단 정보와 구분선 */
     }
     
-    /* ✅ [핵심 수정] 이미지 스타일 */
     .thumbnail-wrapper img {
         display: block;
-        max-width: 80%;   /* 로고의 최대 너비를 제한하여 여백을 확보합니다. */
-        max-height: 80%;  /* 로고의 최대 높이를 제한하여 여백을 확보합니다. */
-        object-fit: contain; /* 이미지 비율을 유지하면서 컨테이너 안에 맞춥니다. */
+        max-width: 80%;
+        max-height: 80%;
+        object-fit: contain;
         transition: transform 0.3s ease;
     }
     
-    /* ✅ [신규] 로고가 없을 때 보여줄 플레이스홀더 스타일 */
+    /* 로고가 없을 때 보여줄 플레이스홀더 스타일 */
     .thumbnail-placeholder {
         display: flex;
         align-items: center;
@@ -55,23 +55,21 @@
     .thumbnail-placeholder span {
         font-size: 4rem;
         font-weight: 800;
-        color: rgba(0, 0, 0, 0.1);
+        color: rgba(255, 255, 255, 0.1); /* 어두운 배경에 밝은 텍스트가 되도록 수정 */
     }
     
-    /* 카드에 마우스를 올렸을 때 로고가 살짝 커지는 효과 */
     .product-card:hover .thumbnail-wrapper img {
         transform: scale(1.05);
     }
     
-    .card-body { padding: 1.25rem; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background-color: #242424; }
+    .card-body { padding: 1.25rem; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
     .product-name { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.75rem; }
     
-    /* ✅ [핵심 수정] 카테고리 태그 스타일 */
     .category-tag {
         font-size: 0.75rem;
         font-weight: 600;
         padding: 4px 10px;
-        border-radius: 20px; /* 둥근 알약 모양 */
+        border-radius: 20px;
         background-color: rgba(255, 255, 255, 0.1);
         color: rgba(255, 255, 255, 0.8);
     }
