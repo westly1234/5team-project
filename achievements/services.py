@@ -26,7 +26,7 @@ def check_and_award_achievement(request, user, codename):
         
         # 4. 업적 부여 및 알림
         UserAchievement.objects.create(user=user, achievement=achievement)
-        messages.success(request, f"✨ 업적 달성! [{achievement.name}] 뱃지를 획득했습니다!")
+        messages.success(request, f"✨ 업적 달성! [{achievement.name}] 뱃지를 획득했습니다!", extra_tags='achievement_unlocked')
 
     except Achievement.DoesNotExist:
         # 코드네임에 해당하는 업적이 DB에 없는 경우

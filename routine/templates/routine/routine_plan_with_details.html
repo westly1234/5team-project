@@ -6,6 +6,7 @@
 {% block page_content %}
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
+    /* 스타일은 변경 없이 그대로 유지됩니다. */
     @keyframes slide-in-fwd { 0% { transform: translateY(50px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
     .slide-in-fwd { animation: slide-in-fwd 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both; }
     @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -23,6 +24,7 @@
     body.edit-mode .routine-exercise-card { border-left: 4px solid #8b5cf6; }
 </style>
 
+<!-- ✨✨✨ 1. 루틴 수정 폼: 수정과 관련된 모든 요소를 감쌉니다. ✨✨✨ -->
 <form id="edit-routine-form" method="POST" action="{% if routine_obj %}{% url 'routine:edit_routine' routine_obj.id %}{% endif %}">
     {% csrf_token %}
     <input type="hidden" name="exercises_data" id="exercises_data_input">
@@ -129,26 +131,35 @@
             </div>
         </div>
         
-        <div class="mt-16 text-center space-x-4">
-            <div class="view-mode-item inline-block">
-                <a href="{% url 'routine:my_routines' %}" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full transition-colors">목록으로</a>
-                {% if routine_obj %}<button type="button" onclick="toggleEditMode(true)" class="bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 px-8 rounded-full transition-colors">루틴 수정하기</button>
-                <form action="{% url 'routine:complete_workout' routine_id=routine_obj.id %}" method="post" class="inline-block">
-                    {% csrf_token %}
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-full transition-colors">
-                        <i class="bi bi-check-circle-fill mr-2"></i>운동 완료!
-                    </button>
-                </form>
-                {% endif %}
-            </div>
-            <div class="edit-mode-item inline-block">
-                <button type="button" onclick="toggleEditMode(false)" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full transition-colors">취소</button>
-                <button type="button" onclick="saveRoutine()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-full transition-colors">수정 완료</button>
-            </div>
+        <!-- 수정 모드 전용 버튼들 (폼 안에 위치) -->
+        <div class="mt-16 text-center space-x-4 edit-mode-item">
+            <button type="button" onclick="toggleEditMode(false)" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full transition-colors">취소</button>
+            <button type="button" onclick="saveRoutine()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-full transition-colors">수정 완료</button>
         </div>
     </div>
-</form>
+</form> <!-- ✨✨✨ 수정 폼은 여기서 종료됩니다. ✨✨✨ -->
 
+
+<!-- ✨✨✨ 2. 보기 모드 버튼 및 운동 완료 폼: 수정 폼 바깥에 독립적으로 위치합니다. ✨✨✨ -->
+<div class="max-w-4xl mx-auto px-4 sm:px-8">
+    <div class="mt-16 text-center space-x-4 view-mode-item">
+        <a href="{% url 'routine:my_routines' %}" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full transition-colors">목록으로</a>
+        {% if routine_obj %}
+        <button type="button" onclick="toggleEditMode(true)" class="bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 px-8 rounded-full transition-colors">루틴 수정하기</button>
+        
+        <!-- 이제 이 폼은 독립적이며 올바르게 작동합니다. -->
+        <form action="{% url 'routine:complete_workout' routine_id=routine_obj.id %}" method="post" class="inline-block">
+            {% csrf_token %}
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-8 rounded-full transition-colors">
+                <i class="bi bi-check-circle-fill mr-2"></i>운동 완료!
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- ✨✨✨ 3. 모달 및 스크립트: 변경 없이 그대로 유지됩니다. ✨✨✨ -->
 <div id="exercise-modal-backdrop" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm hidden z-40"></div>
 <div id="exercise-modal" class="fixed inset-0 flex items-center justify-center p-4 hidden z-50">
     <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col animate-pop-in">

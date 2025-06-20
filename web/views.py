@@ -59,7 +59,7 @@ def auth_signup_view(request):
             user = form.save()
             # 회원가입 성공 시 업적 부여
             if check_and_award_achievement:
-                check_and_award_achievement(request, user, 'first_visit')
+                check_and_award_achievement(request, user, 'first_visit',  extra_tags='achievement_unlocked')
             messages.success(request, '회원가입이 성공적으로 완료되었습니다. 로그인해주세요.')
             return redirect('login_page')
     else:
@@ -97,7 +97,7 @@ def services_page(request):
     if check_and_award_achievement:
         one_year_ago = today - timezone.timedelta(days=365)
         if user.date_joined.date() <= one_year_ago:
-            check_and_award_achievement(request, user, 'anniversary_1year')
+            check_and_award_achievement(request, user, 'anniversary_1year',  extra_tags='achievement_unlocked')
 
     # ✅ 프로필 및 칭호 정보 가져오기 (두 번째 파일 기능)
     if Profile:
