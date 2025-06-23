@@ -352,7 +352,7 @@
         @keyframes morph { 0%, 100% { border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; transform: rotate(0deg) scale(1); } 25% { border-radius: 70% 30% 50% 50% / 30% 70% 50% 50%; transform: rotate(90deg) scale(1.1); } 50% { border-radius: 50% 50% 30% 70% / 70% 30% 70% 30%; transform: rotate(180deg) scale(0.9); } 75% { border-radius: 30% 70% 30% 70% / 70% 30% 30% 70%; transform: rotate(270deg) scale(1.05); } }
 
         footer { padding: 100px 50px 50px; background: #000; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.1); }
-        footer h2 { font-size: 3rem; margin-bottom: 20px; background: linear-gradient(90deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        footer h2 { font-size: 3rem; margin-bottom: 20px; background: linear-gradient(90deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
         footer p { font-size: 1.2rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 40px; }
         .footer-btn { padding: 15px 50px; background: transparent; border: 2px solid #4ecdc4; border-radius: 50px; color: #4ecdc4; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
         .footer-btn:hover { background: #4ecdc4; color: #000; transform: translateY(-3px); }
@@ -360,10 +360,87 @@
         @media (max-width: 1200px) { /* 반응형 스타일 추가 */ }
         @media (max-width: 1024px) { .pinterest-bg-half { min-height: 30vh; } }
         @media (max-width: 768px) { .hero h1 {font-size: 3rem;} .pinterest-bg-half { min-height: 50vh; } }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001; /* 네비게이션(10000)보다 위에 오도록 설정 */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            width: 350px;
+            background: rgba(26, 26, 26, 0.8); /* 다크 테마에 맞는 배경 */
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .toast-body {
+            flex-grow: 1;
+            font-weight: 500;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .toast-body strong {
+            font-weight: 700;
+            color: #4ecdc4; /* 브랜드 컬러 */
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .btn-close-toast {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding: 5px;
+        }
+
+        .btn-close-toast:hover {
+            color: #fff;
+        }
     </style>
 </head>
 <body>
     <!-- 모든 페이지에 공통으로 들어가는 요소들 -->
+    {% if messages %}
+    <div class="toast-container">
+        {% for message in messages %}
+        <div class="toast show" role="alert">
+            <div class="toast-icon">✨</div>
+            <div class="toast-body">
+                <strong>업적 달성!</strong>
+                {{ message }}
+            </div>
+            <button type="button" class="btn-close-toast" onclick="this.parentElement.remove()">×</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
     <div class="cursor-glow"></div>
     <div class="cursor-dot"></div>
 
@@ -389,11 +466,13 @@
     {% block content %}{% endblock %}
 
     <!-- 모든 페이지 공통 푸터 -->
+    {% block footer %}
     <footer>
         <h2>지금 시작하세요</h2>
-        <p>AI와 함께 더 건강한 내일을 만들어가세요</p>      
-        <button class="footer-btn">무료 체험 시작</button>
+        <p>AI와 함께 더 건강한 내일을 만들어가세요</p>
+        <a href="{% url 'web:services' %}" class="footer-btn">무료 체험 시작</a>
     </footer>
+    {% endblock %}
 
     <!-- 모든 페이지 공통 JavaScript -->
     <script>
