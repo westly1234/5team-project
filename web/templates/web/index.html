@@ -1,100 +1,266 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}HealthWise - 히어로 배경 Pinterest 영상 (수정 시도){% endblock %}
+{% block title %}HealthWise - 히어로 배경 영상{% endblock %}
 
 {% block content %}
-<section class="hero" id="hero">
-    <div class="hero-background-pinterest">
-        <div class="pinterest-bg-half left-video">
-            <a data-pin-do="embedPin" href="https://www.pinterest.com/pin/AWWWDdpWKzplppyqZV-9IVFuKOy7GE4WAUTbzALQpJLI6AU8AGUmyJmjo-sTMpY7VarRdk2npwW2TmFmyaGQZ5YDVQ/"></a>
-        </div>
-        <div class="pinterest-bg-half right-video">
-            <a data-pin-do="embedPin" href="https://www.pinterest.com/pin/775040147159241639/"></a>
-        </div>
-    </div>
+<!-- ================================================================== -->
+<!-- 히어로 섹션: 비디오 배경 -->
+<!-- ================================================================== -->
+<style>
+    .hero {
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-video-background {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        z-index: -1;
+    }
+    #heroVideo {
+        width: 100%; height: 100%;
+        object-fit: cover;
+    }
+    section.hero {
+        background-color: transparent !important;
+    }
+    .parallax-elements, .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+</style>
 
+<section class="hero" id="hero">
+    <div class="hero-video-background">
+        <video autoplay muted loop playsinline id="heroVideo">
+            <source src="{% static 'videos/hero_background.mp4' %}" type="video/mp4">
+            브라우저가 비디오 태그를 지원하지 않습니다.
+        </video>
+    </div>
     <div class="parallax-elements">
         <div class="parallax-circle parallax-circle-1"></div>
         <div class="parallax-circle parallax-circle-2"></div>
         <div class="parallax-circle parallax-circle-3"></div>
     </div>
-
     <div class="hero-content">
         <h1>AI Healthcare</h1>
         <p>스크롤하여 혁신적인 기능들을 확인하세요</p>
-        <button class="hero-btn">자세히 보기</button>
+        <!-- ✅ 수정: 버튼에 id를 추가합니다. -->
+        <button class="hero-btn" id="viewDetailsBtn">자세히 보기</button>
         <a href="{% url 'web:services' %}" class="hero-btn">시작하기</a>
     </div>
 </section>
 
-<div class="main-container">
-    <div class="text-side">
-        <div class="text-section" id="section-1">
-            <span class="section-number">01</span>
-            <div class="text-content active" data-section="1">
-                <h2>AI 건강 상담</h2>
-                <p>최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석합니다. 사용자의 건강 상태를 분석하여 맞춤 운동과 식단을 알려줍니다.</p>
-                <ul class="feature-list">
-                    <li>실시간 나의 상태 분석</li> <li>실시간 건강 모니터링</li>
-                    <li>개인 맞춤형 건강 리포트</li> <li>조기 진단 알림 시스템</li>
-                </ul>
-            </div>
-        </div>
-        <div class="text-section" id="section-2">
-            <span class="section-number">02</span>
-            <div class="text-content" data-section="2">
-                <h2>내 위치 맞춤 장소 서비스 </h2>
-                <p>원하는 장소나 내 주변 운동 장소를 한눈에 보여주는 서비스 입니다.</p>
-                <ul class="feature-list">
-                    <li>모든 운동 장소 확인 가능</li> <li>실시간 데이터 동기화</li>
-                    <li>전지역 내 위치 맞춤 서비스</li> <li>운동 종류별 위치 탐색</li>
-                </ul>
-            </div>
-        </div>
-        <div class="text-section" id="section-3">
-            <span class="section-number">03</span>
-            <div class="text-content" data-section="3">
-                <h2>맞춤형 운동 코칭</h2>
-                <p>AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계합니다. 컴퓨터 비전 기술로 운동 자세를 실시간으로 분석하고 교정합니다.</p>
-                <ul class="feature-list">
-                    <li>개인별 맞춤 운동 프로그램</li> <li>실시간 자세 교정</li>
-                    <li>운동 효과 분석</li> <li>부상 예방 가이드</li>
-                </ul>
-            </div>
-        </div>
-        <div class="text-section" id="section-4">
-            <span class="section-number">04</span>
-            <div class="text-content" data-section="4">
-                <h2>스마트 영양 관리</h2>
-                <p>음식 사진만으로 칼로리와 영양소를 정확하게 분석합니다. 개인의 건강 목표와 상태에 맞는 식단을 AI가 추천해드립니다.</p>
-                <ul class="feature-list">
-                    <li>AI 기반 음식 인식</li> <li>영양소 자동 계산</li>
-                    <li>맞춤형 식단 추천</li> <li>알레르기 성분 체크</li>
-                </ul>
-            </div>
-        </div>
-    </div>
 
-    <div class="image-side">
-        <div class="image-wrapper">
-            <div class="image-box">
-                <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800" alt="AI 진단" class="sticky-image active" data-image="1">
-                <img src="{% static 'images/hand1.JPG' %}" alt="웨어러블" class="sticky-image" data-image="2">
-                <img src="{% static 'images/hand2.png' %}" alt="운동 이미지 (스티키)" class="sticky-image" data-image="3">
-                <img src="{% static 'images/hand3.PNG' %}" alt="영양" class="sticky-image" data-image="4">
-            </div>
-            <div class="image-indicators">
-                <div class="indicator active" data-indicator="1"></div> <div class="indicator" data-indicator="2"></div>
-                <div class="indicator" data-indicator="3"></div> <div class="indicator" data-indicator="4"></div>
-            </div>
-            <div class="page-number">
-                <span class="current-page">1</span> <span class="divider">/</span> <span class="total-pages">4</span>
-            </div>
-            <div class="swipe-hint">
-                <div class="swipe-icon"></div> <span>스와이프하여 이동</span>
-            </div>
+<!-- ================================================================ -->
+<!-- 기능 소개 섹션 -->
+<!-- ================================================================ -->
+<style>
+    .feature-section {
+        margin-top: -22px;
+        display: flex;
+        padding: 60px 5%;
+        box-sizing: border-box;
+        background-color: #1a1a1a;
+        color: #fff;
+        transition: all 0.5s;
+        overflow: hidden;
+    }
+    .image-container {
+        display: flex;
+        align-items: center; 
+        width: 100%;
+        gap: 20px;
+        transition: width 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    .image-item {
+        flex: 1;
+        height: 300px; 
+        border-radius: 0px;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover; 
+        background-color: #111;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    #feature-image-1 { background-image: url("{% static 'images/hand1.png' %}"); }
+    #feature-image-2 { background-image: url("{% static 'images/hand2.png' %}"); }
+    #feature-image-3 { background-image: url("{% static 'images/hand3.JPG' %}"); }
+    #feature-image-4 { background-image: url("{% static 'images/hand4.png' %}"); }
+    .text-container {
+        display: none;
+        width: 0;
+        padding-left: 40px;
+        box-sizing: border-box;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .text-content { 
+        display: none;
+    }
+    .text-content.active {
+        display: block;
+    }
+    .feature-section.active { align-items: center; }
+    .feature-section.active .image-container { width: 60%; }
+    .feature-section.active .text-container {
+        display: flex;
+        width: 40%;
+        opacity: 1;
+        visibility: visible;
+        height: 80vh;
+    }
+    .feature-section.active .image-item {
+        flex-grow: 0; opacity: 0; width: 0; margin: 0; border: none;
+    }
+    .feature-section.active .image-item.active {
+        flex-grow: 1; width: 100%; opacity: 1; background-size: contain; height: 80vh;
+    }
+    .text-container h2 { font-size: 3rem; margin-bottom: 2rem; }
+    .text-container p { font-size: 1.1rem; line-height: 1.8; color: #ccc; margin-bottom: 2.5rem; }
+    .text-container .feature-list { list-style-type: none; padding: 0; }
+    .text-container .feature-list li { margin-bottom: 15px; font-size: 1.1rem; }
+    .text-container .feature-list li::before { content: '✓'; margin-right: 12px; color: #a5e6ba; }
+</style>
+
+<section class="feature-section" id="featureSection">
+    <div class="image-container" id="imageContainer">
+        <div class="image-item" id="feature-image-1" data-feature="1"></div>
+        <div class="image-item" id="feature-image-2" data-feature="2"></div>
+        <div class="image-item" id="feature-image-3" data-feature="3"></div>
+        <div class="image-item" id="feature-image-4" data-feature="4"></div>
+    </div>
+    <div class="text-container" id="textContainer">
+        <div class="text-content" data-feature="1">
+            <h2>AI 건강 상담</h2>
+            <p>최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석합니다. 사용자의 건강 상태를 분석하여 맞춤 운동과 식단을 알려줍니다.</p>
+            <ul class="feature-list">
+                <li>실시간 나의 상태 분석</li><li>실시간 건강 모니터링</li>
+                <li>개인 맞춤형 건강 리포트</li><li>조기 진단 알림 시스템</li>
+            </ul>
+        </div>
+        <div class="text-content" data-feature="2">
+            <h2>내 위치 맞춤 장소 서비스</h2>
+            <p>원하는 장소나 내 주변 운동 장소를 한눈에 보여주는 서비스 입니다.</p>
+            <ul class="feature-list">
+                <li>모든 운동 장소 확인 가능</li><li>실시간 데이터 동기화</li>
+                <li>전지역 내 위치 맞춤 서비스</li><li>운동 종류별 위치 탐색</li>
+            </ul>
+        </div>
+        <div class="text-content" data-feature="3">
+            <h2>맞춤형 운동 코칭</h2>
+            <p>AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계합니다. 컴퓨터 비전 기술로 운동 자세를 실시간으로 분석하고 교정합니다.</p>
+            <ul class="feature-list">
+                <li>개인별 맞춤 운동 프로그램</li><li>실시간 자세 교정</li>
+                <li>운동 효과 분석</li><li>부상 예방 가이드</li>
+            </ul>
+        </div>
+        <div class="text-content" data-feature="4">
+            <h2>스마트 영양 관리</h2>
+            <p>음식 사진만으로 칼로리와 영양소를 정확하게 분석합니다. 개인의 건강 목표와 상태에 맞는 식단을 AI가 추천해드립니다.</p>
+            <ul class="feature-list">
+                <li>AI 기반 음식 인식</li><li>영양소 자동 계산</li>
+                <li>맞춤형 식단 추천</li><li>알레르기 성분 체크</li>
+            </ul>
         </div>
     </div>
-</div>
+</section>
+
+<!-- ================================================================ -->
+<!-- 통계 섹션 (수정 없음) -->
+<!-- ================================================================ -->
+<style>
+    .stats-section {
+        background-color: #111;
+        padding: 80px 5%;
+        text-align: center;
+    }
+    .stats-container {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    .stat-item {
+        flex: 1;
+        min-width: 200px;
+    }
+    .stat-number {
+        font-size: 4.5rem;
+        font-weight: bold;
+        color: #d89aff;
+        margin-bottom: 10px;
+    }
+    .stat-label {
+        font-size: 1rem;
+        color: #ccc;
+        opacity: 0.9;
+    }
+</style>
+
+<section class="stats-section">
+    <div class="stats-container">
+        <div class="stat-item">
+            <div class="stat-number">97%</div>
+            <p class="stat-label">사용자 만족도</p>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">85점</div>
+            <p class="stat-label">평균 건강 점수</p>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">4.5h</div>
+            <p class="stat-label">주간 운동 시간</p>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">15%</div>
+            <p class="stat-label">의료비 절감</p>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const section = document.getElementById('featureSection');
+        const imageItems = document.querySelectorAll('.image-item');
+        const textContents = document.querySelectorAll('.text-content');
+        
+        // ✅ 추가: 버튼과 스크롤할 목표 섹션을 변수로 지정합니다.
+        const viewDetailsBtn = document.getElementById('viewDetailsBtn');
+        const featureSection = document.getElementById('featureSection');
+
+        // ✅ 추가: 버튼 클릭 이벤트를 추가합니다.
+        viewDetailsBtn.addEventListener('click', () => {
+            // featureSection으로 부드럽게 스크롤합니다.
+            featureSection.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // 기존 이미지 클릭 이벤트는 그대로 둡니다.
+        imageItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const featureId = item.dataset.feature;
+                const isActive = item.classList.contains('active');
+
+                section.classList.remove('active');
+                imageItems.forEach(i => i.classList.remove('active'));
+                textContents.forEach(tc => tc.classList.remove('active'));
+
+                if (!isActive) {
+                    section.classList.add('active');
+                    item.classList.add('active');
+                    
+                    const targetText = document.querySelector(`.text-content[data-feature="${featureId}"]`);
+                    if (targetText) {
+                        targetText.classList.add('active');
+                    }
+                }
+            });
+        });
+    });
+</script>
+
 {% endblock %}
