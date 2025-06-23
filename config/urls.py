@@ -27,3 +27,5 @@ urlpatterns = [
 # 사용자가 업로드한 이미지를 개발 서버에서 볼 수 있도록 설정
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    

@@ -1,7 +1,16 @@
-{# store/templates/store/_brand_card.html #}
+{# store/templates/store/_brand_card.html (수정 적용본) #}
+<div class="product-card" style="position: relative;">
+    
+    {% if user.is_authenticated %}
+        <button 
+            class="favorite-btn {% if brand.id in favorite_brand_ids %}favorited{% endif %}"
+            data-brandid="{{ brand.id }}"
+            data-action="toggle-favorite"
+            title="찜하기">
+            <i class="bi bi-heart-fill"></i>
+        </button>
+    {% endif %}
 
-{# ✅ [핵심 변경] 클릭 이벤트를 위해 전체를 div로 감쌉니다. #}
-<div class="product-card">
     <a href="{{ brand.link }}" target="_blank" rel="noopener noreferrer" class="thumbnail-wrapper">
         {% if brand.thumbnail %}
             <img src="{{ brand.thumbnail.url }}" alt="{{ brand.name }} 로고">
@@ -13,11 +22,22 @@
     </a>
     <div class="card-body">
         <h3 class="product-name">{{ brand.name }}</h3>
-        <span class="category-tag">{{ brand.get_category_display }}</span>
-        
-        {# ✅ [핵심 변경] '자세히 보기' 버튼을 추가합니다. brand.id를 데이터 속성으로 전달합니다. #}
+        <div class="category-tags-wrapper" style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; min-height: 22px; margin-bottom: 0.5rem;">
+            {% for category in brand.categories.all %}
+                <span class="category-tag">{{ category.name }}</span>
+            {% endfor %}
+        </div>
+
+        {# ✅ 조건부 렌더링으로 '자세히 보기' 숨기기 #}
+        {% if not hide_quick_view %}
         <button class="quick-view-btn" data-brandid="{{ brand.id }}">
             자세히 보기
         </button>
+        {% endif %}
+
+        <div class="compare-checkbox-wrapper">
+            <input type="checkbox" id="compare-{{ brand.id }}" class="compare-checkbox" data-brandid="{{ brand.id }}">
+            <label for="compare-{{ brand.id }}">브랜드 비교하기</label>
+        </div>
     </div>
 </div>

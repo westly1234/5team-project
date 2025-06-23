@@ -1,10 +1,28 @@
+<style>
+    /* 네비게이션 바의 활성 메뉴를 위한 스타일 */
+    .nav-item.active {
+        color: #4ecdc4; /* 활성화된 메뉴 항목 색상 */
+        font-weight: 700;
+    }
+</style>
+
 <nav>
     <div class="nav-container">
         <a href="/" class="logo" style="text-decoration: none;">💊 HealthWise</a>
         <ul class="nav-menu">
-            <li><a href="/" class="nav-item">홈</a></li>
-            <li><a href="{% url 'store:home' %}" class="nav-item">스토어</a></li>
+            <li><a href="/" class="nav-item {% if active_menu == 'home' %}active{% endif %}">홈</a></li>
+            
+            {# '스토어' 메뉴에 active 클래스를 조건부로 추가 #}
+            <li><a href="{% url 'store:home' %}" class="nav-item {% if active_menu == 'store' %}active{% endif %}">스토어</a></li>
+
+            {# ✅ [핵심 수정] 찜한 목록 링크를 조건부로 추가 #}
+            {# 사용자가 로그인했고, 현재 페이지가 '스토어' 관련 페이지일 때만 표시됩니다. #}
+            {% if user.is_authenticated and active_menu == 'store' %}
+                <li><a href="{% url 'store:my_favorites' %}" class="nav-item">찜한 목록</a></li>
+            {% endif %}
+
             <li><a href="#" class="nav-item">고객지원</a></li>
+            
             <!-- Django 로그인/로그아웃 분기 처리 -->
             {% if user.is_authenticated %}
                 <li style="padding: 5px 0; color: rgba(255, 255, 255, 0.85); font-weight: 500;"> {{ user.username }}님</li>

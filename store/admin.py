@@ -1,18 +1,31 @@
 # store/admin.py
 
 from django.contrib import admin
-from .models import Brand, Tag, Review, Product
+from .models import Brand, Tag, Review, Product, BrandCategory
+
+# ✅ 새로 만든 BrandCategory 모델을 관리자 페이지에 등록합니다.
+@admin.register(BrandCategory)
+class BrandCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code')
+    search_fields = ('name', 'code')
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'is_featured', 'promotion_info', 'created_at')
-    list_filter = ('category', 'is_featured', 'tags')
+    # ✅ [핵심 수정] list_display와 list_filter를 새로운 'categories' 필드에 맞게 변경
+    list_display = ('name', 'display_categories', 'get_average_rating_display', 'is_featured', 'created_at')
+    list_filter = ('categories', 'is_featured', 'tags') # 'category' -> 'categories'
     search_fields = ('name', 'description', 'detailed_description')
-    # ManyToManyField를 관리자 페이지에서 편하게 선택할 수 있도록 해줍니다.
-    filter_horizontal = ('tags', 'favorited_by')
+    
+    # ✅ 다대다 관계를 관리하기 편한 UI로 변경 (filter_horizontal)
+    filter_horizontal = ('categories', 'tags', 'favorited_by')
+    
     fieldsets = (
         (None, {
-            'fields': ('name', 'category', 'link', 'is_featured')
+            'fields': ('name', 'link', 'is_featured')
+        }),
+        # ✅ 'category'를 'categories'로 변경
+        ('카테고리 및 태그', {
+            'fields': ('categories', 'tags')
         }),
         ('설명', {
             'fields': ('description', 'detailed_description')
@@ -22,9 +35,20 @@ class BrandAdmin(admin.ModelAdmin):
         }),
         ('연관 데이터 (선택)', {
             'classes': ('collapse',),
-            'fields': ('tags', 'favorited_by'),
+            'fields': ('favorited_by',),
         }),
     )
+    
+    # ✅ [핵심 추가] 다대다 관계인 카테고리들을 보기 좋게 문자열로 만들어주는 함수
+    @admin.display(description='카테고리')
+    def display_categories(self, obj):
+        # obj.categories.all()로 해당 브랜드에 연결된 모든 카테고리를 가져옴
+        return ", ".join([category.name for category in obj.categories.all()])
+
+    @admin.display(description='평균 평점')
+    def get_average_rating_display(self, obj):
+        avg_rating = obj.get_average_rating()
+        return f"{avg_rating:.2f}점" if avg_rating > 0 else "리뷰 없음"
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
@@ -35,7 +59,6 @@ class ReviewAdmin(admin.ModelAdmin):
     list_display = ('brand', 'user', 'rating', 'created_at')
     list_filter = ('rating', 'created_at')
     search_fields = ('brand__name', 'user__username', 'content')
-    autocomplete_fields = ('brand', 'user') # ForeignKey 필드를 검색으로 찾기 쉽게 해줍니다.
+    autocomplete_fields = ('brand', 'user')
 
-# Product 모델도 등록합니다.
 admin.site.register(Product)
