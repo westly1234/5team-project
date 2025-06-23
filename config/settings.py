@@ -93,7 +93,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),# 'assets'를 'static'으로 변경
+    os.path.join(BASE_DIR, 'assets'),# 'assets'를 'static'으로 변경
     #BASE_DIR / "mysite" / "web" / "templates" / "web" / "public" # 수정된 부분
 ]
 
