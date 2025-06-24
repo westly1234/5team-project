@@ -247,7 +247,8 @@ def profile_edit(request):
 
     context = {
         'user_form': user_form,
-        'profile_form': profile_form
+        'profile_form': profile_form,
+        'active_title': profile.active_title
     }
     return render(request, 'accounts/profile_edit.html', context)
 

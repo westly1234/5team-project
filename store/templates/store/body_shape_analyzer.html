@@ -1,0 +1,415 @@
+{% extends 'web/base_simple.html' %}
+{% load static %}
+{% block title %}AI 체형 분석{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    .analyzer-container { max-width: 900px; margin: 4rem auto; padding: 2rem; color: #fff; text-align: center; }
+    .analyzer-container h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+    .analyzer-container > p.subtitle { color: rgba(255,255,255,0.7); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem auto; }
+    
+    .pre-analysis-guide {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        text-align: left;
+        margin-bottom: 2rem;
+        background: #2a2a2e;
+        padding: 2rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .guide-box h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.2rem;
+        color: #4ecdc4;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #444;
+        padding-bottom: 0.75rem;
+    }
+    .guide-box ul {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+    }
+    .guide-box ul li {
+        margin-bottom: 0.75rem;
+        padding-left: 1.5rem;
+        position: relative;
+        font-size: 0.95rem;
+        color: rgba(255,255,255,0.8);
+    }
+    .guide-box ul li i {
+        position: absolute;
+        left: 0;
+        top: 4px;
+        color: #4ecdc4;
+    }
+    .guide-box ul li.bad i {
+        color: #ff6b6b;
+    }
+    .profile-info-display {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    .info-item {
+        background: rgba(0,0,0,0.2);
+        padding: 1rem;
+        border-radius: 8px;
+        flex-grow: 1;
+    }
+    .info-item .label {
+        font-size: 0.8rem;
+        color: #aaa;
+        margin-bottom: 0.25rem;
+    }
+    .info-item .value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .edit-profile-link {
+        display: block;
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+    }
+
+    #upload-form { background: #2a2a2e; padding: 2.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+    .form-section { margin-bottom: 2rem; }
+    .form-section:last-of-type { margin-bottom: 0; }
+    .form-section-title { font-weight: 600; margin-bottom: 1rem; display: block; text-align: center; }
+
+    #user-concerns {
+        width: 100%;
+        box-sizing: border-box;
+        background-color: #1e1e22;
+        border: 1px solid #555;
+        border-radius: 8px;
+        padding: 1rem;
+        color: #fff;
+        min-height: 100px;
+        resize: vertical;
+        transition: border-color 0.2s;
+    }
+    #user-concerns:focus {
+        border-color: #4ecdc4;
+        outline: none;
+    }
+    
+    .gender-selector { display: flex; justify-content: center; gap: 1rem; }
+    .gender-selector input[type="radio"] { display: none; }
+    .gender-selector label { padding: 12px 24px; border: 1px solid #555; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background-color: #333; }
+    .gender-selector input[type="radio"]:not(:checked) + label:hover { background-color: #444; border-color: #777; }
+    .gender-selector input[type="radio"]:checked + label { background-color: #4ecdc4; color: #111; border-color: #4ecdc4; font-weight: 700; }
+    .file-upload-wrapper { border: 2px dashed #555; border-radius: 12px; padding: 3rem; text-align: center; cursor: pointer; transition: all 0.2s ease; background-color: #1e1e22; }
+    .file-upload-wrapper.dragover { border-color: #4ecdc4; background-color: #252529; }
+    .file-upload-wrapper i { font-size: 3rem; color: #4ecdc4; }
+    .file-upload-wrapper p { margin: 1rem 0 0.5rem 0; font-size: 1.1rem; color: #fff; }
+    .file-upload-wrapper span { font-size: 0.9rem; color: #888; }
+    #image-upload { display: none; }
+    #upload-form button { background-color: #4ecdc4; color: #111; border: none; padding: 14px 32px; font-size: 1.1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.3s; margin-top: 2rem; }
+    #upload-form button:hover { background-color: #fff; }
+    #upload-form button:disabled { background-color: #555; color: #888; cursor: not-allowed; }
+    .loader { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #4ecdc4; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; display: none; margin: 2rem auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    #results-container {
+        text-align: left;
+        background: #1e1e22;
+        padding: 2.5rem;
+        border-radius: 16px;
+        display: none;
+        margin-top: 3rem;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .results-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 2.5rem;
+        align-items: flex-start;
+    }
+    .image-results-wrapper img {
+        width: 100%;
+        border-radius: 8px;
+        background-color: #111;
+        border: 1px solid #333;
+    }
+    .image-results-wrapper h4 {
+        text-align: center;
+        margin-top: 1rem;
+        color: #aaa;
+        font-weight: 500;
+    }
+    .text-results-wrapper h2 {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-bottom: 1px solid #444;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+    }
+    .result-section {
+        background: rgba(0,0,0,0.2);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-top: 1.5rem;
+    }
+    .result-section h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #4ecdc4;
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+    }
+    .result-section p {
+        color: rgba(255,255,255,0.8);
+        line-height: 1.7;
+        margin: 0;
+    }
+    #result-fits-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    .fit-tag {
+        background-color: #333;
+        color: #ddd;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="analyzer-container">
+    <h1>AI 체형 분석 및 스타일 추천</h1>
+    <p class="subtitle">사진 한 장과 프로필 정보를 바탕으로, AI가 당신의 체형을 분석하고 어울리는 스타일을 추천해 드립니다.</p>
+
+    <div class="pre-analysis-guide">
+        <div class="guide-box">
+            <h3><i class="bi bi-person-check-fill"></i>프로필 정보 확인</h3>
+            <p>정확한 분석을 위해 아래 정보가 올바르게 입력되었는지 확인해주세요.</p>
+            <div class="profile-info-display">
+                <div class="info-item">
+                    <div class="label">키</div>
+                    <div class="value">{{ user.profile.height|default_if_none:"-" }} cm</div>
+                </div>
+                <div class="info-item">
+                    <div class="label">현재 체중</div>
+                    <div class="value">{{ user.profile.current_weight|default_if_none:"-" }} kg</div>
+                </div>
+            </div>
+            <a href="{% url 'accounts:profile_edit' %}" class="edit-profile-link" style="color: #4ecdc4; text-align: center;">프로필 정보 수정하기 →</a>
+        </div>
+        <div class="guide-box">
+            <h3><i class="bi bi-camera-fill"></i>사진 업로드 가이드</h3>
+            <ul>
+                <li><i class="bi bi-check-circle-fill"></i>몸 전체가 다 나오는 전신사진</li>
+                <li><i class="bi bi-check-circle-fill"></i>정면을 바라본 자세</li>
+                <li><i class="bi bi-check-circle-fill"></i>몸에 너무 붙지 않는 편안한 옷차림</li>
+                <li class="bad"><i class="bi bi-x-circle-fill"></i>옆모습, 뒷모습, 앉은 자세</li>
+                <li class="bad"><i class="bi bi-x-circle-fill"></i>과도하게 부피가 큰 옷 (패딩 등)</li>
+            </ul>
+        </div>
+    </div>
+
+    <form id="upload-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <strong class="form-section-title">1. 성별을 선택해주세요.</strong>
+            <div class="gender-selector">
+                <input type="radio" id="gender_male" name="gender" value="male" required>
+                <label for="gender_male">남성</label>
+                <input type="radio" id="gender_female" name="gender" value="female">
+                <label for="gender_female">여성</label>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <strong class="form-section-title">2. 특별히 커버하고 싶거나 보완하고 싶은 신체적 고민을 알려주세요. (선택사항)</strong>
+            <textarea id="user-concerns" name="concerns" placeholder="예: 유독 하체가 발달했어요, 어깨가 좁아서 왜소해 보여요, 종아리가 두꺼운 편이에요..."></textarea>
+        </div>
+
+        <div class="form-section">
+            <strong class="form-section-title">3. 가이드에 맞는 사진을 업로드해주세요.</strong>
+            <div id="file-upload-area" class="file-upload-wrapper">
+                <i class="bi bi-cloud-arrow-up-fill"></i>
+                <p id="file-upload-text">여기에 JPG 파일을 드래그하거나 클릭하여 업로드</p>
+                <span id="file-upload-hint">최대 10MB, JPG/JPEG 형식만 지원</span>
+                <input type="file" name="image" id="image-upload" accept="image/jpeg, image/jpg" required>
+            </div>
+        </div>
+
+        <button type="submit" id="submit-btn" disabled>분석 시작하기</button>
+    </form>
+    
+    <div class="loader" id="loader"></div>
+
+    <div id="results-container">
+        <div class="results-grid">
+            <div class="image-results-wrapper">
+                <h4>분석된 신체 구조</h4>
+                <img id="result-skeleton-image" src="#" alt="스켈레톤 이미지">
+            </div>
+            <div class="text-results-wrapper">
+                <h2><i class="bi bi-file-earmark-person"></i>분석 리포트</h2>
+                <div class="result-section">
+                    <h3><i class="bi bi-rulers"></i>측정된 체형</h3>
+                    <p><strong id="result-shape"></strong></p>
+                </div>
+                <div class="result-section">
+                    <h3><i class="bi bi-magic"></i>추천 아이템</h3>
+                    <div id="result-fits-tags"></div>
+                </div>
+                <div class="result-section">
+                    <h3><i class="bi bi-lightbulb-fill"></i>스타일링 팁</h3>
+                    <p id="result-tips"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const uploadForm = document.getElementById('upload-form');
+    const fileUploadArea = document.getElementById('file-upload-area');
+    const imageUpload = document.getElementById('image-upload');
+    const fileUploadText = document.getElementById('file-upload-text');
+    const submitBtn = document.getElementById('submit-btn');
+    const loader = document.getElementById('loader');
+    const resultsContainer = document.getElementById('results-container');
+    const resultSkeletonImage = document.getElementById('result-skeleton-image');
+    const resultShape = document.getElementById('result-shape');
+    const resultFitsTags = document.getElementById('result-fits-tags');
+    const resultTips = document.getElementById('result-tips');
+
+    let selectedFile = null;
+
+    fileUploadArea.addEventListener('click', () => imageUpload.click());
+
+    fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.add('dragover');
+    });
+    fileUploadArea.addEventListener('dragleave', () => {
+        fileUploadArea.classList.remove('dragover');
+    });
+    fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+
+    imageUpload.addEventListener('change', () => {
+        if (imageUpload.files.length > 0) {
+            handleFile(imageUpload.files[0]);
+        }
+    });
+
+    function handleFile(file) {
+        if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
+            alert('JPG 또는 JPEG 형식의 파일만 업로드할 수 있습니다.');
+            resetFileState();
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            alert('파일 크기는 10MB를 초과할 수 없습니다.');
+            resetFileState();
+            return;
+        }
+        selectedFile = file;
+        fileUploadText.textContent = `선택된 파일: ${file.name}`;
+        fileUploadText.style.color = '#4ecdc4';
+        updateSubmitButtonState();
+    }
+
+    function resetFileState() {
+        imageUpload.value = '';
+        selectedFile = null;
+        fileUploadText.textContent = '여기에 JPG 파일을 드래그하거나 클릭하여 업로드';
+        fileUploadText.style.color = '#fff';
+        updateSubmitButtonState();
+    }
+    
+    uploadForm.querySelectorAll('input[name="gender"]').forEach(radio => {
+        radio.addEventListener('change', updateSubmitButtonState);
+    });
+
+    function updateSubmitButtonState() {
+        const genderSelected = uploadForm.querySelector('input[name="gender"]:checked');
+        if (genderSelected && selectedFile) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (submitBtn.disabled) return;
+        
+        const formData = new FormData(uploadForm);
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        loader.style.display = 'block';
+        resultsContainer.style.display = 'none';
+        window.scrollTo({ top: uploadForm.offsetTop + uploadForm.offsetHeight, behavior: 'smooth' });
+
+        try {
+            const response = await fetch("{% url 'store:analyze_body_shape_api' %}", {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken },
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                resultSkeletonImage.src = data.skeleton_image_url;
+                resultShape.textContent = data.body_shape;
+                resultTips.textContent = data.style_tips;
+                
+                resultFitsTags.innerHTML = '';
+                let recommendationsArray = [];
+                if (typeof data.recommendations === 'string') {
+                    recommendationsArray = data.recommendations.split(',').map(item => item.trim());
+                } 
+                else if (Array.isArray(data.recommendations)) {
+                    recommendationsArray = data.recommendations;
+                }
+                recommendationsArray.forEach(item => {
+                    if (item) {
+                        const tagElement = document.createElement('span');
+                        tagElement.className = 'fit-tag';
+                        tagElement.textContent = item;
+                        resultFitsTags.appendChild(tagElement);
+                    }
+                });
+                
+                resultsContainer.style.display = 'block';
+                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                alert('분석 실패: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('오류가 발생했습니다.');
+        } finally {
+            loader.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

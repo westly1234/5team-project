@@ -92,7 +92,7 @@ def generate_title_with_llm(bot_answer: str, client: OpenAI | None) -> str:
     - 출력: 운동 방법
     """
     try:
-        response = client.chat.completions.create(model="gpt-3.5-turbo", messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": bot_answer}], temperature=0.0, max_tokens=20)
+        response = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": bot_answer}], temperature=0.0, max_tokens=20)
         title = response.choices[0].message.content.strip()
         if not title or "새 대화" in title or len(title) > 13:
             return "새 대화"

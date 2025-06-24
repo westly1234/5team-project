@@ -87,3 +87,35 @@ class Product(models.Model):
         verbose_name = "추천 상품"
         verbose_name_plural = "추천 상품 목록"
         ordering = ['-created_at']
+
+# 기존 모델들 아래에 추가
+class BodyShapeAnalysis(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    source_image = models.ImageField(upload_to='body_analysis/source/')
+    
+    # ✅ 추가: 스켈레톤 이미지를 저장할 필드
+    skeleton_image = models.ImageField(upload_to='body_analysis/skeleton/', blank=True, null=True)
+
+    body_shape_choices = [
+        ('HOURGLASS', '모래시계형'),
+        ('TRIANGLE', '삼각형 (서양배형)'),
+        ('INVERTED_TRIANGLE', '역삼각형'),
+        ('RECTANGLE', '직사각형'),
+        ('OVAL', '타원형 (사과형)'),
+    ]
+    body_shape = models.CharField(max_length=20, choices=body_shape_choices, blank=True, null=True)
+    analysis_data = models.JSONField(blank=True, null=True) # 신체 비율 등 수치 데이터 저장
+
+    # ✅ 추가: AI가 생성한 추천 내용을 저장할 필드
+    recommendations = models.TextField(blank=True, null=True)
+    style_tips = models.TextField(blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class ClothingRecommendation(models.Model):
+    body_shape = models.CharField(max_length=20, choices=BodyShapeAnalysis.body_shape_choices, unique=True)
+    recommended_fits = models.TextField(help_text="추천하는 옷 스타일 (예: A라인 스커트, 와이드 팬츠, 보트넥 티셔츠)을 쉼표로 구분하여 입력")
+    style_tips = models.TextField(help_text="스타일링 팁 요약")
+
+    def __str__(self):
+        return self.get_body_shape_display()

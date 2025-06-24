@@ -16,4 +16,8 @@ urlpatterns = [
     path('api/brands/<int:brand_id>/add_review/', views.add_review_api, name='add_review_api'),
     path('api/compare-brands/', views.compare_brands_api, name='compare_brands_api'),
     path('api/filter-brands/', views.filter_brands_api, name='filter_brands_api'),
+
+    # ✅ 체형 분석 페이지와 API를 위한 URL 추가
+    path('body-shape-analyzer/', views.body_shape_analyzer_view, name='body_shape_analyzer'),
+    path('api/analyze-body-shape/', views.analyze_body_shape_api, name='analyze_body_shape_api'),
 ]

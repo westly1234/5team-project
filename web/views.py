@@ -105,15 +105,14 @@ def services_page(request):
             context['profile'] = None
 
     # ✅ [핵심 수정] 'is_active' 대신 실제 필드 이름인 'activated_by_profile'을 사용합니다.
-    active_title = None
-    if UserAchievement:
+    if Profile:
         try:
-            # 현재 유저가 획득한 칭호 중, 프로필에 의해 활성화된 것을 찾습니다.
-            active_user_achievement = UserAchievement.objects.select_related('achievement').get(user=user, activated_by_profile=True)
-            active_title = active_user_achievement.achievement
-        except UserAchievement.DoesNotExist:
-            active_title = None
-    context['active_title'] = active_title
+            profile = Profile.objects.select_related('active_title__achievement').get(user=user)
+            context['profile'] = profile
+            context['active_title'] = profile.active_title
+        except Profile.DoesNotExist:
+            context['profile'] = None
+            context['active_title'] = None
 
 
     # --- 1. 최근 운동 루틴 가져오기 (이하 코드는 변경 없음) ---

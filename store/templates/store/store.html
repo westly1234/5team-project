@@ -4,7 +4,7 @@
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
-    /* CSS는 이전과 동일합니다. 수정할 필요 없습니다. */
+    /* 기본 CSS */
     .store-container { max-width: 1200px; margin: 4rem auto; padding: 0 2rem; color: #fff; }
     .store-header { text-align: center; margin-bottom: 3rem; }
     .store-header h1 { font-size: 2.5rem; font-weight: 700; background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #ffe66d); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
@@ -52,6 +52,52 @@
     .compare-bar-btn { background-color: #fff; color: #0a0a0a; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; }
     .loader { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #4ecdc4; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 4rem auto; display: none; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    /* ✅ 추가: AI 분석 배너 스타일 */
+    .analyzer-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 2.5rem 3rem;
+        background: linear-gradient(135deg, #2a2a2e 0%, #1c1c20 100%);
+        border-radius: 16px;
+        margin-bottom: 3rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .analyzer-banner-content h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #fff;
+    }
+    .analyzer-banner-content p {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+        max-width: 450px;
+    }
+    .analyzer-banner-action .btn-start-analysis {
+        background-color: #4ecdc4;
+        color: #111;
+        text-decoration: none;
+        padding: 14px 28px;
+        border-radius: 8px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .analyzer-banner-action .btn-start-analysis:hover {
+        background-color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+    }
+    .analyzer-banner-action .btn-start-analysis i {
+        font-size: 1.2rem;
+    }
+    
+    /* 모달 및 리뷰 관련 스타일 */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); visibility: hidden; opacity: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.3s ease, visibility 0.3s ease; }
     .modal-overlay.active { visibility: visible; opacity: 1; }
     .modal-content { background: #1c1c20; padding: 2.5rem; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
@@ -77,6 +123,7 @@
 
 <div class="store-container">
     <header class="store-header"><h1>HealthWise Store</h1><p>엄선된 헬스 & 피트니스 브랜드를 만나보세요.</p></header>
+
     <div class="filter-bar-optimized">
         <div class="category-filter-group" id="category-filter-group">
             <a href="{% url 'store:home' %}" data-category="" class="filter-btn {% if not current_category %}active{% endif %}">전체</a>
@@ -99,12 +146,28 @@
             <button type="button" class="search-btn-optimized"><i class="bi bi-search"></i></button>
         </div>
     </div>
+
+    <!-- ✅ 추가된 AI 체형 분석 배너 -->
+    <div class="analyzer-banner">
+        <div class="analyzer-banner-content">
+            <h3>내 몸에 딱 맞는 스타일을 찾아보세요</h3>
+            <p>사진 한 장으로 AI가 당신의 체형을 분석하고, 어울리는 옷 스타일을 추천해 드립니다.</p>
+        </div>
+        <div class="analyzer-banner-action">
+            <a href="{% url 'store:body_shape_analyzer' %}" class="btn-start-analysis">
+                <i class="bi bi-robot"></i>
+                <span>분석 시작하기</span>
+            </a>
+        </div>
+    </div>
+
     <h2 class="section-title"><i class="bi bi-grid-3x3-gap-fill icon"></i>전체 브랜드 목록</h2>
     <div id="brand-list-container">
         {% include 'store/partials/brand_grid.html' %}
     </div>
     <div class="loader" id="loader"></div>
 </div>
+
 <div class="compare-bar" id="compare-bar">
     <span id="compare-count"></span>
     <a href="#" class="compare-bar-btn" id="compare-action-btn">비교하기</a>
@@ -254,8 +317,7 @@
                 }
             });
         }
-
-        // ✅ 수정: 모달 관련 함수를 전역 또는 상위 스코프로 정의
+        
         const modal = document.getElementById('quick-view-modal');
         const modalCloseBtn = document.getElementById('modal-close-btn');
         const modalBrandName = document.getElementById('modal-brand-name');
@@ -303,7 +365,6 @@
         };
         const closeModal = () => { if (modal) modal.classList.remove('active'); };
 
-        // ✅ 수정: 이벤트 위임을 body 전체에 적용하여 동적 컨텐츠 처리
         document.body.addEventListener('click', (e) => {
             const paginationLink = e.target.closest('.store-pagination a');
             const favoriteButton = e.target.closest('[data-action="toggle-favorite"]');
