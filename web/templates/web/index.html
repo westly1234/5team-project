@@ -1,266 +1,203 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}HealthWise - 히어로 배경 영상{% endblock %}
+{% block title %}HealthWise - 혁신적인 AI 헬스케어{% endblock %}
 
 {% block content %}
+<style>
+    /* 상단바/푸터 스타일 유지를 위해 body, html 스타일은 건드리지 않습니다. */
+    .hero-btn {
+        display: inline-block; padding: 12px 28px; margin: 0 10px; border: 2px solid #fff;
+        background-color: transparent; color: #fff; text-decoration: none; font-size: 1rem;
+        font-weight: 600; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+    }
+    .hero-btn:hover { background-color: #fff; color: #000; }
+</style>
+
 <!-- ================================================================== -->
-<!-- 히어로 섹션: 비디오 배경 -->
+<!-- 1. 히어로 섹션 -->
 <!-- ================================================================== -->
 <style>
     .hero {
+        height: 100vh;
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
         overflow: hidden;
+        background-color: #000;
+        color: #fff;
     }
-    .hero-video-background {
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 100%;
-        z-index: -1;
-    }
+    /* ✅ 비디오 관련 스타일은 더 이상 필요 없으므로 삭제 또는 주석 처리 */
+    /*
     #heroVideo {
+        position: absolute; top: 0; left: 0;
         width: 100%; height: 100%;
         object-fit: cover;
-    }
-    section.hero {
-        background-color: transparent !important;
-    }
-    .parallax-elements, .hero-content {
-        position: relative;
         z-index: 1;
+    }
+    */
+    .hero-content {
+        position: relative;
+        z-index: 2;
     }
 </style>
 
 <section class="hero" id="hero">
-    <div class="hero-video-background">
-        <video autoplay muted loop playsinline id="heroVideo">
-            <source src="{% static 'videos/hero_background.mp4' %}" type="video/mp4">
-            브라우저가 비디오 태그를 지원하지 않습니다.
-        </video>
-    </div>
-    <div class="parallax-elements">
-        <div class="parallax-circle parallax-circle-1"></div>
-        <div class="parallax-circle parallax-circle-2"></div>
-        <div class="parallax-circle parallax-circle-3"></div>
-    </div>
+    <!-- ✅ [핵심 수정] video 태그를 완전히 삭제했습니다. -->
     <div class="hero-content">
         <h1>AI Healthcare</h1>
         <p>스크롤하여 혁신적인 기능들을 확인하세요</p>
-        <!-- ✅ 수정: 버튼에 id를 추가합니다. -->
-        <button class="hero-btn" id="viewDetailsBtn">자세히 보기</button>
+        <a href="#mainContent" class="hero-btn">자세히 보기</a>
         <a href="{% url 'web:services' %}" class="hero-btn">시작하기</a>
     </div>
 </section>
 
-
 <!-- ================================================================ -->
-<!-- 기능 소개 섹션 -->
+<!-- 2. 기능 소개 및 통계 섹션 (화면 고정 효과 적용) -->
 <!-- ================================================================ -->
 <style>
-    .feature-section {
-        margin-top: -22px;
-        display: flex;
-        padding: 60px 5%;
-        box-sizing: border-box;
-        background-color: #1a1a1a;
-        color: #fff;
-        transition: all 0.5s;
-        overflow: hidden;
-    }
-    .image-container {
-        display: flex;
-        align-items: center; 
-        width: 100%;
-        gap: 20px;
-        transition: width 0.7s cubic-bezier(0.65, 0, 0.35, 1);
-    }
-    .image-item {
-        flex: 1;
-        height: 300px; 
-        border-radius: 0px;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover; 
-        background-color: #111;
-        cursor: pointer;
+    .features-sticky-wrapper {
         position: relative;
-        transition: all 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+        height: 400vh;
+        background-color: #1a202c;
     }
-    #feature-image-1 { background-image: url("{% static 'images/hand1.png' %}"); }
-    #feature-image-2 { background-image: url("{% static 'images/hand2.png' %}"); }
-    #feature-image-3 { background-image: url("{% static 'images/hand3.JPG' %}"); }
-    #feature-image-4 { background-image: url("{% static 'images/hand4.png' %}"); }
-    .text-container {
-        display: none;
-        width: 0;
-        padding-left: 40px;
-        box-sizing: border-box;
+    .features-content {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        width: 100%;
+        display: flex;
         flex-direction: column;
+        align-items: center;
         justify-content: center;
+        overflow: hidden;
+        color: #fff;
     }
-    .text-content { 
-        display: none;
-    }
-    .text-content.active {
-        display: block;
-    }
-    .feature-section.active { align-items: center; }
-    .feature-section.active .image-container { width: 60%; }
-    .feature-section.active .text-container {
-        display: flex;
-        width: 40%;
-        opacity: 1;
-        visibility: visible;
-        height: 80vh;
-    }
-    .feature-section.active .image-item {
-        flex-grow: 0; opacity: 0; width: 0; margin: 0; border: none;
-    }
-    .feature-section.active .image-item.active {
-        flex-grow: 1; width: 100%; opacity: 1; background-size: contain; height: 80vh;
-    }
-    .text-container h2 { font-size: 3rem; margin-bottom: 2rem; }
-    .text-container p { font-size: 1.1rem; line-height: 1.8; color: #ccc; margin-bottom: 2.5rem; }
-    .text-container .feature-list { list-style-type: none; padding: 0; }
-    .text-container .feature-list li { margin-bottom: 15px; font-size: 1.1rem; }
-    .text-container .feature-list li::before { content: '✓'; margin-right: 12px; color: #a5e6ba; }
-</style>
-
-<section class="feature-section" id="featureSection">
-    <div class="image-container" id="imageContainer">
-        <div class="image-item" id="feature-image-1" data-feature="1"></div>
-        <div class="image-item" id="feature-image-2" data-feature="2"></div>
-        <div class="image-item" id="feature-image-3" data-feature="3"></div>
-        <div class="image-item" id="feature-image-4" data-feature="4"></div>
-    </div>
-    <div class="text-container" id="textContainer">
-        <div class="text-content" data-feature="1">
-            <h2>AI 건강 상담</h2>
-            <p>최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석합니다. 사용자의 건강 상태를 분석하여 맞춤 운동과 식단을 알려줍니다.</p>
-            <ul class="feature-list">
-                <li>실시간 나의 상태 분석</li><li>실시간 건강 모니터링</li>
-                <li>개인 맞춤형 건강 리포트</li><li>조기 진단 알림 시스템</li>
-            </ul>
-        </div>
-        <div class="text-content" data-feature="2">
-            <h2>내 위치 맞춤 장소 서비스</h2>
-            <p>원하는 장소나 내 주변 운동 장소를 한눈에 보여주는 서비스 입니다.</p>
-            <ul class="feature-list">
-                <li>모든 운동 장소 확인 가능</li><li>실시간 데이터 동기화</li>
-                <li>전지역 내 위치 맞춤 서비스</li><li>운동 종류별 위치 탐색</li>
-            </ul>
-        </div>
-        <div class="text-content" data-feature="3">
-            <h2>맞춤형 운동 코칭</h2>
-            <p>AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계합니다. 컴퓨터 비전 기술로 운동 자세를 실시간으로 분석하고 교정합니다.</p>
-            <ul class="feature-list">
-                <li>개인별 맞춤 운동 프로그램</li><li>실시간 자세 교정</li>
-                <li>운동 효과 분석</li><li>부상 예방 가이드</li>
-            </ul>
-        </div>
-        <div class="text-content" data-feature="4">
-            <h2>스마트 영양 관리</h2>
-            <p>음식 사진만으로 칼로리와 영양소를 정확하게 분석합니다. 개인의 건강 목표와 상태에 맞는 식단을 AI가 추천해드립니다.</p>
-            <ul class="feature-list">
-                <li>AI 기반 음식 인식</li><li>영양소 자동 계산</li>
-                <li>맞춤형 식단 추천</li><li>알레르기 성분 체크</li>
-            </ul>
-        </div>
-    </div>
-</section>
-
-<!-- ================================================================ -->
-<!-- 통계 섹션 (수정 없음) -->
-<!-- ================================================================ -->
-<style>
-    .stats-section {
-        background-color: #111;
-        padding: 80px 5%;
-        text-align: center;
-    }
-    .stats-container {
-        display: flex;
-        justify-content: space-around;
-        flex-wrap: wrap;
-        gap: 20px;
+    .feature-display-area {
+        width: 90%;
         max-width: 1200px;
-        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        flex-grow: 1;
     }
-    .stat-item {
-        flex: 1;
-        min-width: 200px;
+    .feature-panel {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 5%;
+        opacity: 0;
+        transition: opacity 0.6s ease-in-out;
+        pointer-events: none;
     }
-    .stat-number {
-        font-size: 4.5rem;
-        font-weight: bold;
-        color: #d89aff;
-        margin-bottom: 10px;
+    .feature-panel.active {
+        opacity: 1;
+        pointer-events: auto;
     }
-    .stat-label {
-        font-size: 1rem;
-        color: #ccc;
-        opacity: 0.9;
+    .feature-panel:nth-of-type(even) {
+        flex-direction: row-reverse;
     }
+    .feature-image, .feature-text { flex: 1; }
+    .feature-image img { width: 100%; max-height: 50vh; object-fit: contain; }
+    .feature-text { text-align: left; }
+    .feature-text h2 { font-size: 3rem; margin-bottom: 2rem; font-weight: 600; }
+    .feature-text p { font-size: 1.1rem; line-height: 1.8; color: #ccc; margin-bottom: 2.5rem;}
+    .feature-text .feature-list { list-style-type: none; padding: 0; }
+    .feature-text .feature-list li { margin-bottom: 15px; font-size: 1.1rem; }
+    .feature-text .feature-list li::before { content: '✓'; margin-right: 12px; color: #a5e6ba; }
+    
+    .stats-container {
+        display: flex; justify-content: space-around; width: 90%; max-width: 1200px;
+        padding: 40px 0; border-top: 1px solid #333;
+    }
+    .stat-item { flex: 1; min-width: 200px; text-align: center; }
+    .stat-number { font-size: 3.5rem; font-weight: bold; color: #d89aff; margin-bottom: 10px; }
+    .stat-label { font-size: 1rem; color: #ccc; opacity: 0.9; }
 </style>
 
-<section class="stats-section">
-    <div class="stats-container">
-        <div class="stat-item">
-            <div class="stat-number">97%</div>
-            <p class="stat-label">사용자 만족도</p>
+<section class="features-sticky-wrapper" id="mainContent">
+    <div class="features-content">
+        <!-- 기능 내용이 바뀌는 영역 -->
+        <div class="feature-display-area">
+            <!-- 패널 1 -->
+            <div class="feature-panel active">
+                <div class="feature-image"><img src="{% static 'images/hand7.jpg' %}" alt="AI 건강 상담"></div>
+                <div class="feature-text">
+                    <h2>AI 건강 상담</h2>
+                    <p>최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석합니다. 사용자의 건강 상태를 분석하여 맞춤 운동과 식단을 알려줍니다.</p>
+                    <ul class="feature-list"><li>실시간 나의 상태 분석</li><li>실시간 건강 모니터링</li><li>개인 맞춤형 건강 리포트</li><li>조기 진단 알림 시스템</li></ul>
+                </div>
+            </div>
+            <!-- 패널 2 -->
+            <div class="feature-panel">
+                <div class="feature-image"><img src="{% static 'images/hand8.jpg' %}" alt="장소 서비스"></div>
+                <div class="feature-text">
+                    <h2>내 위치 맞춤 장소 서비스</h2>
+                    <p>원하는 장소나 내 주변 운동 장소를 한눈에 보여주는 서비스 입니다.</p>
+                    <ul class="feature-list"><li>모든 운동 장소 확인 가능</li><li>실시간 데이터 동기화</li><li>전지역 내 위치 맞춤 서비스</li><li>운동 종류별 위치 탐색</li></ul>
+                </div>
+            </div>
+            <!-- 패널 3 -->
+            <div class="feature-panel">
+                <div class="feature-image"><img src="{% static 'images/hand3.JPG' %}" alt="운동 코칭"></div>
+                <div class="feature-text">
+                    <h2>맞춤형 운동 코칭</h2>
+                    <p>AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계합니다. 컴퓨터 비전 기술로 운동 자세를 실시간으로 분석하고 교정합니다.</p>
+                    <ul class="feature-list"><li>개인별 맞춤 운동 프로그램</li><li>실시간 자세 교정</li><li>운동 효과 분석</li><li>부상 예방 가이드</li></ul>
+                </div>
+            </div>
+            <!-- 패널 4 -->
+            <div class="feature-panel">
+                <div class="feature-image"><img src="{% static 'images/hand4.png' %}" alt="영양 관리"></div>
+                <div class="feature-text">
+                    <h2>스마트 영양 관리</h2>
+                    <p>음식 사진만으로 칼로리와 영양소를 정확하게 분석합니다. 개인의 건강 목표와 상태에 맞는 식단을 AI가 추천해드립니다.</p>
+                    <ul class="feature-list"><li>AI 기반 음식 인식</li><li>영양소 자동 계산</li><li>맞춤형 식단 추천</li><li>알레르기 성분 체크</li></ul>
+                </div>
+            </div>
         </div>
-        <div class="stat-item">
-            <div class="stat-number">85점</div>
-            <p class="stat-label">평균 건강 점수</p>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">4.5h</div>
-            <p class="stat-label">주간 운동 시간</p>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">15%</div>
-            <p class="stat-label">의료비 절감</p>
+        <!-- 통계 (고정) -->
+        <div class="stats-container">
+            <div class="stat-item"><div class="stat-number">97%</div><p class="stat-label">사용자 만족도</p></div>
+            <div class="stat-item"><div class="stat-number">85점</div><p class="stat-label">평균 건강 점수</p></div>
+            <div class="stat-item"><div class="stat-number">4.5h</div><p class="stat-label">주간 운동 시간</p></div>
+            <div class="stat-item"><div class="stat-number">15%</div><p class="stat-label">의료비 절감</p></div>
         </div>
     </div>
 </section>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const section = document.getElementById('featureSection');
-        const imageItems = document.querySelectorAll('.image-item');
-        const textContents = document.querySelectorAll('.text-content');
+document.addEventListener('DOMContentLoaded', () => {
+    const mainContent = document.getElementById('mainContent');
+    const featurePanels = document.querySelectorAll('.feature-panel');
+    const viewDetailsBtn = document.querySelector('a[href="#mainContent"]');
+
+    if (viewDetailsBtn) {
+        viewDetailsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    window.addEventListener('scroll', () => {
+        const wrapperRect = mainContent.getBoundingClientRect();
         
-        // ✅ 추가: 버튼과 스크롤할 목표 섹션을 변수로 지정합니다.
-        const viewDetailsBtn = document.getElementById('viewDetailsBtn');
-        const featureSection = document.getElementById('featureSection');
+        if (wrapperRect.top <= 0 && wrapperRect.bottom >= window.innerHeight) {
+            const progress = -wrapperRect.top / (mainContent.scrollHeight - window.innerHeight);
+            let activeIndex = Math.floor(progress * featurePanels.length);
+            activeIndex = Math.min(activeIndex, featurePanels.length - 1);
 
-        // ✅ 추가: 버튼 클릭 이벤트를 추가합니다.
-        viewDetailsBtn.addEventListener('click', () => {
-            // featureSection으로 부드럽게 스크롤합니다.
-            featureSection.scrollIntoView({ behavior: 'smooth' });
-        });
-
-        // 기존 이미지 클릭 이벤트는 그대로 둡니다.
-        imageItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const featureId = item.dataset.feature;
-                const isActive = item.classList.contains('active');
-
-                section.classList.remove('active');
-                imageItems.forEach(i => i.classList.remove('active'));
-                textContents.forEach(tc => tc.classList.remove('active'));
-
-                if (!isActive) {
-                    section.classList.add('active');
-                    item.classList.add('active');
-                    
-                    const targetText = document.querySelector(`.text-content[data-feature="${featureId}"]`);
-                    if (targetText) {
-                        targetText.classList.add('active');
-                    }
-                }
+            featurePanels.forEach((panel, index) => {
+                panel.classList.toggle('active', index === activeIndex);
             });
-        });
+        }
     });
+});
 </script>
 
 {% endblock %}
