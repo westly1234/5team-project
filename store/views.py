@@ -221,7 +221,7 @@ def filter_brands_api(request):
         if starts_with == '0-9': brands_queryset = brands_queryset.filter(name__iregex=r'^[0-9]')
         else: brands_queryset = brands_queryset.filter(name__istartswith=starts_with)
     if query: brands_queryset = brands_queryset.filter(name__icontains=query)
-    paginator = Paginator(brands_queryset.distinct().order_by('name'), 24)
+    paginator = Paginator(brands_queryset.distinct().order_by('name'), 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {'page_obj': page_obj, 'favorite_brand_ids': favorite_brand_ids, 'search_query': query, 'current_filter_params': current_filter_params}
