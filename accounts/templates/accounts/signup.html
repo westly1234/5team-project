@@ -816,6 +816,14 @@
         </script>
     </div>
 
+    <!-- signup.html 파일의 <body> 맨 아래, <script> 태그 바로 위에 추가 -->
+    <script>
+        // Django 템플릿 변수를 JavaScript 변수로 변환합니다.
+        // 'submitted_as_normal_on_fail'이 True이면 true가, 아니면 false가 됩니다.
+        const submittedAsNormalOnFail = {{ submitted_as_normal_on_fail|yesno:'true,false' }};
+    </script>
+
+    <!-- 기존의 마지막 <script> 태그를 다음과 같이 수정 -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const userTypeRadios = document.querySelectorAll('input[name="user_type"]');
@@ -826,12 +834,22 @@
         const submitSignupButton = document.getElementById('submitSignup');
         const surveyActionArea = document.getElementById('surveyActionArea');
 
-        let isSurveyStored = false; // 설문 데이터가 임시 저장(또는 성공적으로 제출)되었는지 여부
+        let isSurveyStored = false; 
+
+        // ✅ 페이지 로드 시, 유효성 검사 실패로 되돌아온 경우인지 확인하고 상태를 복원
+        if (submittedAsNormalOnFail) {
+            console.log("Validation failed, restoring 'normal user' UI state.");
+            // '일반' 라디오 버튼을 체크 상태로 만듭니다.
+            document.getElementById('user_type_normal').checked = true;
+            // 설문이 완료된 상태로 간주합니다.
+            isSurveyStored = true;
+        }
 
         function updateSignupFormDisplay() {
+            // ... (이 함수 내부는 기존 코드 그대로 유지) ...
             const selectedUserTypeRadio = document.querySelector('input[name="user_type"]:checked');
 
-            if (!selectedUserTypeRadio) { // 아무것도 선택 안된 초기 상태
+            if (!selectedUserTypeRadio) { 
                 signupContainerWrapper.classList.remove('hidden');
                 newHealthSurveyWrapper.classList.add('hidden');
                 mainFormFields.classList.add('hidden');
@@ -845,18 +863,15 @@
             if (userType === 'company') {
                 signupContainerWrapper.classList.remove('hidden');
                 newHealthSurveyWrapper.classList.add('hidden');    
-                
                 mainFormFields.classList.remove('hidden');
                 submitSignupButton.classList.remove('hidden');
                 surveyActionArea.classList.add('hidden');
             } else if (userType === 'normal') {
-                if (isSurveyStored) { // 설문이 완료된 경우
-                    signupContainerWrapper.classList.remove('hidden'); // 회원가입 폼 표시
-                    newHealthSurveyWrapper.classList.add('hidden');    // 설문 폼 숨김
-                    
-                    mainFormFields.classList.remove('hidden');         // Django 폼 필드 표시
-                    submitSignupButton.classList.remove('hidden');     // 가입하기 버튼 표시
-                    
+                if (isSurveyStored) {
+                    signupContainerWrapper.classList.remove('hidden'); 
+                    newHealthSurveyWrapper.classList.add('hidden');    
+                    mainFormFields.classList.remove('hidden');        
+                    submitSignupButton.classList.remove('hidden');     
                     surveyActionArea.classList.remove('hidden');
                     surveyActionArea.innerHTML = `
                         <p class="survey-complete-text">✅ 설문 작성 완료</p>
@@ -865,10 +880,9 @@
                     const editBtn = document.getElementById('editSurveyDataBtn');
                     if(editBtn) editBtn.addEventListener('click', openSurveyForEdit);
 
-                } else { // 설문 미완료 시
-                    signupContainerWrapper.classList.remove('hidden'); // 회원가입 유형 선택 부분은 계속 표시
-                    newHealthSurveyWrapper.classList.add('hidden');    // 설문 폼은 일단 숨김 (버튼 누르면 표시)
-                    
+                } else {
+                    signupContainerWrapper.classList.remove('hidden');
+                    newHealthSurveyWrapper.classList.add('hidden');    
                     surveyActionArea.classList.remove('hidden');
                     surveyActionArea.innerHTML = `
                         <p class="notice-text">
@@ -878,12 +892,11 @@
                     `;
                     const startBtn = document.getElementById('startSurveyBtn');
                     if(startBtn) startBtn.addEventListener('click', function() {
-                        signupContainerWrapper.classList.add('hidden'); // 회원가입 폼 숨기고
-                        newHealthSurveyWrapper.classList.remove('hidden'); // 설문 폼 표시
+                        signupContainerWrapper.classList.add('hidden');
+                        newHealthSurveyWrapper.classList.remove('hidden');
                     });
-
-                    mainFormFields.classList.add('hidden'); // Django 폼 필드 숨김
-                    submitSignupButton.classList.add('hidden'); // 가입하기 버튼 숨김
+                    mainFormFields.classList.add('hidden'); 
+                    submitSignupButton.classList.add('hidden');
                 }
             }
         }
@@ -895,22 +908,19 @@
         function openSurveyForEdit() {
             signupContainerWrapper.classList.add('hidden');
             newHealthSurveyWrapper.classList.remove('hidden');
-            // TODO: 설문 폼에 기존 데이터 로드하는 로직이 필요하다면 여기에 추가
         }
 
-        // 설문조사 스크립트에서 호출될 전역 함수
         window.handleSurveyCompletion = function(surveyData) {
             console.log("회원가입 폼: 설문 완료 데이터 수신:", surveyData);
             isSurveyStored = true; 
             
-            // 중요: 설문 폼을 숨기고 회원가입 폼을 다시 표시
             newHealthSurveyWrapper.classList.add('hidden');
             signupContainerWrapper.classList.remove('hidden');
             
-            updateSignupFormDisplay(); // 화면 상태를 '설문 완료'로 업데이트
+            updateSignupFormDisplay();
         };
         
-        // 초기 로드 시 회원 유형에 따른 UI 업데이트
+        // 초기 로드 시 UI 업데이트 (이제 실패 상태를 복원한 후 실행됨)
         updateSignupFormDisplay(); 
     });
     </script>

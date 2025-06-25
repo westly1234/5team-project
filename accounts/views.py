@@ -28,8 +28,8 @@ def signup(request: HttpRequest):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = False  # 이메일 인증 전까지 비활성 상태로 설정
-            user.save()  # ✅ 먼저 저장해서 user.id 생성
+            user.is_active = False
+            user.save()
 
             survey_data = request.session.get('survey_data_temp')
             if survey_data:
@@ -51,20 +51,19 @@ def signup(request: HttpRequest):
                         drinking_amount=survey_data.get('drinking_amount', ''),
                         family_history=survey_data.get('family_history', []),
                         family_history_details=survey_data.get('family_history_details', ''),
-                        user=user  # ✅ FK 연결 (user는 이미 save됨)
+                        user=user
                     )
                     health_survey_instance.save()
                     print(f"HealthSurvey for {user.email} created and linked.")
-                    check_and_award_achievement(request, user, 'first_health_survey') 
+                    check_and_award_achievement(request, user, 'first_health_survey')
 
                     if 'survey_data_temp' in request.session:
                         del request.session['survey_data_temp']
                         print("Temporary survey data deleted from session.")
-
                 except Exception as e:
                     print(f"Error creating or saving HealthSurvey: {e}")
 
-            # 이메일 인증 링크 생성
+            # 이메일 인증 링크 생성 및 발송
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             activation_link = request.build_absolute_uri(f"/accounts/activate/{uid}/{token}/")
@@ -76,8 +75,6 @@ def signup(request: HttpRequest):
             html_content = render_to_string('accounts/activation_email.html', {
                 'user': user,
                 'activation_link': activation_link,
-                'site_name': 'Your Family',
-                'request': request,
             })
             msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
             msg.attach_alternative(html_content, "text/html")
@@ -89,17 +86,28 @@ def signup(request: HttpRequest):
             return render(request, 'accounts/check_email.html')
 
         else:
+            # --- POST 요청 & 유효성 검사 실패 시 ---
             print("Signup form errors:", form.errors)
+            
+            # 사용자가 '일반' 유형으로 제출하다 실패했는지 확인합니다.
+            submitted_as_normal_on_fail = request.POST.get('user_type') == 'normal'
+
             context = {
-                'form': form,
-                'user_type_is_normal': True,
-                'survey_completed': True
+                'form': form, # 에러 메시지가 포함된 form 객체
+                'submitted_as_normal_on_fail': submitted_as_normal_on_fail,
             }
             return render(request, 'accounts/signup.html', context)
 
     else:
+        # --- GET 요청 (페이지 최초 로드) 시 ---
         form = CustomUserCreationForm()
-        return render(request, 'accounts/signup.html', {'form': form})
+        context = {
+            'form': form,
+            # 최초 접속 시에는 실패 상태가 아니므로 명확하게 False를 전달합니다.
+            # 이 부분이 signup.html의 JavaScript 오류를 방지합니다.
+            'submitted_as_normal_on_fail': False,
+        }
+        return render(request, 'accounts/signup.html', context)
 
 
 

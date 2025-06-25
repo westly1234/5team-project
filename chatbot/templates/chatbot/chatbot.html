@@ -23,10 +23,6 @@
     }
 
     /* === 전체 레이아웃 (헤더 침범 문제 해결) === */
-    /*
-      position: absolute 대신 Flexbox를 사용하여 페이지 콘텐츠 영역 내에서만
-      챗봇이 중앙에 위치하도록 합니다. 이렇게 하면 헤더와 겹치지 않습니다.
-    */
     .chatbot-page-wrapper {
         display: flex;
         align-items: center;
@@ -93,6 +89,7 @@
     .menu-popup button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: none; background: none; text-align: left; font-size: 1rem; font-weight: 500; color: var(--text-primary); cursor: pointer; border-radius: 6px; transition: background-color 0.2s ease; }
     .menu-popup button:hover { background-color: rgba(255,255,255,0.15); }
     .menu-popup button.delete-btn:hover { background-color: var(--danger-color); color: #fff; }
+    .title-edit-input { width: calc(100% - 40px); font-size: 1rem; font-weight: 500; background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--accent-color); border-radius: 6px; padding: 0 4px; box-sizing: border-box; margin: 0 0 4px; outline: none; }
     
     #chat-container { position: relative; flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); color: var(--text-primary); }
     #toggle-sidebar { position: absolute; left: -15px; top: 28px; z-index: 1001; background: #3A3A3C; border: 1px solid var(--border-color); border-radius: 50%; width: 32px; height: 32px; color: var(--text-secondary); cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
@@ -262,7 +259,6 @@
       msgDiv.appendChild(bubble);
       if (sender === 'user') msgDiv.appendChild(avatarWrapper);
       wrapper.appendChild(msgDiv);
-      chatboxElem.appendChild(wrapper);
       if (!isTypingPlaceholder) scrollToBottom();
       return bubble;
     }
@@ -460,6 +456,7 @@
       }
     }
 
+    // ✅ 대화 목록 로딩 함수 (수정됨)
     async function loadDialogs() {
       if (!fileListElem) return;
       try {
@@ -476,14 +473,59 @@
           card.id = `file-card-${d.id}`;
           card.className = "file-card";
           if (currentDialogId && String(d.id) === String(currentDialogId)) card.classList.add("active");
-          card.innerHTML = `<h5></h5><small>${d.timestamp}</small><div class="menu-button"><i class="bi bi-three-dots-vertical"></i></div><div class="menu-popup" id="menu-${d.id}"><button class="rename-btn" data-id="${d.id}"><i class="bi bi-pencil"></i> 제목 수정</button><button class="delete-btn" onclick="deleteDialog(${d.id})"><i class="bi bi-trash3"></i> 삭제</button></div>`;
+          
+          // HTML 구조는 그대로 유지하되, onclick 속성은 제거
+          card.innerHTML = `
+            <h5></h5>
+            <small>${d.timestamp}</small>
+            <div class="menu-button"><i class="bi bi-three-dots-vertical"></i></div>
+            <div class="menu-popup" id="menu-${d.id}">
+                <button class="rename-btn"><i class="bi bi-pencil"></i> 제목 수정</button>
+                <button class="delete-btn"><i class="bi bi-trash3"></i> 삭제</button>
+            </div>`;
+
           const h5 = card.querySelector('h5');
-          h5.textContent = d.title || "(제목 없음)"; h5.dataset.fullText = h5.textContent;
+          h5.textContent = d.title || "(제목 없음)";
+          h5.dataset.fullText = h5.textContent;
           if (d.is_custom_title) h5.dataset.customTitle = "true";
+
+          // 카드 클릭 시 대화 로드 (메뉴 관련 영역 제외)
           card.addEventListener("click", e => {
             if (e.target.closest(".menu-button, .menu-popup")) return;
             if (String(currentDialogId) !== String(d.id)) loadDialog(d.id);
           });
+          
+          // ✅ 각 버튼에 직접 이벤트 리스너 추가
+          const menuButton = card.querySelector('.menu-button');
+          const menuPopup = card.querySelector('.menu-popup');
+          const renameButton = card.querySelector('.rename-btn');
+          const deleteButton = card.querySelector('.delete-btn');
+
+          // 메뉴(...) 버튼 클릭 이벤트
+          menuButton.addEventListener('click', (e) => {
+              e.stopPropagation(); // 카드 전체 클릭 방지
+              // 다른 모든 팝업 숨기기
+              document.querySelectorAll('.menu-popup').forEach(p => {
+                  if (p !== menuPopup) p.style.display = 'none';
+              });
+              // 현재 팝업 토글
+              menuPopup.style.display = menuPopup.style.display === 'block' ? 'none' : 'block';
+          });
+
+          // 제목 수정 버튼 클릭 이벤트
+          renameButton.addEventListener('click', (e) => {
+              e.stopPropagation();
+              menuPopup.style.display = 'none';
+              startRename(d.id, h5); // 제목 수정 함수 호출
+          });
+
+          // 삭제 버튼 클릭 이벤트
+          deleteButton.addEventListener('click', (e) => {
+              e.stopPropagation();
+              menuPopup.style.display = 'none';
+              deleteDialog(d.id); // 삭제 함수 호출
+          });
+
           fileListElem.appendChild(card);
         });
       } catch(err) {
@@ -510,21 +552,83 @@
         }).catch(err => console.error(`loadDialog(${id}) error:`, err));
     }
     
+    // ✅ 대화 삭제 함수 (API 호출 및 UI 업데이트)
     function deleteDialog(id) {
         if (confirm("대화를 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
-            fetch(`/chatbot/delete/${id}/`, { method: "POST", headers: {'X-CSRFToken': getCookie('csrftoken')} })
-            .then(res => res.ok ? res.json() : Promise.reject('Delete failed'))
+            fetch(`/chatbot/delete/${id}/`, { 
+                method: "POST", 
+                headers: {'X-CSRFToken': getCookie('csrftoken')}
+            })
+            .then(res => res.json())
             .then(data => {
                 if (data.success) {
                     document.getElementById(`file-card-${id}`)?.remove();
                     if (String(currentDialogId) === String(id)) {
                         const firstCard = fileListElem.querySelector(".file-card");
-                        if (firstCard) loadDialog(firstCard.id.replace("file-card-", ""));
-                        else startNewDialog();
+                        if (firstCard) {
+                            loadDialog(firstCard.id.replace("file-card-", ""));
+                        } else {
+                            startNewDialog();
+                        }
                     }
-                } else { alert("삭제 실패: " + (data.error || "서버 오류")); }
-            }).catch(() => alert("삭제 중 오류 발생."));
+                } else { 
+                    alert("삭제 실패: " + (data.error || "서버 오류")); 
+                }
+            }).catch(() => alert("삭제 중 오류가 발생했습니다."));
         }
+    }
+
+    // ✅ 제목 수정 로직을 처리하는 별도 함수
+    function startRename(id, h5Element) {
+        const cardContent = h5Element.parentNode;
+        const oldTitle = h5Element.dataset.fullText;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = oldTitle;
+        input.className = "title-edit-input";
+
+        h5Element.style.display = 'none';
+        cardContent.prepend(input); // h5 대신 input 삽입
+        input.focus();
+        input.select();
+
+        const finishEdit = (save) => {
+            const newTitle = input.value.trim();
+            input.remove(); // input 제거
+            h5Element.style.display = ''; // h5 다시 보이게
+
+            if (save && newTitle && newTitle !== oldTitle) {
+                // API 호출
+                fetch(`/chatbot/rename/${id}/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", 'X-CSRFToken': getCookie('csrftoken') },
+                    body: JSON.stringify({ title: newTitle })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        h5Element.textContent = data.title;
+                        h5Element.dataset.fullText = data.title;
+                        h5Element.dataset.customTitle = "true";
+                    } else {
+                        h5Element.textContent = oldTitle; // 실패 시 원상 복구
+                        alert("제목 변경 실패: " + (data.error || "알 수 없는 오류"));
+                    }
+                })
+                .catch(() => {
+                    h5Element.textContent = oldTitle; // 실패 시 원상 복구
+                    alert("제목 변경 중 네트워크 오류가 발생했습니다.");
+                });
+            } else {
+                h5Element.textContent = oldTitle; // 저장 안하거나, 내용이 없거나, 그대로일 때
+            }
+        };
+        
+        input.addEventListener("blur", () => finishEdit(true));
+        input.addEventListener("keydown", e => {
+            if (e.key === "Enter") finishEdit(true);
+            if (e.key === "Escape") finishEdit(false);
+        });
     }
 
     window.addEventListener("DOMContentLoaded", () => {
@@ -551,29 +655,13 @@
       });
       chatboxElem?.addEventListener("scroll", () => scrollBtnElem.classList.toggle("visible", chatboxElem.scrollHeight - chatboxElem.scrollTop > chatboxElem.clientHeight + 150));
       scrollBtnElem?.addEventListener("click", () => chatboxElem.scrollTo({ top: chatboxElem.scrollHeight, behavior: "smooth" }));
-      document.body.addEventListener("click", e => {
-          document.querySelectorAll(".menu-popup").forEach(popup => { if (!popup.contains(e.target) && !e.target.closest(".menu-button")) popup.style.display = "none"; });
-          const renameBtn = e.target.closest('.rename-btn');
-          if(renameBtn){
-            const id = renameBtn.dataset.id;
-            const h5 = document.querySelector(`#file-card-${id} h5`);
-            if(!h5) return;
-            const oldText = h5.dataset.fullText;
-            const input = document.createElement("input");
-            input.type = "text"; input.value = oldText; input.className = "title-edit-input";
-            input.style.cssText = "width: 100%; font-size: 1rem; font-weight: 500; background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--accent-color); border-radius: 6px; padding: 0 4px; box-sizing: border-box;";
-            h5.replaceWith(input); input.focus();
-            const finishEdit = (save) => {
-                const newTitle = input.value.trim();
-                input.replaceWith(h5);
-                if(save && newTitle && newTitle !== oldText){
-                    h5.textContent = newTitle;
-                    fetch(`/chatbot/rename/${id}/`, { method: "POST", headers: { "Content-Type": "application/json", 'X-CSRFToken': getCookie('csrftoken') }, body: JSON.stringify({ title: newTitle }) })
-                    .then(res => res.json()).then(data => { if(!data.success) h5.textContent = oldText; loadDialogs(); });
-                } else { h5.textContent = oldText; }
-            };
-            input.addEventListener("blur", () => finishEdit(true));
-            input.addEventListener("keydown", e => { if (e.key === "Enter") finishEdit(true); if (e.key === "Escape") finishEdit(false); });
+      
+      // ✅ 외부 클릭 시 모든 팝업 닫기
+      document.addEventListener("click", e => {
+          if (!e.target.closest('.menu-button') && !e.target.closest('.menu-popup')) {
+              document.querySelectorAll('.menu-popup').forEach(popup => {
+                  popup.style.display = 'none';
+              });
           }
       });
 
