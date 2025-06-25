@@ -178,17 +178,18 @@
         padding: 16px;
         border-radius: 8px;
         transition: background-color 0.3s ease;
-        cursor: pointer;
-        position: relative; /* 오버레이 기준 */
+        position: relative;
     }
     .spotify-card:hover {
         background: #282828;
     }
-    .spotify-card a {
+    /* 카드 내부의 링크가 버튼 영역을 침범하지 않도록 수정 */
+    .spotify-card .card-main-link {
         text-decoration: none;
         color: inherit;
         display: flex;
         flex-direction: column;
+        height: 100%;
     }
     .card-img-wrapper {
         position: relative;
@@ -201,14 +202,12 @@
         object-fit: cover;
         border-radius: 8px;
     }
-    .spotify-card.artist .card-img-wrapper img {
-        border-radius: 50%; /* 아티스트는 원형 이미지 */
-    }
     .card-title {
         font-weight: 700;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        margin-bottom: auto; /* 카드 높이가 달라도 제목을 위로, 부제를 아래로 정렬 */
     }
     .card-subtitle {
         color: #b3b3b3;
@@ -235,6 +234,7 @@
         opacity: 0;
         transform: translateY(8px);
         transition: opacity 0.3s ease, transform 0.3s ease;
+        cursor: pointer;
     }
     .spotify-card:hover .play-icon-overlay {
         opacity: 1;
@@ -243,6 +243,45 @@
     .play-icon-overlay i {
         font-size: 1.5rem;
         color: #000;
+    }
+
+    /* ✨ [NEW] 보관하기 버튼 스타일 ✨ */
+    .save-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0,0,0,0.7);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.2s ease;
+        z-index: 10;
+    }
+    .spotify-card:hover .save-btn {
+        opacity: 1;
+    }
+    .save-btn:hover {
+        background: #000;
+        transform: scale(1.1);
+    }
+    .save-btn.saved {
+        opacity: 1; /* 저장되면 항상 보이도록 */
+    }
+    .save-btn.saved i::before {
+        content: "\\f26a"; /* Bootstrap Icons 'check-circle-fill' */
+        color: #4ecdc4; /* HealthWise 테마 컬러 */
+    }
+    .save-btn.saved:hover {
+        transform: none; /* 저장된 후에는 확대 효과 제거 */
+        background: rgba(0,0,0,0.7);
     }
 
     /* 로딩 스피너 */
@@ -298,7 +337,7 @@
     </aside>
 
     <!-- 우측 메인 뷰 -->
-    <main class="music-main-view">
+    <main class="music-main-view" id="music-main-view">
         <div class="main-view-header">
             <h1 id="main-view-title">오늘의 트렌딩 믹스</h1>
         </div>
@@ -327,6 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const requestBtn = document.getElementById('request-ai-btn');
     const resetBtn = document.getElementById('reset-btn');
     
+    const mainView = document.getElementById('music-main-view');
     const mainViewHeader = document.querySelector('.main-view-header');
     const mainViewTitle = document.getElementById('main-view-title');
     const trendingSection = document.getElementById('trending-section');
@@ -361,6 +401,41 @@ document.addEventListener('DOMContentLoaded', () => {
     requestBtn.addEventListener('click', handleAIRequest);
     resetBtn.addEventListener('click', handleReset);
 
+    // ✨ [NEW] 이벤트 위임을 사용하여 보관하기 버튼 클릭 처리
+    mainView.addEventListener('click', async (e) => {
+        const saveBtn = e.target.closest('.save-btn');
+        if (!saveBtn || saveBtn.classList.contains('saved')) return;
+        
+        const videoId = saveBtn.dataset.videoId;
+        const videoTitle = saveBtn.dataset.videoTitle;
+
+        try {
+            saveBtn.disabled = true; // 중복 클릭 방지
+            const res = await fetch('/music/api/preference/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({
+                    videoId: videoId,
+                    videoTitle: videoTitle,
+                    preferenceType: 'saved'
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || '보관에 실패했습니다.');
+
+            saveBtn.classList.add('saved');
+            saveBtn.title = '보관됨';
+            // (선택사항) 사용자에게 피드백 알림
+            // alert(data.message); 
+
+        } catch (error) {
+            console.error("보관 처리 실패:", error);
+            alert(error.message);
+        } finally {
+            saveBtn.disabled = false;
+        }
+    });
+
     // --- 핵심 기능 함수 ---
     async function handleAIRequest() {
         if (!selectedExercise || !selectedMood) {
@@ -376,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     exercise: selectedExercise,
                     mood: selectedMood,
-                    genres: selectedGenre ? [selectedGenre] : [] // 장르는 단일 선택
+                    genres: selectedGenre ? [selectedGenre] : []
                 })
             });
             const data = await res.json();
@@ -386,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("AI 요청 오류:", error);
-            resultsGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center;">추천 음악을 가져오는 데 실패했습니다.</p>`;
+            resultsGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center;">추천 음악을 가져오는 데 실패했습니다: ${error.message}</p>`;
         } finally {
             setLoadingState(false);
         }
@@ -395,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchMusicFromKeywords(keywords) {
         try {
             const searchPromises = keywords.map(keyword =>
-                fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(keyword)}&type=video&key=${youtubeKey}`)
+                fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(keyword)}&type=video&videoEmbeddable=true&key=${youtubeKey}`)
                 .then(res => res.ok ? res.json() : Promise.reject(new Error(`YouTube API Error: ${res.status}`)))
             );
             
@@ -405,13 +480,13 @@ document.addEventListener('DOMContentLoaded', () => {
             ytResults.forEach((ytData, index) => {
                 if (ytData.items && ytData.items.length > 0) {
                     const video = ytData.items[0];
-                    const card = createSpotifyCard(video, `키워드: ${keywords[index]}`);
+                    const card = createSpotifyCard(video, `AI 추천: ${keywords[index]}`);
                     resultsGrid.appendChild(card);
                 }
             });
 
             if (resultsGrid.innerHTML === '') {
-                resultsGrid.innerHTML = '<p style="color: #aaa; text-align: center;">추천 음악을 찾지 못했습니다.</p>';
+                resultsGrid.innerHTML = '<p style="color: #aaa; text-align: center;">추천 음악을 찾지 못했습니다. 다른 키워드로 시도해보세요.</p>';
             }
         } catch(error) {
             console.error("YouTube 검색 오류:", error);
@@ -421,7 +496,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function setLoadingState(isLoading) {
         requestBtn.disabled = isLoading;
-        requestBtn.innerHTML = isLoading ? '<span class="spinner-border spinner-border-sm"></span> 분석 중...' : 'AI 추천 받기';
+        if (isLoading) {
+             requestBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 분석 중...';
+        } else {
+             requestBtn.innerHTML = 'AI 추천 받기';
+        }
 
         if (isLoading) {
             trendingSection.style.display = 'none';
@@ -434,13 +513,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleReset() {
-        // 선택 초기화
         controls.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
         selectedExercise = null;
         selectedMood = null;
         selectedGenre = null;
 
-        // UI 초기화
         trendingSection.style.display = 'block';
         aiResultsSection.style.display = 'none';
         resultsGrid.innerHTML = '';
@@ -451,25 +528,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- 유틸리티 함수 ---
+    // ✨ [UPDATED] createSpotifyCard 함수
     function createSpotifyCard(item, subtitleText) {
         const isPlaylist = item.kind === 'youtube#playlist';
-        const id = isPlaylist ? item.id : item.id.videoId;
-        const url = isPlaylist ? `https://www.youtube.com/playlist?list=${id}` : `https://www.youtube.com/watch?v=${id}`;
+        const videoId = isPlaylist ? item.id : item.id.videoId;
+        const url = isPlaylist ? `https://www.youtube.com/playlist?list=${videoId}` : `https://www.youtube.com/watch?v=${videoId}`;
         const thumbnailUrl = item.snippet.thumbnails.high.url;
         const title = item.snippet.title;
         const cardSubtitle = subtitleText || item.snippet.channelTitle;
 
         const card = document.createElement('div');
         card.className = 'spotify-card';
+        // HTML 구조에 보관하기 버튼 추가 및 data 속성 설정
         card.innerHTML = `
-            <a href="${url}" target="_blank">
+            <button class="save-btn" title="내 보관함에 추가" 
+                    data-video-id="${videoId}" 
+                    data-video-title="${title.replace(/"/g, '"')}">
+                <i class="bi bi-plus-circle"></i>
+            </button>
+            <a href="${url}" target="_blank" class="card-main-link">
                 <div class="card-img-wrapper">
                     <img src="${thumbnailUrl}" alt="${title}" loading="lazy">
                     <div class="play-icon-overlay"><i class="bi bi-play-fill"></i></div>
                 </div>
                 <div class="card-title">${title}</div>
-                <div class="card-subtitle">${cardSubtitle}</div>
-            </a>`;
+            </a>
+            <div class="card-subtitle">${cardSubtitle}</div>
+            `;
         return card;
     }
 
@@ -484,6 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             const res = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistIds.join(',')}&key=${youtubeKey}`);
+            if (!res.ok) throw new Error(`API Error ${res.status}`);
             const data = await res.json();
             if (data.error) throw new Error(data.error.message);
             
