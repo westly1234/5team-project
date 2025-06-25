@@ -1,277 +1,304 @@
 {% extends 'web/base_simple.html' %}
 {% load static %}
-{% block title %}AI 체형 분석{% endblock %}
+{% block title %}AI 체형 분석 v2.1{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-    .analyzer-container { max-width: 900px; margin: 4rem auto; padding: 2rem; color: #fff; text-align: center; }
-    .analyzer-container h1 { font-size: 2.5rem; margin-bottom: 1rem; }
-    .analyzer-container > p.subtitle { color: rgba(255,255,255,0.7); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem auto; }
-    
+    :root {
+        --primary-color: #4ecdc4;
+        --success-color: #4ecdc4;
+        --danger-color: #ff6b6b;
+        --background-color: #121216;
+        --panel-background: rgba(30, 30, 34, 0.7);
+        --text-color: #e0e0e0;
+        --text-muted: #888;
+        --border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+
+    .analyzer-wrapper {
+        max-width: 1400px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    .page-header h1 { font-size: 2.8rem; font-weight: 700; }
+    .page-header p { font-size: 1.1rem; color: var(--text-muted); max-width: 700px; margin: 0.5rem auto 0; }
+
+    /* === 촬영 가이드 섹션 스타일 === */
     .pre-analysis-guide {
+        background: rgba(0,0,0,0.2);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem 2.5rem;
+        margin-bottom: 2.5rem;
+    }
+    .pre-analysis-guide h2 {
+        text-align: center;
+        font-size: 1.5rem;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+    .pre-analysis-guide h2 .bi-camera-fill { color: var(--primary-color); }
+
+    .guide-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-        text-align: left;
-        margin-bottom: 2rem;
-        background: #2a2a2e;
-        padding: 2rem;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.1);
+        gap: 2.5rem;
     }
     .guide-box h3 {
         display: flex;
         align-items: center;
         gap: 0.75rem;
         font-size: 1.2rem;
-        color: #4ecdc4;
+        font-weight: 600;
         margin-bottom: 1rem;
-        border-bottom: 1px solid #444;
-        padding-bottom: 0.75rem;
     }
-    .guide-box ul {
-        list-style: none;
-        padding-left: 0;
-        margin: 0;
-    }
+    .guide-box.good-examples h3 { color: var(--success-color); }
+    .guide-box.bad-examples h3 { color: var(--danger-color); }
+
+    .guide-box ul { list-style: none; padding-left: 0; margin: 0; }
     .guide-box ul li {
         margin-bottom: 0.75rem;
-        padding-left: 1.5rem;
+        padding-left: 1.8rem;
         position: relative;
         font-size: 0.95rem;
-        color: rgba(255,255,255,0.8);
     }
     .guide-box ul li i {
         position: absolute;
         left: 0;
-        top: 4px;
-        color: #4ecdc4;
+        top: 3px;
+        font-size: 1.1rem;
     }
-    .guide-box ul li.bad i {
-        color: #ff6b6b;
-    }
-    .profile-info-display {
-        display: flex;
-        gap: 1.5rem;
-        justify-content: center;
-        margin-top: 1rem;
-    }
-    .info-item {
-        background: rgba(0,0,0,0.2);
-        padding: 1rem;
-        border-radius: 8px;
-        flex-grow: 1;
-    }
-    .info-item .label {
-        font-size: 0.8rem;
-        color: #aaa;
-        margin-bottom: 0.25rem;
-    }
-    .info-item .value {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #fff;
-    }
-    .edit-profile-link {
-        display: block;
-        margin-top: 1.5rem;
-        font-size: 0.9rem;
-    }
+    .guide-box.good-examples ul li i { color: var(--success-color); }
+    .guide-box.bad-examples ul li i { color: var(--danger-color); }
+    /* ============================== */
 
-    #upload-form { background: #2a2a2e; padding: 2.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-    .form-section { margin-bottom: 2rem; }
-    .form-section:last-of-type { margin-bottom: 0; }
-    .form-section-title { font-weight: 600; margin-bottom: 1rem; display: block; text-align: center; }
-
-    #user-concerns {
-        width: 100%;
-        box-sizing: border-box;
-        background-color: #1e1e22;
-        border: 1px solid #555;
-        border-radius: 8px;
-        padding: 1rem;
-        color: #fff;
-        min-height: 100px;
-        resize: vertical;
-        transition: border-color 0.2s;
-    }
-    #user-concerns:focus {
-        border-color: #4ecdc4;
-        outline: none;
-    }
-    
-    .gender-selector { display: flex; justify-content: center; gap: 1rem; }
-    .gender-selector input[type="radio"] { display: none; }
-    .gender-selector label { padding: 12px 24px; border: 1px solid #555; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background-color: #333; }
-    .gender-selector input[type="radio"]:not(:checked) + label:hover { background-color: #444; border-color: #777; }
-    .gender-selector input[type="radio"]:checked + label { background-color: #4ecdc4; color: #111; border-color: #4ecdc4; font-weight: 700; }
-    .file-upload-wrapper { border: 2px dashed #555; border-radius: 12px; padding: 3rem; text-align: center; cursor: pointer; transition: all 0.2s ease; background-color: #1e1e22; }
-    .file-upload-wrapper.dragover { border-color: #4ecdc4; background-color: #252529; }
-    .file-upload-wrapper i { font-size: 3rem; color: #4ecdc4; }
-    .file-upload-wrapper p { margin: 1rem 0 0.5rem 0; font-size: 1.1rem; color: #fff; }
-    .file-upload-wrapper span { font-size: 0.9rem; color: #888; }
-    #image-upload { display: none; }
-    #upload-form button { background-color: #4ecdc4; color: #111; border: none; padding: 14px 32px; font-size: 1.1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.3s; margin-top: 2rem; }
-    #upload-form button:hover { background-color: #fff; }
-    #upload-form button:disabled { background-color: #555; color: #888; cursor: not-allowed; }
-    .loader { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #4ecdc4; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; display: none; margin: 2rem auto; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    
-    #results-container {
-        text-align: left;
-        background: #1e1e22;
-        padding: 2.5rem;
-        border-radius: 16px;
-        display: none;
-        margin-top: 3rem;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .results-grid {
+    .main-grid-container {
         display: grid;
-        grid-template-columns: 1fr 1.5fr;
+        grid-template-columns: 1fr 1.1fr; /* 오른쪽 패널을 약간 더 넓게 */
         gap: 2.5rem;
-        align-items: flex-start;
+        align-items: start;
     }
-    .image-results-wrapper img {
-        width: 100%;
-        border-radius: 8px;
-        background-color: #111;
-        border: 1px solid #333;
+
+    .panel {
+        background: var(--panel-background);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2.5rem;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: all 0.3s ease;
     }
-    .image-results-wrapper h4 {
-        text-align: center;
-        margin-top: 1rem;
-        color: #aaa;
-        font-weight: 500;
-    }
-    .text-results-wrapper h2 {
+    
+    .panel-title {
         display: flex;
         align-items: center;
         gap: 1rem;
-        border-bottom: 1px solid #444;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 2rem 0;
         padding-bottom: 1rem;
-        margin-bottom: 1.5rem;
-        font-size: 1.8rem;
+        border-bottom: 1px solid var(--border-color);
     }
-    .result-section {
-        background: rgba(0,0,0,0.2);
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin-top: 1.5rem;
+    .panel-title i { color: var(--primary-color); }
+
+    /* 입력 패널 (왼쪽) */
+    .form-section { margin-bottom: 2rem; }
+    .form-section-title { font-weight: 500; margin-bottom: 1rem; display: block; }
+    #user-concerns {
+        width: 100%; box-sizing: border-box; background-color: #1e1e22;
+        border: 1px solid #555; border-radius: 8px; padding: 1rem;
+        color: #fff; min-height: 80px; resize: vertical; transition: all 0.2s;
     }
+    #user-concerns:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.2); }
+    .gender-selector { display: flex; gap: 1rem; }
+    .gender-selector input[type="radio"] { display: none; }
+    .gender-selector label {
+        padding: 10px 20px; border: 1px solid #555; border-radius: 8px; cursor: pointer;
+        transition: all 0.2s ease; background-color: #333; flex-grow: 1; text-align: center;
+    }
+    .gender-selector input[type="radio"]:not(:checked) + label:hover { background-color: #444; }
+    .gender-selector input[type="radio"]:checked + label { background-color: var(--primary-color); color: #111; border-color: var(--primary-color); font-weight: 600; }
+    .file-upload-wrapper {
+        border: 2px dashed #555; border-radius: 12px; padding: 2rem; text-align: center;
+        cursor: pointer; transition: all 0.2s ease; background-color: #1e1e22; position: relative;
+    }
+    .file-upload-wrapper.dragover { border-color: var(--primary-color); background-color: #252529; transform: scale(1.02); }
+    .file-upload-wrapper i { font-size: 2.5rem; color: var(--primary-color); }
+    .file-upload-wrapper p { margin: 1rem 0 0.5rem 0; font-size: 1rem; color: #fff; }
+    #file-name-display { font-size: 0.9rem; color: var(--primary-color); font-weight: 500; min-height: 1.2em; }
+    #image-upload { display: none; }
+    #submit-btn {
+        width: 100%; background-color: var(--primary-color); color: #111; border: none;
+        padding: 14px 0; font-size: 1.1rem; font-weight: 700; border-radius: 8px;
+        cursor: pointer; transition: all 0.3s; margin-top: 1rem;
+    }
+    #submit-btn:hover:not(:disabled) { background-color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(78, 205, 196, 0.2); }
+    #submit-btn:disabled { background-color: #555; color: #888; cursor: not-allowed; }
+
+    /* 결과 패널 (오른쪽) */
+    .results-placeholder {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        border: 2px dashed var(--border-color); border-radius: 12px; min-height: 400px;
+        color: var(--text-muted); text-align: center; transition: opacity 0.3s;
+    }
+    .results-placeholder i { font-size: 4rem; margin-bottom: 1.5rem; }
+    .results-placeholder p { font-size: 1.2rem; }
+    #results-content { display: none; }
+    .loader {
+        border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid var(--primary-color);
+        border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .result-images-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .result-image-box img { width: 100%; border-radius: 8px; background-color: #111; border: 1px solid #333; }
+    .result-image-box h4 { text-align: center; margin-top: 1rem; color: #aaa; font-weight: 500; font-size: 0.9rem; }
+    .result-section { margin-top: 1.5rem; }
     .result-section h3 {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: #4ecdc4;
-        margin-top: 0;
-        margin-bottom: 1rem;
-        font-size: 1.2rem;
+        display: flex; align-items: center; gap: 0.75rem; color: var(--primary-color);
+        margin: 0 0 1rem 0; font-size: 1.1rem;
     }
-    .result-section p {
-        color: rgba(255,255,255,0.8);
-        line-height: 1.7;
-        margin: 0;
+    #result-shape { font-size: 1.3rem; font-weight: 600; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;}
+    #result-fits-tags { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .fit-tag { background-color: #333; color: #ddd; padding: 8px 14px; border-radius: 20px; font-size: 0.9rem; }
+    #result-tips { color: rgba(255,255,255,0.85); line-height: 1.7; margin: 0; }
+
+    /* 반응형 디자인 */
+    @media (max-width: 1200px) {
+        .main-grid-container { grid-template-columns: 1fr; }
     }
-    #result-fits-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-    }
-    .fit-tag {
-        background-color: #333;
-        color: #ddd;
-        padding: 8px 14px;
-        border-radius: 20px;
-        font-size: 0.9rem;
+    @media (max-width: 768px) {
+        .guide-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+        .panel { padding: 1.5rem; }
+        .page-header h1 { font-size: 2.2rem; }
     }
 </style>
 
-<div class="analyzer-container">
-    <h1>AI 체형 분석 및 스타일 추천</h1>
-    <p class="subtitle">사진 한 장과 프로필 정보를 바탕으로, AI가 당신의 체형을 분석하고 어울리는 스타일을 추천해 드립니다.</p>
-
-    <div class="pre-analysis-guide">
-        <div class="guide-box">
-            <h3><i class="bi bi-person-check-fill"></i>프로필 정보 확인</h3>
-            <p>정확한 분석을 위해 아래 정보가 올바르게 입력되었는지 확인해주세요.</p>
-            <div class="profile-info-display">
-                <div class="info-item">
-                    <div class="label">키</div>
-                    <div class="value">{{ user.profile.height|default_if_none:"-" }} cm</div>
-                </div>
-                <div class="info-item">
-                    <div class="label">현재 체중</div>
-                    <div class="value">{{ user.profile.current_weight|default_if_none:"-" }} kg</div>
-                </div>
-            </div>
-            <a href="{% url 'accounts:profile_edit' %}" class="edit-profile-link" style="color: #4ecdc4; text-align: center;">프로필 정보 수정하기 →</a>
-        </div>
-        <div class="guide-box">
-            <h3><i class="bi bi-camera-fill"></i>사진 업로드 가이드</h3>
-            <ul>
-                <li><i class="bi bi-check-circle-fill"></i>몸 전체가 다 나오는 전신사진</li>
-                <li><i class="bi bi-check-circle-fill"></i>정면을 바라본 자세</li>
-                <li><i class="bi bi-check-circle-fill"></i>몸에 너무 붙지 않는 편안한 옷차림</li>
-                <li class="bad"><i class="bi bi-x-circle-fill"></i>옆모습, 뒷모습, 앉은 자세</li>
-                <li class="bad"><i class="bi bi-x-circle-fill"></i>과도하게 부피가 큰 옷 (패딩 등)</li>
-            </ul>
-        </div>
+<div class="analyzer-wrapper">
+    <div class="page-header">
+        <h1>AI 체형 분석 및 스타일 제안</h1>
+        <p>사진 한 장으로 당신의 체형 실루엣을 정밀 분석하고, AI가 최적의 스타일을 찾아드립니다.</p>
     </div>
 
-    <form id="upload-form" enctype="multipart/form-data">
-        {% csrf_token %}
+    <!-- === 촬영 가이드 섹션 === -->
+    <div class="pre-analysis-guide">
+        <h2><i class="bi bi-camera-fill"></i>성공적인 분석을 위한 촬영 가이드</h2>
+        <div class="guide-grid">
+            <div class="guide-box good-examples">
+                <h3><i class="bi bi-check-circle"></i>이렇게 찍어주세요</h3>
+                <ul>
+                    <li><i class="bi bi-check-circle-fill"></i>몸의 실루엣이 드러나는 옷</li>
+                    <li><i class="bi bi-check-circle-fill"></i>머리부터 발끝까지 나오는 전신사진</li>
+                    <li><i class="bi bi-check-circle-fill"></i>정면을 바라보고 똑바로 선 자세</li>
+                    <li><i class="bi bi-check-circle-fill"></i>밝고 그림자가 없는 균일한 조명</li>
+                    <li><i class="bi bi-check-circle-fill"></i>몸과 색이 다른 단색 배경</li>
+                </ul>
+            </div>
+            <div class="guide-box bad-examples">
+                <h3><i class="bi bi-x-circle"></i>이런 사진은 피해주세요</h3>
+                <ul>
+                    <li><i class="bi bi-x-circle-fill"></i>부피가 큰 옷 (패딩, 오버핏 등)</li>
+                    <li><i class="bi bi-x-circle-fill"></i>셀카, 상반신만 나온 사진</li>
+                    <li><i class="bi bi-x-circle-fill"></i>앉거나 옆모습, 비스듬한 자세</li>
+                    <li><i class="bi bi-x-circle-fill"></i>어둡거나 얼굴/몸에 그림자가 진 사진</li>
+                    <li><i class="bi bi-x-circle-fill"></i>팔짱을 끼거나 몸을 가리는 자세</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- ======================== -->
+
+
+    <div class="main-grid-container">
+        <!-- 왼쪽: 입력 패널 -->
+        <div class="panel analyzer-panel">
+            <h2 class="panel-title"><i class="bi bi-pencil-square"></i>분석 정보 입력</h2>
+            <form id="upload-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <strong class="form-section-title">1. 성별</strong>
+                    <div class="gender-selector">
+                        <input type="radio" id="gender_male" name="gender" value="male" required>
+                        <label for="gender_male"><i class="bi bi-gender-male"></i> 남성</label>
+                        <input type="radio" id="gender_female" name="gender" value="female">
+                        <label for="gender_female"><i class="bi bi-gender-female"></i> 여성</label>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <strong class="form-section-title">2. 신체적 고민 (선택사항)</strong>
+                    <textarea id="user-concerns" name="concerns" placeholder="예: 어깨가 좁아요, 하체가 발달했어요, 날씬해 보이고 싶어요..."></textarea>
+                </div>
         
-        <div class="form-section">
-            <strong class="form-section-title">1. 성별을 선택해주세요.</strong>
-            <div class="gender-selector">
-                <input type="radio" id="gender_male" name="gender" value="male" required>
-                <label for="gender_male">남성</label>
-                <input type="radio" id="gender_female" name="gender" value="female">
-                <label for="gender_female">여성</label>
-            </div>
-        </div>
+                <div class="form-section">
+                    <strong class="form-section-title">3. 가이드에 맞는 전신 사진 업로드</strong>
+                    <div id="file-upload-area" class="file-upload-wrapper">
+                        <i class="bi bi-cloud-arrow-up-fill"></i>
+                        <p id="file-upload-text">파일을 드래그하거나 클릭하여 업로드</p>
+                        <span id="file-name-display"></span>
+                    </div>
+                    <input type="file" name="image" id="image-upload" accept="image/jpeg, image/jpg, image/png, image/heic, image/heif" required>
+                </div>
         
-        <div class="form-section">
-            <strong class="form-section-title">2. 특별히 커버하고 싶거나 보완하고 싶은 신체적 고민을 알려주세요. (선택사항)</strong>
-            <textarea id="user-concerns" name="concerns" placeholder="예: 유독 하체가 발달했어요, 어깨가 좁아서 왜소해 보여요, 종아리가 두꺼운 편이에요..."></textarea>
+                <button type="submit" id="submit-btn" disabled>
+                    <i class="bi bi-stars"></i> 분석 시작하기
+                </button>
+            </form>
         </div>
 
-        <div class="form-section">
-            <strong class="form-section-title">3. 가이드에 맞는 사진을 업로드해주세요.</strong>
-            <div id="file-upload-area" class="file-upload-wrapper">
-                <i class="bi bi-cloud-arrow-up-fill"></i>
-                <p id="file-upload-text">여기에 JPG 파일을 드래그하거나 클릭하여 업로드</p>
-                <span id="file-upload-hint">최대 10MB, JPG/JPEG 형식만 지원</span>
-                <input type="file" name="image" id="image-upload" accept="image/jpeg, image/jpg" required>
+        <!-- 오른쪽: 결과 패널 -->
+        <div class="panel results-panel">
+            <h2 class="panel-title"><i class="bi bi-clipboard-data"></i>분석 리포트</h2>
+            
+            <div class="results-placeholder" id="results-placeholder">
+                <div id="loader" style="display: none;"></div>
+                <div id="placeholder-content">
+                    <i class="bi bi-image-alt"></i>
+                    <p>분석 결과가 여기에 표시됩니다.</p>
+                </div>
             </div>
-        </div>
 
-        <button type="submit" id="submit-btn" disabled>분석 시작하기</button>
-    </form>
-    
-    <div class="loader" id="loader"></div>
-
-    <div id="results-container">
-        <div class="results-grid">
-            <div class="image-results-wrapper">
-                <h4>분석된 신체 구조</h4>
-                <img id="result-skeleton-image" src="#" alt="스켈레톤 이미지">
-            </div>
-            <div class="text-results-wrapper">
-                <h2><i class="bi bi-file-earmark-person"></i>분석 리포트</h2>
+            <div id="results-content" style="display: none;">
+                <div class="result-images-grid">
+                    <div class="result-image-box">
+                        <img id="result-skeleton-image" src="#" alt="스켈레톤 이미지">
+                        <h4>기본 골격 구조</h4>
+                    </div>
+                    <div class="result-image-box">
+                        <img id="result-analysis-image" src="#" alt="실루엣 분석 이미지">
+                        <h4>실루엣 형태 분석</h4>
+                    </div>
+                </div>
                 <div class="result-section">
                     <h3><i class="bi bi-rulers"></i>측정된 체형</h3>
-                    <p><strong id="result-shape"></strong></p>
+                    <p id="result-shape"></p>
                 </div>
                 <div class="result-section">
                     <h3><i class="bi bi-magic"></i>추천 아이템</h3>
                     <div id="result-fits-tags"></div>
                 </div>
                 <div class="result-section">
-                    <h3><i class="bi bi-lightbulb-fill"></i>스타일링 팁</h3>
+                    <h3><i class="bi bi-lightbulb-fill"></i>AI 스타일링 팁</h3>
                     <p id="result-tips"></p>
                 </div>
             </div>
@@ -281,14 +308,21 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // 기능 유지를 위해 모든 ID를 그대로 사용합니다.
     const uploadForm = document.getElementById('upload-form');
     const fileUploadArea = document.getElementById('file-upload-area');
     const imageUpload = document.getElementById('image-upload');
     const fileUploadText = document.getElementById('file-upload-text');
+    const fileNameDisplay = document.getElementById('file-name-display');
     const submitBtn = document.getElementById('submit-btn');
+    
+    const resultsPlaceholder = document.getElementById('results-placeholder');
+    const placeholderContent = document.getElementById('placeholder-content');
     const loader = document.getElementById('loader');
-    const resultsContainer = document.getElementById('results-container');
+    const resultsContent = document.getElementById('results-content');
+
     const resultSkeletonImage = document.getElementById('result-skeleton-image');
+    const resultAnalysisImage = document.getElementById('result-analysis-image');
     const resultShape = document.getElementById('result-shape');
     const resultFitsTags = document.getElementById('result-fits-tags');
     const resultTips = document.getElementById('result-tips');
@@ -296,20 +330,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedFile = null;
 
     fileUploadArea.addEventListener('click', () => imageUpload.click());
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileUploadArea.addEventListener(eventName, preventDefaults, false);
+    });
 
-    fileUploadArea.addEventListener('dragover', (e) => {
+    function preventDefaults(e) {
         e.preventDefault();
-        fileUploadArea.classList.add('dragover');
-    });
-    fileUploadArea.addEventListener('dragleave', () => {
-        fileUploadArea.classList.remove('dragover');
-    });
+        e.stopPropagation();
+    }
+
+    fileUploadArea.addEventListener('dragenter', () => fileUploadArea.classList.add('dragover'));
+    fileUploadArea.addEventListener('dragleave', () => fileUploadArea.classList.remove('dragover'));
     fileUploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
         fileUploadArea.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleFile(files[0]);
+        if (e.dataTransfer.files.length > 0) {
+            handleFile(e.dataTransfer.files[0]);
         }
     });
 
@@ -320,27 +355,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function handleFile(file) {
-        if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
-            alert('JPG 또는 JPEG 형식의 파일만 업로드할 수 있습니다.');
-            resetFileState();
-            return;
-        }
         if (file.size > 10 * 1024 * 1024) {
             alert('파일 크기는 10MB를 초과할 수 없습니다.');
             resetFileState();
             return;
         }
         selectedFile = file;
-        fileUploadText.textContent = `선택된 파일: ${file.name}`;
-        fileUploadText.style.color = '#4ecdc4';
+        fileUploadText.style.display = 'none';
+        fileNameDisplay.textContent = file.name;
         updateSubmitButtonState();
     }
 
     function resetFileState() {
         imageUpload.value = '';
         selectedFile = null;
-        fileUploadText.textContent = '여기에 JPG 파일을 드래그하거나 클릭하여 업로드';
-        fileUploadText.style.color = '#fff';
+        fileUploadText.style.display = 'block';
+        fileNameDisplay.textContent = '';
         updateSubmitButtonState();
     }
     
@@ -350,11 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateSubmitButtonState() {
         const genderSelected = uploadForm.querySelector('input[name="gender"]:checked');
-        if (genderSelected && selectedFile) {
-            submitBtn.disabled = false;
-        } else {
-            submitBtn.disabled = true;
-        }
+        submitBtn.disabled = !(genderSelected && selectedFile);
     }
 
     uploadForm.addEventListener('submit', async (e) => {
@@ -364,9 +390,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData(uploadForm);
         const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         
+        placeholderContent.style.display = 'none';
+        resultsContent.style.display = 'none';
         loader.style.display = 'block';
-        resultsContainer.style.display = 'none';
-        window.scrollTo({ top: uploadForm.offsetTop + uploadForm.offsetHeight, behavior: 'smooth' });
+        resultsPlaceholder.style.display = 'flex';
 
         try {
             const response = await fetch("{% url 'store:analyze_body_shape_api' %}", {
@@ -378,18 +405,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.status === 'success') {
                 resultSkeletonImage.src = data.skeleton_image_url;
+                resultAnalysisImage.src = data.analysis_image_url;
                 resultShape.textContent = data.body_shape;
                 resultTips.textContent = data.style_tips;
                 
                 resultFitsTags.innerHTML = '';
-                let recommendationsArray = [];
-                if (typeof data.recommendations === 'string') {
-                    recommendationsArray = data.recommendations.split(',').map(item => item.trim());
-                } 
-                else if (Array.isArray(data.recommendations)) {
-                    recommendationsArray = data.recommendations;
-                }
-                recommendationsArray.forEach(item => {
+                const recommendations = Array.isArray(data.recommendations) 
+                    ? data.recommendations 
+                    : (data.recommendations || "").split(/, |,|،|、/).map(item => item.trim());
+                
+                recommendations.forEach(item => {
                     if (item) {
                         const tagElement = document.createElement('span');
                         tagElement.className = 'fit-tag';
@@ -398,14 +423,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 
-                resultsContainer.style.display = 'block';
-                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                resultsPlaceholder.style.display = 'none';
+                resultsContent.style.display = 'block';
             } else {
                 alert('분석 실패: ' + data.message);
+                placeholderContent.style.display = 'block';
+                placeholderContent.querySelector('p').textContent = "분석 중 오류가 발생했습니다. 다시 시도해주세요.";
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('오류가 발생했습니다.');
+            alert('네트워크 또는 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            placeholderContent.style.display = 'block';
+            placeholderContent.querySelector('p').textContent = "서버와 통신할 수 없습니다.";
         } finally {
             loader.style.display = 'none';
         }
