@@ -24,4 +24,5 @@ urlpatterns = [
     # API URLs
     path('api/exercises/', views.exercise_api, name='api_exercises'),
     path('api/youtube-search/', views.youtube_search_api, name='api_youtube_search'),
+    path('api/analyze/<int:routine_id>/', views.analyze_routine_api, name='api_analyze_routine'),
 ]

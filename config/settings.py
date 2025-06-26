@@ -121,6 +121,8 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 KAKAO_MAP_API_KEY = os.getenv('KAKAO_MAP_API_KEY')
+COUPANG_ACCESS_KEY = os.getenv('COUPANG_ACCESS_KEY')
+COUPANG_SECRET_KEY = os.getenv('COUPANG_SECRET_KEY')
 
 # config/settings.py 맨 아래에 추가
 

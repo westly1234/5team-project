@@ -451,3 +451,60 @@ def youtube_search_api(request):
         return JsonResponse({'videos': videos})
     except requests.exceptions.RequestException as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@require_POST
+@login_required
+def analyze_routine_api(request, routine_id):
+    """
+    POST 요청으로 받은 루틴 데이터를 AI에게 보내 분석을 요청하고,
+    그 결과를 JSON으로 반환합니다.
+    """
+    # 현재 보고 있는 루틴이 사용자의 것인지 다시 한번 확인 (보안 강화)
+    get_object_or_404(Routine, id=routine_id, user=request.user)
+    
+    try:
+        # 프론트엔드에서 보낸 JSON 데이터 파싱
+        exercises_data = json.loads(request.body)
+        if not exercises_data:
+            return JsonResponse({'error': '분석할 운동 데이터가 없습니다.'}, status=400)
+
+        # AI에게 전달할 텍스트 형식으로 루틴 데이터 변환
+        routine_text = ""
+        for i, ex in enumerate(exercises_data):
+            if ex.get('duration_minutes'): # 유산소 운동
+                routine_text += f"{i+1}. {ex['name']}: {ex['duration_minutes']}분\n"
+            else: # 근력 운동
+                routine_text += f"{i+1}. {ex['name']}: {ex['sets']}세트 x {ex['reps']}회, {ex['weight']}kg\n"
+        
+        # OpenAI API에 보낼 프롬프트 구성
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        system_prompt = """
+        당신은 국내 최고의 피트니스 분석 전문가입니다. 
+        사용자가 제공한 운동 루틴을 분석하고, 예상되는 효과와 조언을 친절하고 이해하기 쉽게 설명해야 합니다.
+
+        **분석 가이드라인:**
+        1.  **전체 요약:** 루틴 전체의 목표(예: 근력 강화, 체지방 감소, 근비대)를 한두 문장으로 요약하세요.
+        2.  **주요 타겟 근육:** 이 루틴이 주로 어떤 근육 부위를 발달시키는지 구체적으로 설명해주세요.
+        3.  **예상 효과:** 각 운동이나 전체 루틴을 통해 얻을 수 있는 긍정적인 효과들을 항목별로 나누어 설명합니다. (예: 근력 증가, 자세 교정, 심폐지구력 향상 등)
+        4.  **팁 및 조언:** 이 루틴을 더 효과적으로 수행하기 위한 팁이나 주의사항을 1~2가지 추가해주세요. (예: 휴식 시간, 운동 순서, 영양 섭취 등)
+        5.  **출력 형식:** 전체 답변은 마크다운(Markdown) 형식을 사용하고, 이모티콘(💪, 🔥, 🥗)을 적절히 사용하여 동기를 부여하는 톤으로 작성해주세요.
+        """
+        user_prompt = f"아래 운동 루틴을 분석해주세요:\n\n{routine_text}"
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7
+        )
+        
+        analysis_result = response.choices[0].message.content
+        
+        return JsonResponse({'analysis': analysis_result})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': '잘못된 형식의 데이터입니다.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f'AI 분석 중 오류가 발생했습니다: {str(e)}'}, status=500)

@@ -28,8 +28,8 @@
         align-items: center;
         justify-content: center;
         width: 100%;
-        height: calc(100vh - 80px); /* 뷰포트 높이에서 헤더 높이(80px)를 뺌 */
-        min-height: 700px; /* 최소 높이 보장 */
+        height: calc(100vh - 80px);
+        min-height: 700px;
         padding: 2rem;
         box-sizing: border-box;
     }
@@ -51,7 +51,7 @@
     #main-wrapper.sidebar-hidden #sidebar { margin-left: -320px; }
     #main-wrapper.sidebar-hidden #toggle-sidebar { left: 10px; background-color: rgba(44,44,46,0.5); }
 
-    /* === 사이드바, 입력창 등 다른 모든 스타일은 이전과 동일하게 유지됩니다 === */
+    /* === 사이드바 === */
     #sidebar {
         width: 320px; min-width: 320px;
         background: var(--bg-sidebar); padding: 24px;
@@ -91,6 +91,7 @@
     .menu-popup button.delete-btn:hover { background-color: var(--danger-color); color: #fff; }
     .title-edit-input { width: calc(100% - 40px); font-size: 1rem; font-weight: 500; background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--accent-color); border-radius: 6px; padding: 0 4px; box-sizing: border-box; margin: 0 0 4px; outline: none; }
     
+    /* === 채팅창 === */
     #chat-container { position: relative; flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); color: var(--text-primary); }
     #toggle-sidebar { position: absolute; left: -15px; top: 28px; z-index: 1001; background: #3A3A3C; border: 1px solid var(--border-color); border-radius: 50%; width: 32px; height: 32px; color: var(--text-secondary); cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
     #toggle-sidebar:hover { color: var(--text-primary); background-color: #4A4A4C; }
@@ -103,7 +104,6 @@
     .avatar-wrapper { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
     .avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
     
-    /* === 답변 말풍선 가독성 향상 === */
     .bubble { padding: 14px 20px; border-radius: 20px; font-size: 1rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
     .message.user .bubble { background: var(--bg-bubble-user); color: #fff; border-bottom-right-radius: 5px; }
     .message.bot .bubble { background: var(--bg-bubble-bot); color: var(--text-primary); border-bottom-left-radius: 5px; }
@@ -117,6 +117,89 @@
     .bubble img { max-width: 100%; height: auto; border-radius: 12px; margin-top: 10px; }
     .user-attachment-preview img { max-width: 200px; max-height: 150px; border-radius: 12px; margin-top: 8px; }
 
+    /* === [✨ 수정 및 개선] 상품 추천 카드 스타일 === */
+    .product-recommendation-wrapper {
+        padding-top: 10px;
+    }
+    .product-recommendation-wrapper p {
+        margin-bottom: 12px;
+        font-size: 1rem;
+        color: var(--text-primary);
+    }
+    .product-recommendation-wrapper p strong {
+        color: var(--accent-color);
+        font-weight: 600;
+    }
+    .product-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+    }
+    .product-card {
+        background-color: #3a3a3c;
+        border-radius: 12px;
+        overflow: hidden;
+        text-decoration: none;
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        border-color: var(--accent-color);
+    }
+    .product-card-img-wrapper {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background-color: #fff; /* 이미지가 투명해도 배경이 보이도록 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .product-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* 이미지가 잘리지 않고 다 보이도록 */
+    }
+    .product-card-info {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+    .product-card-title {
+        font-size: 0.9rem;
+        font-weight: 500;
+        line-height: 1.4;
+        height: 3.9em; /* 약 3줄 높이 */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        margin: 0;
+    }
+    .product-card-price {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--accent-color);
+        margin-top: auto; /* 가격을 카드 하단에 고정 */
+        padding-top: 8px;
+    }
+    .product-card-disclaimer {
+      text-align: center;      /* 텍스트 가운데 정렬 */
+      font-size: 1rem;       /* 글자 크기 살짝 키움 */
+      line-height: 1.5;        /* 줄 간격 추가 */
+      color: var(--text-secondary);
+      padding: 12px 0 0;
+      margin-top: 12px;
+      border-top: 1px solid var(--border-color);
+  }
+
+    /* === 입력창 === */
     #chat-input-section { padding: 16px 40px 24px; border-top: 1px solid var(--border-color); }
     #attachment-previews { display: none; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; max-height: 120px; overflow-y: auto; }
     .preview-item { position: relative; display: flex; align-items: center; gap: 10px; background-color: var(--bg-input); padding: 8px; border-radius: 8px; }
@@ -133,6 +216,7 @@
     #send-button { background-color: var(--accent-color); color: #fff; }
     #send-button:hover { background-color: #0066CC; }
 
+    /* === 기타 UI 요소 === */
     .typing-indicator { display: flex; gap: 5px; align-items: center; padding: 10px; }
     .typing-indicator span { width: 8px; height: 8px; background: var(--text-secondary); border-radius: 50%; animation: wave 1.3s infinite ease-in-out; }
     .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
@@ -146,7 +230,6 @@
     .error-popup.visible { display: block; opacity: 1; }
 </style>
 
-<!-- ✅ 페이지 전체를 감싸는 Wrapper 추가 -->
 <div class="chatbot-page-wrapper">
     <div class="chatbot-full-container">
         {% csrf_token %}
@@ -160,9 +243,7 @@
             
             <div id="chat-container">
                 <button id="toggle-sidebar" title="사이드바 열기/닫기"><i class="bi bi-list"></i></button>
-                <div id="chatbox">
-                    <!-- 메시지 동적 추가 -->
-                </div>
+                <div id="chatbox"></div>
                 
                 <button id="scroll-to-bottom" title="맨 아래로">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
@@ -187,379 +268,416 @@
 </div>
 
 <script>
-    // ✅ 모든 JavaScript 로직과 기능은 이전과 100% 동일하게 유지됩니다.
-    // 디자인 변경으로 인해 영향을 받는 부분이 없으므로, 안심하고 사용하시면 됩니다.
     const userProfileImage = "{% if user.profile.image %}{{ user.profile.image.url }}{% else %}/static/chatbot_images/avatar-default.jpeg{% endif %}";
-    let currentDialogId = null;
     const DEFAULT_USER_AVATAR = "/static/chatbot_images/avatar-default.jpeg";
+    
+    // 전역 변수
+    let currentDialogId = null;
     let domReady = false;
     let chatboxElem, fileListElem, messageInputElem, searchBoxElem, newDialogBtnElem,
         toggleSidebarBtnElem, errorPopupElem, errorTextElem, scrollBtnElem, sendButtonElem,
         fileUploadButtonElem, fileInputHiddenElem, attachmentPreviewsElem;
     let attachedFilesStore = [];
+    
+    // 상수
     const MAX_FILES_COUNT = 5;
     const MAX_FILE_SIZE_MB = 10;
     const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
+    // --- 유틸리티 함수 ---
     function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
-          }
-        }
-      }
-      return cookieValue;
-    }
-
-    function hideErrorPopup() {
-      if (errorPopupElem) errorPopupElem.classList.remove("visible");
-    }
-
-    function renderMessage(sender, textOrHtml, messageType = "text_response", isTypingPlaceholder = false, imagePath = null) {
-      if (!chatboxElem) return null;
-      const wrapper = document.createElement("div");
-      wrapper.className = `message-wrapper ${sender}`;
-      const msgDiv = document.createElement("div");
-      msgDiv.className = `message ${sender}`;
-      const avatarWrapper = document.createElement("div");
-      avatarWrapper.className = "avatar-wrapper";
-      const avatarImg = document.createElement("img");
-      avatarImg.className = "avatar";
-      avatarImg.src = sender === "user" ? userProfileImage : "/static/chatbot_images/avatar-bot.png";
-      avatarImg.alt = sender;
-      avatarImg.onerror = function() { this.src = DEFAULT_USER_AVATAR; };
-      avatarWrapper.appendChild(avatarImg);
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      if (isTypingPlaceholder) {
-        bubble.innerHTML = textOrHtml;
-      } else {
-        const textPart = textOrHtml || "";
-        if (textPart) {
-            const textNode = document.createElement('div');
-            textNode.innerHTML = textPart;
-            bubble.appendChild(textNode);
-        }
-        if (imagePath) {
-            const previewsContainer = document.createElement('div');
-            previewsContainer.className = 'user-attachment-preview'; 
-            const img = document.createElement('img');
-            img.src = `/chatbot/temp_image/${imagePath}/`;
-            img.alt = "사용자가 첨부한 이미지";
-            previewsContainer.appendChild(img);
-            bubble.appendChild(previewsContainer);
-        }
-      }
-      if (sender === 'bot') msgDiv.appendChild(avatarWrapper);
-      msgDiv.appendChild(bubble);
-      if (sender === 'user') msgDiv.appendChild(avatarWrapper);
-      wrapper.appendChild(msgDiv);
-      if (!isTypingPlaceholder) scrollToBottom();
-      return bubble;
-    }
-
-    function scrollToBottom() {
-      if (chatboxElem) requestAnimationFrame(() => { chatboxElem.scrollTop = chatboxElem.scrollHeight; });
-    }
-
-    async function typeHTML(botBubbleContainer, html, baseSpeed = 10) {
-      if (!botBubbleContainer) return;
-      botBubbleContainer.innerHTML = '';
-      const tempContainer = document.createElement("div");
-      tempContainer.innerHTML = html;
-      async function typeNodeByNode(sourceNode, targetParent) {
-        for (const currentNode of Array.from(sourceNode.childNodes)) {
-          if (currentNode.nodeType === Node.TEXT_NODE) {
-            for (const char of (currentNode.textContent || "")) {
-              targetParent.appendChild(document.createTextNode(char));
-              scrollToBottom();
-              await new Promise(r => setTimeout(r, baseSpeed));
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
-          } else if (currentNode.nodeType === Node.ELEMENT_NODE) {
-            const newElement = document.createElement(currentNode.tagName);
-            Array.from(currentNode.attributes).forEach(attr => newElement.setAttribute(attr.name, attr.value));
-            targetParent.appendChild(newElement);
-            await typeNodeByNode(currentNode, newElement);
-          }
         }
-      }
-      await typeNodeByNode(tempContainer, botBubbleContainer);
-      scrollToBottom();
+        return cookieValue;
     }
 
-    function formatFileSize(bytes) {
-      if (bytes === 0) return '0 Bytes';
-      const k = 1024;
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${['Bytes', 'KB', 'MB', 'GB'][i]}`;
+    function showErrorPopup(message) {
+        if(errorTextElem) errorTextElem.textContent = `⚠️ ${message}`;
+        if(errorPopupElem) errorPopupElem.classList.add("visible");
+        setTimeout(() => {
+            if(errorPopupElem) errorPopupElem.classList.remove("visible");
+        }, 4000);
     }
-    
+    function scrollToBottom() { if (chatboxElem) requestAnimationFrame(() => { chatboxElem.scrollTop = chatboxElem.scrollHeight; }); }
+    function formatFileSize(bytes) { if (bytes === 0) return '0 Bytes'; const k = 1024; const i = Math.floor(Math.log(bytes) / Math.log(k)); return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${['Bytes', 'KB', 'MB', 'GB'][i]}`; }
+
+    // --- 메시지 렌더링 함수 ---
+    function renderMessage(sender, htmlContent, imagePath = null) {
+        if (!chatboxElem) return null;
+        const wrapper = document.createElement("div");
+        wrapper.className = `message-wrapper ${sender}`;
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `message ${sender}`;
+        const avatarWrapper = document.createElement("div");
+        avatarWrapper.className = "avatar-wrapper";
+        const avatarImg = document.createElement("img");
+        avatarImg.className = "avatar";
+        avatarImg.src = sender === "user" ? userProfileImage : "/static/chatbot_images/avatar-bot.png";
+        avatarImg.alt = sender;
+        avatarImg.onerror = function() { this.src = DEFAULT_USER_AVATAR; };
+        avatarWrapper.appendChild(avatarImg);
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        
+        let finalHtmlContent = htmlContent || "";
+        if (imagePath) {
+            finalHtmlContent += `<div class="user-attachment-preview"><img src="${imagePath}" alt="첨부된 이미지"></div>`;
+        }
+        bubble.innerHTML = finalHtmlContent;
+        
+        if (sender === 'bot') msgDiv.appendChild(avatarWrapper);
+        msgDiv.appendChild(bubble);
+        if (sender === 'user') msgDiv.appendChild(avatarWrapper);
+        wrapper.appendChild(msgDiv);
+        chatboxElem.appendChild(wrapper);
+        scrollToBottom();
+        return bubble;
+    }
+
+    // --- 타이핑 효과 함수 ---
+    async function typeHTML(botBubbleContainer, html, baseSpeed = 10) {
+        if (!botBubbleContainer) return;
+        botBubbleContainer.innerHTML = '';
+        const tempContainer = document.createElement("div");
+        tempContainer.innerHTML = html;
+        async function typeNodeByNode(sourceNode, targetParent) {
+            for (const currentNode of Array.from(sourceNode.childNodes)) {
+                if (currentNode.nodeType === Node.TEXT_NODE) {
+                    for (const char of (currentNode.textContent || "")) {
+                        targetParent.appendChild(document.createTextNode(char));
+                        scrollToBottom();
+                        await new Promise(r => setTimeout(r, baseSpeed));
+                    }
+                } else if (currentNode.nodeType === Node.ELEMENT_NODE) {
+                    const newElement = document.createElement(currentNode.tagName);
+                    Array.from(currentNode.attributes).forEach(attr => newElement.setAttribute(attr.name, attr.value));
+                    targetParent.appendChild(newElement);
+                    await typeNodeByNode(currentNode, newElement);
+                }
+            }
+        }
+        await typeNodeByNode(tempContainer, botBubbleContainer);
+        scrollToBottom();
+    }
+
+    // --- 파일 첨부 관련 함수 ---
     function addPreviewItem(file) {
-      if (!attachmentPreviewsElem) return;
-      const fileUID = file.name + file.size + file.lastModified;
-      const previewId = `preview-${fileUID.replace(/[^a-zA-Z0-9-_]/g, '')}`;
-      if (document.getElementById(previewId)) return false;
-      const previewItem = document.createElement('div');
-      previewItem.className = 'preview-item';
-      previewItem.id = previewId;
-      previewItem.innerHTML = `<img class="thumb" alt="${file.name}"><div class="file-info"><span class="file-name">${file.name}</span><span class="file-size">${formatFileSize(file.size)}</span></div><button class="remove-preview-btn">×</button>`;
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = e => previewItem.querySelector('.thumb').src = e.target.result;
-        reader.readAsDataURL(file);
-      } else {
-         previewItem.querySelector('.thumb').src = '/static/chatbot_images/file-icon.png';
-      }
-      previewItem.querySelector('.remove-preview-btn').onclick = () => removePreviewItem(previewId);
-      attachmentPreviewsElem.appendChild(previewItem);
-      return true;
+        if (!attachmentPreviewsElem) return;
+        const fileUID = file.name + file.size + file.lastModified;
+        const previewId = `preview-${fileUID.replace(/[^a-zA-Z0-9-_]/g, '')}`;
+        if (document.getElementById(previewId)) return false;
+        const previewItem = document.createElement('div');
+        previewItem.className = 'preview-item';
+        previewItem.id = previewId;
+        previewItem.innerHTML = `<img class="thumb" alt="${file.name}"><div class="file-info"><span class="file-name">${file.name}</span><span class="file-size">${formatFileSize(file.size)}</span></div><button class="remove-preview-btn">×</button>`;
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = e => previewItem.querySelector('.thumb').src = e.target.result;
+            reader.readAsDataURL(file);
+        } else {
+            previewItem.querySelector('.thumb').src = "{% static 'chatbot_images/file-icon.png' %}";
+        }
+        previewItem.querySelector('.remove-preview-btn').onclick = () => removePreviewItem(previewId);
+        attachmentPreviewsElem.appendChild(previewItem);
+        return true;
     }
 
     function removePreviewItem(previewId) {
-      document.getElementById(previewId)?.remove();
-      attachedFilesStore = attachedFilesStore.filter(f => f.id !== previewId);
-      if (attachedFilesStore.length === 0 && attachmentPreviewsElem) {
-        attachmentPreviewsElem.style.display = "none";
-      }
+        document.getElementById(previewId)?.remove();
+        attachedFilesStore = attachedFilesStore.filter(f => f.id !== previewId);
+        if (attachedFilesStore.length === 0 && attachmentPreviewsElem) {
+            attachmentPreviewsElem.style.display = "none";
+        }
     }
 
     function clearAllPreviews() {
-      if (attachmentPreviewsElem) {
-        attachmentPreviewsElem.innerHTML = '';
-        attachmentPreviewsElem.style.display = "none";
-      }
-      attachedFilesStore = [];
+        if (attachmentPreviewsElem) {
+            attachmentPreviewsElem.innerHTML = '';
+            attachmentPreviewsElem.style.display = "none";
+        }
+        attachedFilesStore = [];
     }
 
-    function handleFileUpload() {
-      if (!fileInputHiddenElem || !attachmentPreviewsElem) return;
-      let currentFileCount = attachedFilesStore.length;
-      for (const file of fileInputHiddenElem.files) {
-        if (currentFileCount >= MAX_FILES_COUNT) {
-          alert(`최대 ${MAX_FILES_COUNT}개까지만 파일을 첨부할 수 있습니다.`); break;
+    function handleFileUpload(files) {
+        if (!files || !attachmentPreviewsElem) return;
+        let currentFileCount = attachedFilesStore.length;
+        for (const file of files) {
+            if (currentFileCount >= MAX_FILES_COUNT) {
+                showErrorPopup(`최대 ${MAX_FILES_COUNT}개까지만 파일을 첨부할 수 있습니다.`); break;
+            }
+            if (file.size > MAX_FILE_SIZE_BYTES) {
+                showErrorPopup(`'${file.name}' 파일이 너무 큽니다. (최대 ${MAX_FILE_SIZE_MB}MB)`); continue;
+            }
+            const fileUID = file.name + file.size + file.lastModified;
+            const previewId = `preview-${fileUID.replace(/[^a-zA-Z0-9-_]/g, '')}`;
+            if (attachedFilesStore.some(f => f.id === previewId)) continue;
+            if (addPreviewItem(file)) {
+                attachedFilesStore.push({ file: file, id: previewId });
+                currentFileCount++;
+            }
         }
-        if (file.size > MAX_FILE_SIZE_BYTES) {
-          alert(`'${file.name}' 파일이 너무 큽니다. (최대 ${MAX_FILE_SIZE_MB}MB)`); continue;
-        }
-        const fileUID = file.name + file.size + file.lastModified;
-        const previewId = `preview-${fileUID.replace(/[^a-zA-Z0-9-_]/g, '')}`;
-        if (attachedFilesStore.some(f => f.id === previewId)) continue;
-        if (addPreviewItem(file)) {
-          attachedFilesStore.push({ file: file, id: previewId });
-          currentFileCount++;
-        }
-      }
-      if (attachedFilesStore.length > 0) attachmentPreviewsElem.style.display = "flex";
-      fileInputHiddenElem.value = "";
+        if (attachedFilesStore.length > 0) attachmentPreviewsElem.style.display = "flex";
+        if(fileInputHiddenElem) fileInputHiddenElem.value = "";
     }
 
     function handlePaste(event) {
-      if (!attachmentPreviewsElem) return;
-      let currentFileCount = attachedFilesStore.length;
-      for (const item of (event.clipboardData || event.originalEvent.clipboardData).items) {
-        if (item.kind === 'file' && item.type.startsWith('image/')) {
-          event.preventDefault();
-          const file = item.getAsFile();
-          if (!file) continue;
-          if (currentFileCount >= MAX_FILES_COUNT) {
-            alert(`최대 ${MAX_FILES_COUNT}개까지만 파일을 첨부할 수 있습니다.`); break;
-          }
-          if (file.size > MAX_FILE_SIZE_BYTES) {
-            alert(`붙여넣은 이미지가 너무 큽니다. (최대 ${MAX_FILE_SIZE_MB}MB)`); continue;
-          }
-          const namedFile = new File([file], `pasted_image_${Date.now()}.${file.type.split('/')[1] || 'png'}`, {type: file.type});
-          const fileUID = namedFile.name + namedFile.size + namedFile.lastModified + '_pasted';
-          const previewId = `preview-${fileUID.replace(/[^a-zA-Z0-9-_]/g, '')}`;
-          if (attachedFilesStore.some(f => f.id === previewId)) continue;
-          if (addPreviewItem(namedFile, true)) {
-            attachedFilesStore.push({ file: namedFile, id: previewId });
-            currentFileCount++;
-          }
-        }
-      }
-      if (attachedFilesStore.length > 0) attachmentPreviewsElem.style.display = "flex";
-    }
-
-    async function sendMessage() {
-      const msgText = messageInputElem.value.trim();
-      if (!msgText && attachedFilesStore.length === 0) return;
-      if (msgText || attachedFilesStore.length > 0) {
-        const userBubble = renderMessage("user", msgText);
-        if (userBubble && attachedFilesStore.length > 0) {
-            const previewsContainer = document.createElement('div');
-            previewsContainer.className = 'user-attachment-preview';
-            attachedFilesStore.filter(fo => fo.file.type.startsWith('image/')).forEach(fo => {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(fo.file);
-                img.onload = () => URL.revokeObjectURL(img.src);
-                previewsContainer.appendChild(img);
-            });
-            if (previewsContainer.children.length > 0) userBubble.appendChild(previewsContainer);
-        }
-      }
-      messageInputElem.value = ""; messageInputElem.style.height = "auto";
-      const typingIndicator = renderMessage("bot", '<div class="typing-indicator"><span></span><span></span><span></span></div>', "text_response", true);
-      const formData = new FormData();
-      formData.append("message", msgText);
-      if (currentDialogId) formData.append("id", currentDialogId);
-      attachedFilesStore.forEach(fo => formData.append("file", fo.file, fo.file.name));
-      clearAllPreviews();
-
-      try {
-        const res = await fetch("/chatbot/api/", { method: "POST", body: formData, headers: { 'X-CSRFToken': getCookie('csrftoken') }});
-        if (!res.ok) throw new Error(`서버 오류 (HTTP ${res.status})`);
-        const data = await res.json();
-        typingIndicator?.closest('.message-wrapper')?.remove();
-        if (data.type === "error") throw new Error(data.response || "서버 처리 중 오류 발생");
-        hideErrorPopup();
-        if (data.id && String(currentDialogId) !== String(data.id)) {
-            currentDialogId = data.id; localStorage.setItem("currentDialogId", String(data.id));
-            if (!document.getElementById(`file-card-${data.id}`)) await loadDialogs();
-        }
-        if (data.title && currentDialogId) {
-            const cardTitle = document.querySelector(`#file-card-${currentDialogId} h5`);
-            if (cardTitle && cardTitle.textContent !== data.title && cardTitle.dataset.customTitle !== "true") {
-                cardTitle.textContent = data.title; cardTitle.dataset.fullText = data.title;
-            }
-        }
-        const botBubble = renderMessage("bot", "", data.type || "text_response", true);
-        if (botBubble) await typeHTML(botBubble, data.response || "(응답 없음)");
-      } catch (e) {
-        typingIndicator?.closest('.message-wrapper')?.remove();
-        if (errorTextElem) errorTextElem.textContent = `⚠️ ${e.message}`;
-        if (errorPopupElem) errorPopupElem.classList.add("visible");
-      }
+        handleFileUpload((event.clipboardData || event.originalEvent.clipboardData).files);
     }
     
-    async function startNewDialog() {
-      if (!domReady || !chatboxElem) return;
-      try {
-        const res = await fetch("/chatbot/new/");
-        if (!res.ok) throw new Error(`New dialog API error! Status: ${res.status}`);
-        const data = await res.json();
-        if (!data || typeof data.id === 'undefined') throw new Error("Invalid data from new dialog API.");
-        chatboxElem.innerHTML = "";
-        const botBubble = renderMessage("bot", "", "text_response", true);
-        if(botBubble) await typeHTML(botBubble, data.message || "안녕하세요! 무엇을 도와드릴까요?");
-        currentDialogId = data.id;
-        localStorage.setItem("currentDialogId", String(data.id));
-        clearAllPreviews();
-        await loadDialogs();
-      } catch(err) {
-        console.error("startNewDialog failed:", err);
-        if (chatboxElem) chatboxElem.innerHTML = "<p style='color:red; text-align:center;'>새 대화 시작에 실패했습니다.</p>";
-      }
-    }
-
-    // ✅ 대화 목록 로딩 함수 (수정됨)
-    async function loadDialogs() {
-      if (!fileListElem) return;
-      try {
-        const res = await fetch("/chatbot/list/");
-        if (!res.ok) throw new Error('Dialog list API error');
-        const data = await res.json();
-        fileListElem.innerHTML = "";
-        if (!data?.dialogs?.length) {
-          fileListElem.innerHTML = "<p style='text-align:center; color: var(--text-secondary);'>대화 기록이 없습니다.</p>";
-          return;
-        }
-        data.dialogs.forEach(d => {
-          const card = document.createElement("div");
-          card.id = `file-card-${d.id}`;
-          card.className = "file-card";
-          if (currentDialogId && String(d.id) === String(currentDialogId)) card.classList.add("active");
-          
-          // HTML 구조는 그대로 유지하되, onclick 속성은 제거
-          card.innerHTML = `
-            <h5></h5>
-            <small>${d.timestamp}</small>
-            <div class="menu-button"><i class="bi bi-three-dots-vertical"></i></div>
-            <div class="menu-popup" id="menu-${d.id}">
-                <button class="rename-btn"><i class="bi bi-pencil"></i> 제목 수정</button>
-                <button class="delete-btn"><i class="bi bi-trash3"></i> 삭제</button>
-            </div>`;
-
-          const h5 = card.querySelector('h5');
-          h5.textContent = d.title || "(제목 없음)";
-          h5.dataset.fullText = h5.textContent;
-          if (d.is_custom_title) h5.dataset.customTitle = "true";
-
-          // 카드 클릭 시 대화 로드 (메뉴 관련 영역 제외)
-          card.addEventListener("click", e => {
-            if (e.target.closest(".menu-button, .menu-popup")) return;
-            if (String(currentDialogId) !== String(d.id)) loadDialog(d.id);
-          });
-          
-          // ✅ 각 버튼에 직접 이벤트 리스너 추가
-          const menuButton = card.querySelector('.menu-button');
-          const menuPopup = card.querySelector('.menu-popup');
-          const renameButton = card.querySelector('.rename-btn');
-          const deleteButton = card.querySelector('.delete-btn');
-
-          // 메뉴(...) 버튼 클릭 이벤트
-          menuButton.addEventListener('click', (e) => {
-              e.stopPropagation(); // 카드 전체 클릭 방지
-              // 다른 모든 팝업 숨기기
-              document.querySelectorAll('.menu-popup').forEach(p => {
-                  if (p !== menuPopup) p.style.display = 'none';
-              });
-              // 현재 팝업 토글
-              menuPopup.style.display = menuPopup.style.display === 'block' ? 'none' : 'block';
-          });
-
-          // 제목 수정 버튼 클릭 이벤트
-          renameButton.addEventListener('click', (e) => {
-              e.stopPropagation();
-              menuPopup.style.display = 'none';
-              startRename(d.id, h5); // 제목 수정 함수 호출
-          });
-
-          // 삭제 버튼 클릭 이벤트
-          deleteButton.addEventListener('click', (e) => {
-              e.stopPropagation();
-              menuPopup.style.display = 'none';
-              deleteDialog(d.id); // 삭제 함수 호출
-          });
-
-          fileListElem.appendChild(card);
+    // --- [✨ 새로 추가] 상품 카드 렌더링 함수 ---
+        // --- [✨ 최종 수정] 상품 카드 렌더링 함수 ---
+        // --- [✨ 최종 수정] 상품 카드 렌더링 함수 (가격 표시 개선) ---
+    function renderProductCards(data) {
+        let cardsHtml = '';
+        data.products.forEach(product => {
+            const formattedPrice = product.price ? `약 ${Number(product.price).toLocaleString()}원` : '사이트에서 가격 확인';
+            
+            const productName = product.product_name || '상품명 없음';
+            const thumbnailUrl = product.thumbnail_url || "{% static 'chatbot_images/default-product.png' %}";
+            
+            cardsHtml += `
+                <a href="${product.link}" target="_blank" rel="noopener noreferrer" class="product-card">
+                    <div class="product-card-img-wrapper">
+                        <img src="${thumbnailUrl}" alt="${productName}" class="product-card-img" onerror="this.onerror=null;this.src='{% static 'chatbot_images/default-product.png' %}';">
+                    </div>
+                    <div class="product-card-info">
+                        <div class="product-card-title">${productName}</div>
+                        <div class="product-card-price">${formattedPrice}</div>
+                    </div>
+                </a>
+            `;
         });
-      } catch(err) {
-        console.error("loadDialogs failed:", err);
-      }
+
+        const introParagraph = data.intro_text 
+            ? `<p>${data.intro_text.replace(/\n/g, '<br>')}</p>`
+            : `<p>AI가 찾은 <strong>'${data.keyword}'</strong> 추천 상품이에요! 🚀</p>`;
+
+        const recommendationHtml = `
+            <div class="product-recommendation-wrapper">
+                ${introParagraph}
+                <div class="product-card-grid">
+                    ${cardsHtml}
+                </div>
+                <div class="product-card-disclaimer">
+                    상품 가격 및 정보는 실시간으로 변동될 수 있습니다.
+                    (이 링크는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받을 수 있습니다.)
+                </div>
+            </div>
+        `;
+        
+        const botBubble = renderMessage("bot", "");
+        if (botBubble) {
+            botBubble.innerHTML = recommendationHtml;
+            scrollToBottom();
+        }
     }
 
-    function loadDialog(id) {
-        if (!chatboxElem || !id) return;
-        currentDialogId = id; localStorage.setItem("currentDialogId", String(id));
+    // --- [✨ 핵심 수정] 메시지 전송 함수 ---
+    async function sendMessage() {
+        const msgText = messageInputElem.value.trim();
+        if (!msgText && attachedFilesStore.length === 0) return;
+
+        let userMessageHtml = msgText;
+        let userImagePreviewUrl = null;
+        if (attachedFilesStore.length > 0) {
+            const imageFile = attachedFilesStore.find(f => f.file.type.startsWith('image/'))?.file;
+            if (imageFile) userImagePreviewUrl = URL.createObjectURL(imageFile);
+        }
+        renderMessage("user", userMessageHtml, userImagePreviewUrl);
+
+        messageInputElem.value = "";
+        messageInputElem.style.height = "auto";
+        
+        const typingIndicatorHtml = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+        const typingIndicatorBubble = renderMessage("bot", typingIndicatorHtml);
+
+        const formData = new FormData();
+        formData.append("message", msgText);
+        if (currentDialogId) formData.append("id", currentDialogId);
+        attachedFilesStore.forEach(fo => formData.append("file", fo.file, fo.file.name));
         clearAllPreviews();
-        fetch(`/chatbot/load/${id}/`).then(res => {
-            if (res.status === 404) { localStorage.removeItem("currentDialogId"); startNewDialog(); return null; }
-            if (!res.ok) throw new Error(`Load dialog API error! Status: ${res.status}`);
-            return res.json();
-        }).then(data => {
-            if (data === null) return;
-            chatboxElem.innerHTML = "";
-            if (data.error) throw new Error(data.error);
-            data.messages.forEach(msg => renderMessage(msg.sender, msg.text, "text_response", false, msg.image_path || null));
-            document.querySelectorAll(".file-card.active").forEach(c => c.classList.remove("active"));
-            document.getElementById(`file-card-${id}`)?.classList.add("active");
-            setTimeout(scrollToBottom, 0);
-        }).catch(err => console.error(`loadDialog(${id}) error:`, err));
+
+        try {
+            const res = await fetch("/chatbot/api/", {
+                method: "POST",
+                body: formData,
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            });
+
+            typingIndicatorBubble?.closest('.message-wrapper')?.remove();
+
+            if (!res.ok) throw new Error(`서버 오류 (HTTP ${res.status})`);
+            const data = await res.json();
+            
+            if (data.type === 'product_recommendation') {
+                renderProductCards(data);
+            } else {
+                if (data.type === "error") throw new Error(data.response || "서버 처리 중 오류 발생");
+                const botBubble = renderMessage("bot", "");
+                if (botBubble) await typeHTML(botBubble, data.response || "(응답 없음)");
+            }
+            
+            if (data.id && String(currentDialogId) !== String(data.id)) {
+                currentDialogId = data.id;
+                await loadDialogs();
+                const activeCard = document.querySelector(`#file-card-${data.id}`);
+                if(activeCard) activeCard.classList.add('active');
+
+            }
+            if (data.title && currentDialogId) {
+                const card = document.querySelector(`#file-card-${currentDialogId}`);
+                if (card) {
+                    const h5 = card.querySelector('h5');
+                    const isCustom = h5.dataset.customTitle === "true";
+                    if(h5 && h5.textContent !== data.title && !isCustom){
+                         h5.textContent = data.title;
+                         h5.dataset.fullText = data.title;
+                    }
+                }
+            }
+        } catch (e) {
+            typingIndicatorBubble?.closest('.message-wrapper')?.remove();
+            showErrorPopup(e.message);
+        }
     }
     
-    // ✅ 대화 삭제 함수 (API 호출 및 UI 업데이트)
+    // --- 대화 관련 함수들 ---
+    async function startNewDialog() {
+        if (!domReady || !chatboxElem) return;
+        try {
+            const res = await fetch("/chatbot/new/");
+            if (!res.ok) throw new Error(`새 대화 생성 실패 (Status: ${res.status})`);
+            const data = await res.json();
+            if (!data || typeof data.id === 'undefined') throw new Error("새 대화 API로부터 잘못된 응답 수신");
+            
+            chatboxElem.innerHTML = "";
+            const botBubble = renderMessage("bot", "");
+            if(botBubble) await typeHTML(botBubble, data.message || "안녕하세요! 무엇을 도와드릴까요?");
+            
+            currentDialogId = data.id;
+            localStorage.setItem("currentDialogId", String(data.id));
+            clearAllPreviews();
+            await loadDialogs();
+        } catch(err) {
+            console.error("startNewDialog failed:", err);
+            showErrorPopup(err.message);
+        }
+    }
+
+    async function loadDialogs() {
+        if (!fileListElem) return;
+        try {
+            const res = await fetch("/chatbot/list/");
+            if (!res.ok) throw new Error('대화 목록 로딩 실패');
+            const data = await res.json();
+            
+            fileListElem.innerHTML = "";
+            if (!data?.dialogs?.length) {
+                fileListElem.innerHTML = "<p style='text-align:center; color: var(--text-secondary);'>대화 기록이 없습니다.</p>";
+                await startNewDialog();
+                return;
+            }
+
+            data.dialogs.forEach(d => {
+                const card = document.createElement("div");
+                card.id = `file-card-${d.id}`;
+                card.className = "file-card";
+                
+                card.innerHTML = `<h5></h5><small>${d.timestamp}</small><div class="menu-button"><i class="bi bi-three-dots-vertical"></i></div><div class="menu-popup" id="menu-${d.id}"><button class="rename-btn"><i class="bi bi-pencil"></i> 제목 수정</button><button class="delete-btn"><i class="bi bi-trash3"></i> 삭제</button></div>`;
+                const h5 = card.querySelector('h5');
+                h5.textContent = d.title || "(제목 없음)";
+                h5.dataset.fullText = h5.textContent;
+                if (d.is_custom_title) h5.dataset.customTitle = "true";
+                
+                card.addEventListener("click", e => {
+                    if (e.target.closest(".menu-button, .menu-popup")) return;
+                    if (String(currentDialogId) !== String(d.id)) loadDialog(d.id);
+                });
+                
+                const menuButton = card.querySelector('.menu-button');
+                const menuPopup = card.querySelector('.menu-popup');
+                menuButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.menu-popup').forEach(p => { if (p !== menuPopup) p.style.display = 'none'; });
+                    menuPopup.style.display = menuPopup.style.display === 'block' ? 'none' : 'block';
+                });
+                card.querySelector('.rename-btn').addEventListener('click', (e) => { e.stopPropagation(); menuPopup.style.display = 'none'; startRename(d.id, h5); });
+                card.querySelector('.delete-btn').addEventListener('click', (e) => { e.stopPropagation(); menuPopup.style.display = 'none'; deleteDialog(d.id); });
+                
+                fileListElem.appendChild(card);
+            });
+
+            const activeCard = document.querySelector(`#file-card-${currentDialogId}`);
+            if(activeCard) activeCard.classList.add('active');
+
+        } catch(err) {
+            console.error("loadDialogs failed:", err);
+            showErrorPopup(err.message);
+        }
+    }
+
+    async function loadDialog(id) {
+        if (!chatboxElem || !id) return;
+        currentDialogId = id; 
+        localStorage.setItem("currentDialogId", String(id));
+        clearAllPreviews();
+
+        document.querySelectorAll(".file-card.active").forEach(c => c.classList.remove("active"));
+        const newActiveCard = document.getElementById(`file-card-${id}`);
+        if(newActiveCard) newActiveCard.classList.add("active");
+
+        try {
+            const res = await fetch(`/chatbot/load/${id}/`);
+            if (res.status === 404) { localStorage.removeItem("currentDialogId"); await startNewDialog(); return; }
+            if (!res.ok) throw new Error(`대화 로딩 실패 (Status: ${res.status})`);
+            
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            chatboxElem.innerHTML = "";
+            data.messages.forEach(msg => {
+                // [✨ 수정] loadDialog 시 상품 카드 렌더링 로직 추가
+                // 백엔드에서 저장한 텍스트를 기반으로 판별
+                if (msg.sender === 'bot' && msg.text.includes('대한 쿠팡 상품을') && msg.text.includes('개 추천했습니다.')) {
+                    const match = msg.text.match(/'(.*?)'에 대한 쿠팡 상품을 (\d+)개 추천했습니다\./);
+                    if (match) {
+                        const keyword = match[1];
+                        // 여기서 실제 상품 정보를 다시 불러오는 대신, 간단한 텍스트로 표시
+                        renderMessage('bot', `<p><strong>'${keyword}'</strong>에 대한 상품 추천 기록입니다. (다시 보려면 새로 질문해주세요)</p>`);
+                    } else {
+                        renderMessage('bot', msg.text);
+                    }
+                } else {
+                    renderMessage(msg.sender, msg.text, msg.image_path || null)
+                }
+            });
+            setTimeout(scrollToBottom, 0);
+
+        } catch (err) {
+            console.error(`loadDialog(${id}) error:`, err);
+            showErrorPopup(err.message);
+        }
+    }
+    
     function deleteDialog(id) {
         if (confirm("대화를 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
             fetch(`/chatbot/delete/${id}/`, { 
                 method: "POST", 
                 headers: {'X-CSRFToken': getCookie('csrftoken')}
             })
-            .then(res => res.json())
+            .then(res => {
+                if(!res.ok) throw new Error("삭제 요청 실패");
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
                     document.getElementById(`file-card-${id}`)?.remove();
@@ -572,13 +690,12 @@
                         }
                     }
                 } else { 
-                    alert("삭제 실패: " + (data.error || "서버 오류")); 
+                    showErrorPopup("삭제 실패: " + (data.error || "서버 오류")); 
                 }
-            }).catch(() => alert("삭제 중 오류가 발생했습니다."));
+            }).catch((err) => showErrorPopup(err.message));
         }
     }
 
-    // ✅ 제목 수정 로직을 처리하는 별도 함수
     function startRename(id, h5Element) {
         const cardContent = h5Element.parentNode;
         const oldTitle = h5Element.dataset.fullText;
@@ -586,19 +703,15 @@
         input.type = "text";
         input.value = oldTitle;
         input.className = "title-edit-input";
-
         h5Element.style.display = 'none';
-        cardContent.prepend(input); // h5 대신 input 삽입
+        cardContent.prepend(input);
         input.focus();
         input.select();
-
         const finishEdit = (save) => {
             const newTitle = input.value.trim();
-            input.remove(); // input 제거
-            h5Element.style.display = ''; // h5 다시 보이게
-
+            input.remove();
+            h5Element.style.display = '';
             if (save && newTitle && newTitle !== oldTitle) {
-                // API 호출
                 fetch(`/chatbot/rename/${id}/`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json", 'X-CSRFToken': getCookie('csrftoken') },
@@ -611,63 +724,68 @@
                         h5Element.dataset.fullText = data.title;
                         h5Element.dataset.customTitle = "true";
                     } else {
-                        h5Element.textContent = oldTitle; // 실패 시 원상 복구
-                        alert("제목 변경 실패: " + (data.error || "알 수 없는 오류"));
+                        h5Element.textContent = oldTitle;
+                        showErrorPopup("제목 변경 실패: " + (data.error || "알 수 없는 오류"));
                     }
                 })
                 .catch(() => {
-                    h5Element.textContent = oldTitle; // 실패 시 원상 복구
-                    alert("제목 변경 중 네트워크 오류가 발생했습니다.");
+                    h5Element.textContent = oldTitle;
+                    showErrorPopup("제목 변경 중 네트워크 오류가 발생했습니다.");
                 });
             } else {
-                h5Element.textContent = oldTitle; // 저장 안하거나, 내용이 없거나, 그대로일 때
+                h5Element.textContent = oldTitle;
             }
         };
-        
         input.addEventListener("blur", () => finishEdit(true));
-        input.addEventListener("keydown", e => {
-            if (e.key === "Enter") finishEdit(true);
-            if (e.key === "Escape") finishEdit(false);
-        });
+        input.addEventListener("keydown", e => { if (e.key === "Enter") finishEdit(true); if (e.key === "Escape") finishEdit(false); });
     }
 
+    // --- 페이지 로드 및 이벤트 리스너 설정 ---
     window.addEventListener("DOMContentLoaded", () => {
-      domReady = true;
-      chatboxElem = document.getElementById("chatbox"); fileListElem = document.getElementById("file-list");
-      messageInputElem = document.getElementById("message"); searchBoxElem = document.getElementById("search-box");
-      newDialogBtnElem = document.getElementById("new-dialog-btn"); toggleSidebarBtnElem = document.getElementById("toggle-sidebar");
-      errorPopupElem = document.getElementById("error-popup"); errorTextElem = document.getElementById("error-text");
-      scrollBtnElem = document.getElementById("scroll-to-bottom"); sendButtonElem = document.getElementById("send-button");
-      fileUploadButtonElem = document.getElementById("file-upload-button"); fileInputHiddenElem = document.getElementById("file-input-hidden");
-      attachmentPreviewsElem = document.getElementById("attachment-previews");
+        domReady = true;
+        chatboxElem = document.getElementById("chatbox"); fileListElem = document.getElementById("file-list");
+        messageInputElem = document.getElementById("message"); searchBoxElem = document.getElementById("search-box");
+        newDialogBtnElem = document.getElementById("new-dialog-btn"); toggleSidebarBtnElem = document.getElementById("toggle-sidebar");
+        errorPopupElem = document.getElementById("error-popup"); errorTextElem = document.getElementById("error-text");
+        scrollBtnElem = document.getElementById("scroll-to-bottom"); sendButtonElem = document.getElementById("send-button");
+        fileUploadButtonElem = document.getElementById("file-upload-button"); fileInputHiddenElem = document.getElementById("file-input-hidden");
+        attachmentPreviewsElem = document.getElementById("attachment-previews");
 
-      newDialogBtnElem?.addEventListener("click", startNewDialog);
-      toggleSidebarBtnElem?.addEventListener("click", () => document.getElementById("main-wrapper")?.classList.toggle("sidebar-hidden"));
-      sendButtonElem?.addEventListener("click", sendMessage);
-      fileUploadButtonElem?.addEventListener("click", () => fileInputHiddenElem.click());
-      fileInputHiddenElem?.addEventListener("change", handleFileUpload);
-      messageInputElem?.addEventListener("paste", handlePaste);
-      messageInputElem?.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-      messageInputElem?.addEventListener("input", () => { messageInputElem.style.height = "auto"; messageInputElem.style.height = `${Math.min(messageInputElem.scrollHeight, 200)}px`; });
-      searchBoxElem?.addEventListener("input", e => {
-        const keyword = e.target.value.toLowerCase();
-        document.querySelectorAll(".file-card").forEach(card => card.style.display = (card.querySelector('h5')?.textContent.toLowerCase().includes(keyword) ? "" : "none"));
-      });
-      chatboxElem?.addEventListener("scroll", () => scrollBtnElem.classList.toggle("visible", chatboxElem.scrollHeight - chatboxElem.scrollTop > chatboxElem.clientHeight + 150));
-      scrollBtnElem?.addEventListener("click", () => chatboxElem.scrollTo({ top: chatboxElem.scrollHeight, behavior: "smooth" }));
-      
-      // ✅ 외부 클릭 시 모든 팝업 닫기
-      document.addEventListener("click", e => {
-          if (!e.target.closest('.menu-button') && !e.target.closest('.menu-popup')) {
-              document.querySelectorAll('.menu-popup').forEach(popup => {
-                  popup.style.display = 'none';
-              });
-          }
-      });
+        newDialogBtnElem?.addEventListener("click", startNewDialog);
+        toggleSidebarBtnElem?.addEventListener("click", () => document.getElementById("main-wrapper")?.classList.toggle("sidebar-hidden"));
+        sendButtonElem?.addEventListener("click", sendMessage);
+        fileUploadButtonElem?.addEventListener("click", () => fileInputHiddenElem.click());
+        fileInputHiddenElem?.addEventListener("change", (e) => handleFileUpload(e.target.files));
+        messageInputElem?.addEventListener("paste", handlePaste);
+        messageInputElem?.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+        messageInputElem?.addEventListener("input", () => { messageInputElem.style.height = "auto"; messageInputElem.style.height = `${Math.min(messageInputElem.scrollHeight, 200)}px`; });
+        searchBoxElem?.addEventListener("input", e => {
+            const keyword = e.target.value.toLowerCase();
+            document.querySelectorAll(".file-card").forEach(card => card.style.display = (card.querySelector('h5')?.textContent.toLowerCase().includes(keyword) ? "" : "none"));
+        });
+        chatboxElem?.addEventListener("scroll", () => scrollBtnElem.classList.toggle("visible", chatboxElem.scrollHeight - chatboxElem.scrollTop > chatboxElem.clientHeight + 150));
+        scrollBtnElem?.addEventListener("click", () => chatboxElem.scrollTo({ top: chatboxElem.scrollHeight, behavior: "smooth" }));
+        
+        document.addEventListener("click", e => {
+            if (!e.target.closest('.menu-button') && !e.target.closest('.menu-popup')) {
+                document.querySelectorAll('.menu-popup').forEach(popup => { popup.style.display = 'none'; });
+            }
+        });
 
-      const savedDialogId = localStorage.getItem("currentDialogId");
-      if (savedDialogId) { loadDialogs().then(() => loadDialog(savedDialogId)); } 
-      else { startNewDialog(); }
+        const initialDialogId = "{{ initial_dialog_id|default:'' }}";
+        currentDialogId = initialDialogId || localStorage.getItem("currentDialogId");
+
+        loadDialogs().then(() => {
+            if (currentDialogId) {
+                loadDialog(currentDialogId);
+            } else if (fileListElem.querySelector(".file-card")) {
+                 // 로드할 ID가 없을 경우, 목록의 첫번째 대화를 로드
+                const firstDialogId = fileListElem.querySelector(".file-card").id.replace('file-card-', '');
+                loadDialog(firstDialogId);
+            } else {
+                // 대화 목록이 아예 비어있을 경우 새 대화 시작 (loadDialogs 내부에서 처리)
+            }
+        });
     });
-  </script>
+</script>
 {% endblock %}
