@@ -140,7 +140,7 @@
             background-color: var(--button-primary-hover-bg);
         }
 
-        .form-errors { /* 폼 상단 에러 메시지 */
+        .form-errors {
             color: var(--error-text);
             font-size: 0.875rem;
             margin-bottom: 15px;
@@ -157,8 +157,8 @@
         .form-errors li:last-child {
             margin-bottom: 0;
         }
-        
-        .field-errorlist { /* Django 폼 필드 에러용 (ul.errorlist에 JS로 추가될 수 있음) */
+
+        .field-errorlist {
             list-style: none;
             padding: 0;
             margin: 6px 0 0 0;
@@ -224,6 +224,12 @@
             {% endif %}
           
             <button type="submit" class="login-button">로그인</button>
+
+            <!-- 🔽 여기 추가 -->
+            <div class="signup-link-container" style="margin-top: 15px;">
+                <a href="{% url 'accounts:find_username' %}">아이디 찾기</a> |
+                <a href="{% url 'password_reset' %}">비밀번호 재설정</a>
+            </div>
         </form>
 
         <div class="signup-link-container">
@@ -236,7 +242,7 @@
             function setupFormField(fieldId, placeholderText) {
                 const inputElement = document.getElementById(fieldId);
                 if (inputElement) {
-                    inputElement.classList.add('form-control'); /* 이 클래스는 CSS에서 input[type="text"] 등으로 직접 스타일링 중 */
+                    inputElement.classList.add('form-control');
                     inputElement.setAttribute('placeholder', placeholderText);
                 }
                 const errorList = inputElement?.parentElement?.querySelector('ul.errorlist');
