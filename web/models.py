@@ -1,8 +1,13 @@
+# web/models.py
 from django.db import models
+from django.conf import settings
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+# ==============================================================
+# 모델 1: HealthSurvey (이 부분은 원래 그대로입니다)
+# ==============================================================
 class HealthSurvey(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="health_survey")
     blood_type = models.CharField(max_length=20)
@@ -23,6 +28,9 @@ class HealthSurvey(models.Model):
     submitted_at = models.DateTimeField(auto_now_add=True)
 
 
+# ==============================================================
+# 모델 2: FitnessProfile (이 부분도 원래 그대로입니다)
+# ==============================================================
 class FitnessProfile(models.Model):
     experience = models.CharField(max_length=10)
     goal = models.CharField(max_length=50)
@@ -39,5 +47,43 @@ class FitnessProfile(models.Model):
     gym = models.CharField(max_length=10)
 
     def __str__(self):
+        # 이 모델에 맞는 __str__ 입니다.
         return f"{self.goal} - {self.gender}"
 
+
+class Inquiry(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, # 사용자가 탈퇴해도 문의는 남도록 설정
+        null=True,
+        blank=True,
+        verbose_name="문의자 (회원인 경우)"
+    )
+    CATEGORY_CHOICES = [
+        ('account', '계정 관리'),
+        ('routine', '운동 루틴'),
+        ('diet', '식단'),
+        ('feature', '기능 문의'),
+        ('bug', '오류/버그 신고'),
+        ('etc', '기타'),
+    ]
+
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="문의 유형")
+    email = models.EmailField(verbose_name="답변받을 이메일")
+    subject = models.CharField(max_length=200, verbose_name="제목")
+    message = models.TextField(verbose_name="문의 내용")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="접수 시간")
+    is_answered = models.BooleanField(default=False, verbose_name="답변 완료 여부")
+
+    # --- 새로 추가할 부분 ---
+    answer = models.TextField(verbose_name="답변 내용", blank=True, null=True)
+    answered_at = models.DateTimeField(verbose_name="답변 시간", blank=True, null=True)
+    # --- 여기까지 추가 ---
+
+    def __str__(self):
+        return f"[{self.get_category_display()}] {self.subject}"
+
+    class Meta:
+        verbose_name = "1:1 문의"
+        verbose_name_plural = "1:1 문의 목록"
+        ordering = ['-created_at']

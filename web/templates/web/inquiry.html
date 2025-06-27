@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthWise - 1:1 문의하기</title>
+    <style>
+        /* CSS 스타일은 그대로 유지 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+        body {
+            background-color: #1A1A2E;
+            color: #E0E0E0;
+            font-family: 'Noto Sans KR', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .inquiry-form-container {
+            background-color: #23233B;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .inquiry-form-container h2 {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #FFFFFF;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #1A1A2E;
+            border: 1px solid #4A4A6A;
+            border-radius: 8px;
+            color: #E0E0E0;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #00BFFF;
+            box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.2);
+        }
+
+        .form-control-file::file-selector-button {
+            background: linear-gradient(90deg, #E94560, #00BFFF);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        .privacy-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .privacy-group input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .privacy-group label {
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+        .privacy-group a {
+            color: #00BFFF;
+            text-decoration: none;
+        }
+        .privacy-group a:hover {
+            text-decoration: underline;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFFFFF;
+            background: linear-gradient(90deg, #E94560 0%, #00BFFF 100%);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .submit-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="inquiry-form-container">
+        <h2>1:1 문의하기</h2>
+        <!-- ★★★★★ 수정된 부분 1 ★★★★★ -->
+        <form method="POST" action="{% url 'web:inquiry' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <!-- 문의 유형 -->
+            <div class="form-group">
+                <label for="category">문의 유형</label>
+                <!-- ★★★★★ 수정된 부분 2: name="category" 추가 ★★★★★ -->
+                <select id="category" name="category" class="form-control" required>
+                    <option value="" disabled selected>문의할 내용을 선택해주세요.</option>
+                    <option value="account">계정 관리 (로그인, 비밀번호, 프로필)</option>
+                    <option value="routine">운동 루틴 생성/관리</option>
+                    <option value="diet">식단 대시보드/기록</option>
+                    <option value="feature">기능 문의 (운동 장소, AI 추천 등)</option>
+                    <option value="bug">오류/버그 신고</option>
+                    <option value="etc">기타 문의</option>
+                </select>
+            </div>
+
+            <!-- 이메일 주소 -->
+            <div class="form-group">
+                <label for="email">답변받을 이메일 주소</label>
+                <!-- ★★★★★ 수정된 부분 3: name="email" 추가 ★★★★★ -->
+                <input type="email" id="email" name="email" class="form-control" placeholder="example@healthwise.com" required>
+            </div>
+
+            <!-- 제목 -->
+            <div class="form-group">
+                <label for="subject">제목</label>
+                <!-- ★★★★★ 수정된 부분 4: name="subject" 추가 ★★★★★ -->
+                <input type="text" id="subject" name="subject" class="form-control" placeholder="문의 제목을 입력해주세요." required>
+            </div>
+
+            <!-- 문의 내용 -->
+            <div class="form-group">
+                <label for="message">문의 내용</label>
+                <!-- ★★★★★ 수정된 부분 5: name="message" 추가 ★★★★★ -->
+                <textarea id="message" name="message" class="form-control" rows="6" placeholder="자세한 문의 내용을 작성해주세요." required></textarea>
+            </div>
+
+            <!-- 파일 첨부 (선택 사항 - 일단 기능은 빼고 UI만 둠) -->
+            <div class="form-group">
+                <label for="attachment">파일 첨부 (선택)</label>
+                <input type="file" id="attachment" name="attachment" class="form-control form-control-file">
+            </div>
+
+            <!-- 개인정보 처리방침 동의 -->
+            <div class="privacy-group">
+                <input type="checkbox" id="privacy" required>
+                <label for="privacy"><a href="#">개인정보 처리방침</a>에 동의합니다.</label>
+            </div>
+
+            <!-- 제출 버튼 -->
+            <button type="submit" class="submit-btn">문의 접수하기</button>
+        </form>
+    </div>
+
+    <!-- ★★★★★ 수정된 부분 6: <script> 블록을 완전히 삭제했습니다. ★★★★★ -->
+
+</body>
+</html>

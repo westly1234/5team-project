@@ -29,15 +29,6 @@
         background-color: #000;
         color: #fff;
     }
-    /* ✅ 비디오 관련 스타일은 더 이상 필요 없으므로 삭제 또는 주석 처리 */
-    /*
-    #heroVideo {
-        position: absolute; top: 0; left: 0;
-        width: 100%; height: 100%;
-        object-fit: cover;
-        z-index: 1;
-    }
-    */
     .hero-content {
         position: relative;
         z-index: 2;
@@ -45,7 +36,6 @@
 </style>
 
 <section class="hero" id="hero">
-    <!-- ✅ [핵심 수정] video 태그를 완전히 삭제했습니다. -->
     <div class="hero-content">
         <h1>AI Healthcare</h1>
         <p> {% t '스크롤하여 혁신적인 기능들을 확인하세요' %} </p>
@@ -197,6 +187,303 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+});
+</script>
+
+<!-- ================================================================ -->
+<!-- 3. 사용자 후기 섹션 -->
+<!-- ================================================================ -->
+<style>
+.testimonials-section {
+    background-color: #0b0a1d;
+    color: #fff;
+    padding: 100px 20px;
+    text-align: center;
+}
+.testimonials-section h2 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 70px;
+    background: linear-gradient(90deg, #f977ce, #a361ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+}
+.testimonial-cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+.testimonial-card {
+    background-color: #1c1a34;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 360px;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+.testimonial-header { display: flex; align-items: center; margin-bottom: 15px; }
+.testimonial-avatar { font-size: 2.5rem; margin-right: 15px; line-height: 1; }
+.testimonial-user h3 { font-size: 1.1rem; font-weight: 600; margin: 0 0 5px 0; }
+.testimonial-user p { font-size: 0.9rem; color: #a0aec0; margin: 0; }
+.testimonial-rating { margin-bottom: 20px; color: #ffc107; font-size: 1.1rem; }
+.testimonial-body { font-size: 1rem; line-height: 1.7; color: #e2e8f0; }
+</style>
+
+<section class="testimonials-section">
+    <h2>10만 직장인이 선택한 이유</h2>
+    <div class="testimonial-cards-container">
+        <!-- Testimonial 1: 김지훈 -->
+        <div class="testimonial-card">
+            <div class="testimonial-header"><span class="testimonial-avatar">👨‍💼</span><div class="testimonial-user"><h3>김지훈</h3><p>삼성전자 개발팀</p></div></div>
+            <div class="testimonial-rating">★★★★★</div>
+            <p class="testimonial-body">AI 컨설턴트 덕분에 3개월 만에 체중 10kg 감량했어요. 맞춤형 운동과 식단이 정말 효과적이었습니다.</p>
+        </div>
+        <!-- Testimonial 2: 이서연 -->
+        <div class="testimonial-card">
+            <div class="testimonial-header"><span class="testimonial-avatar">👩‍💼</span><div class="testimonial-user"><h3>이서연</h3><p>LG화학 마케팅팀</p></div></div>
+            <div class="testimonial-rating">★★★★★</div>
+            <p class="testimonial-body">팀 운동 챌린지로 동료들과 재미있게 건강을 관리하고 있어요. 업무 스트레스도 많이 줄었습니다.</p>
+        </div>
+        <!-- Testimonial 3: 박민수 -->
+        <div class="testimonial-card">
+            <div class="testimonial-header"><span class="testimonial-avatar">👨‍💻</span><div class="testimonial-user"><h3>박민수</h3><p>현대자동차 기획팀</p></div></div>
+            <div class="testimonial-rating">★★★★★</div>
+            <p class="testimonial-body">웨어러블 연동으로 실시간 건강 모니터링이 가능해서 좋아요. 건강 관리가 훨씬 쉬워졌습니다.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- 4. 파트너사 로고 스크롤 섹션 (새로 추가된 부분) -->
+<!-- ================================================================ -->
+<style>
+/* 카운팅 애니메이션을 위한 키프레임 (선택사항, 부드러운 등장 효과) */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.growth-partners-section {
+    background-color: #0b0a1d; /* 이전 섹션과 동일한 배경 */
+    padding: 100px 20px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.growth-partners-section h2 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 20px;
+    animation: fadeIn 1s ease-out;
+}
+
+.growth-partners-section .section-description {
+    font-size: 1.1rem;
+    color: #a0aec0;
+    margin-bottom: 60px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    animation: fadeIn 1s ease-out 0.2s;
+    animation-fill-mode: backwards; /* 애니메이션 시작 전까지 숨김 */
+}
+
+.growth-display {
+    margin-bottom: 80px;
+    animation: fadeIn 1s ease-out 0.4s;
+    animation-fill-mode: backwards;
+}
+
+.growth-number {
+    font-size: 9rem;
+    font-weight: 800;
+    line-height: 1;
+    /* 사용자 후기 제목과 동일한 그라데이션 적용 */
+    background: linear-gradient(90deg, #f977ce, #a361ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    display: inline-block;
+    position: relative;
+}
+
+/* 숫자 옆에 '%' 기호 추가 */
+.growth-number::after {
+    content: '%';
+    font-size: 0.3em; /* '%' 크기를 숫자보다 작게 */
+    font-weight: 600;
+    position: absolute;
+    top: 15%;
+    right: -0.6em; /* '%' 기호 위치 조정 */
+    background: none;
+    -webkit-text-fill-color: #a361ff; /* 그라데이션의 끝 색상과 맞춤 */
+}
+
+.growth-label {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+/* --- 로고 슬라이더 스타일 (이전과 동일) --- */
+@keyframes scroll-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+.logos-viewport {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+.logos-track {
+    display: flex;
+    width: calc(230px * 40); /* 로고너비 150 + 좌우마진 80 = 230 */
+    animation: scroll-left 60s linear infinite;
+}
+.logos-viewport:hover .logos-track {
+    animation-play-state: paused;
+}
+.logo-item {
+    flex-shrink: 0;
+    width: 150px;
+    height: 60px;
+    margin: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.logo-item img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    filter: grayscale(100%) brightness(0.8);
+    opacity: 0.7;
+    transition: all 0.3s ease-in-out;
+}
+.logo-item:hover img {
+    filter: grayscale(0%) brightness(1);
+    opacity: 1;
+    transform: scale(1.1);
+}
+</style>
+
+<section class="growth-partners-section">
+    <h2>후원으로 성장률 상승</h2>
+    <p class="section-description">
+        최고의 파트너들과 함께 사용자의 건강 목표 달성률을 높여가고 있습니다.
+    </p>
+    
+    <div class="growth-display">
+        <!-- data-target에 목표 숫자를 넣으면 JS가 자동으로 카운팅합니다 -->
+        <div class="growth-number" data-target="185">0</div>
+        <p class="growth-label">사용자 목표 달성률</p>
+    </div>
+
+    <div class="logos-viewport">
+        <div class="logos-track">
+            <!-- 원본 로고 20개 -->
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+
+            <!-- 무한 스크롤을 위한 복제본 20개 -->
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+        </div>
+    </div>
+</section>
+
+<!-- 숫자 카운팅 애니메이션을 위한 JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const counter = document.querySelector('.growth-number');
+    if (!counter) return;
+
+    const animateCounter = () => {
+        const target = +counter.getAttribute('data-target');
+        const duration = 2000; // 2초 동안 애니메이션
+        const start = 0;
+        let startTime = null;
+
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const currentNumber = Math.floor(progress * (target - start) + start);
+            
+            counter.innerText = currentNumber;
+
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        requestAnimationFrame(animation);
+    };
+
+    // 섹션이 화면에 보일 때 애니메이션 시작 (Intersection Observer API)
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter();
+                observer.unobserve(entry.target); // 한 번만 실행
+            }
+        });
+    }, { threshold: 0.5 }); // 섹션이 50% 보일 때 실행
+
+    observer.observe(document.querySelector('.growth-partners-section'));
 });
 </script>
 
