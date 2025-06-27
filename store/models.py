@@ -95,6 +95,7 @@ class BodyShapeAnalysis(models.Model):
     
     # ✅ 추가: 스켈레톤 이미지를 저장할 필드
     skeleton_image = models.ImageField(upload_to='body_analysis/skeleton/', blank=True, null=True)
+    analysis_image = models.ImageField(upload_to='body_analysis/analysis_results/', blank=True, null=True)
 
     body_shape_choices = [
         ('HOURGLASS', '모래시계형'),

@@ -2,7 +2,7 @@
 
 <div class="product-grid main-grid">
     {% for brand in page_obj %}
-        {% include 'store/_brand_card.html' with brand=brand %}
+        {% include 'store/_brand_card.html' with brand=brand favorite_brand_ids=favorite_brand_ids %}
     {% empty %}
         <div class="no-results" id="no-results-message">
             <p>{% if search_query %}'{{ search_query }}'에 대한 검색 결과가 없습니다.{% else %}해당 조건에 맞는 브랜드가 없습니다.{% endif %}</p>
