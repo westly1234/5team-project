@@ -1,5 +1,5 @@
 {% extends "web/dashboard_sliding_base.html" %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}AI 뮤직 허브 - HealthWise{% endblock %}
 
@@ -298,41 +298,41 @@
     <!-- 좌측 컨트롤 패널 -->
     <aside class="music-nav-sidebar">
         <div class="sidebar-block">
-            <h2 class="block-title">AI 뮤직 큐레이션</h2>
+            <h2 class="block-title"> {% t 'AI 뮤직 큐레이션' %} </h2>
             <div id="ai-controls">
                 <div id="exercise-group" class="sidebar-options-list">
-                    <div class="option-item" data-value="헬스"><i class="bi bi-person-arms-up icon"></i> 헬스</div>
-                    <div class="option-item" data-value="요가 또는 필라테스"><i class="bi bi-peace icon"></i> 요가/필라테스</div>
-                    <div class="option-item" data-value="조깅"><i class="bi bi-person-walking icon"></i> 조깅</div>
-                    <div class="option-item" data-value="고강도 인터벌 트레이닝 (HIIT)"><i class="bi bi-fire icon"></i> HIIT</div>
+                    <div class="option-item" data-value="헬스"><i class="bi bi-person-arms-up icon"></i> {% t '헬스' %} </div>
+                    <div class="option-item" data-value="요가 또는 필라테스"><i class="bi bi-peace icon"></i> {% t '요가/필라테스' %} </div>
+                    <div class="option-item" data-value="조깅"><i class="bi bi-person-walking icon"></i> {% t '조깅' %} </div>
+                    <div class="option-item" data-value="고강도 인터벌 트레이닝 (HIIT)"><i class="bi bi-fire icon"></i> {% t 'HIIT' %} </div>
                 </div>
                 <hr style="border-color: #2a2a2a; margin: 16px 0;">
                 <div id="mood-group" class="sidebar-options-list">
-                    <div class="option-item" data-value="최고로 집중해서"><i class="bi bi-headphones icon"></i> 집중 모드</div>
-                    <div class="option-item" data-value="지치지만 이겨내고 싶을 때"><i class="bi bi-rocket-takeoff icon"></i> 한계 돌파</div>
-                    <div class="option-item" data-value="에너지 넘치게"><i class="bi bi-lightning-charge icon"></i> 에너지 폭발</div>
-                    <div class="option-item" data-value="편안하고 차분하게"><i class="bi bi-cup-hot icon"></i> 편안한 휴식</div>
+                    <div class="option-item" data-value="최고로 집중해서"><i class="bi bi-headphones icon"></i> {% t '집중 모드' %} </div>
+                    <div class="option-item" data-value="지치지만 이겨내고 싶을 때"><i class="bi bi-rocket-takeoff icon"></i> {% t '한계 돌파' %} </div>
+                    <div class="option-item" data-value="에너지 넘치게"><i class="bi bi-lightning-charge icon"></i> {% t '에너지 폭발' %} </div>
+                    <div class="option-item" data-value="편안하고 차분하게"><i class="bi bi-cup-hot icon"></i> {% t '편안한 휴식' %} </div>
                 </div>
                  <hr style="border-color: #2a2a2a; margin: 16px 0;">
                 <div id="genre-group" class="sidebar-options-list">
-                    <div class="option-item" data-value="신나는 K-Pop"><i class="bi bi-mic icon"></i> K-Pop</div>
-                    <div class="option-item" data-value="힙합"><i class="bi bi-boombox icon"></i> 힙합</div>
-                    <div class="option-item" data-value="EDM"><i class="bi bi-speaker icon"></i> EDM</div>
-                    <div class="option-item" data-value="팝송"><i class="bi bi-globe-americas icon"></i> 팝송</div>
+                    <div class="option-item" data-value="신나는 K-Pop"><i class="bi bi-mic icon"></i> {% t 'K-Pop' %} </div>
+                    <div class="option-item" data-value="힙합"><i class="bi bi-boombox icon"></i> {% t '힙합' %} </div>
+                    <div class="option-item" data-value="EDM"><i class="bi bi-speaker icon"></i> {% t 'EDM' %} </div>
+                    <div class="option-item" data-value="팝송"><i class="bi bi-globe-americas icon"></i> {% t '팝송' %} </div>
                     <div class="option-item" data-value="락"><i class="bi bi-music-note-beamed icon"></i> 락</div>
                 </div>
             </div>
         </div>
         <div class="sidebar-footer">
-            <button id="request-ai-btn" class="action-btn recommend">AI 추천 받기</button>
-            <button id="reset-btn" class="action-btn reset">초기화</button>
+            <button id="request-ai-btn" class="action-btn recommend"> {% t 'AI 추천 받기' %} </button>
+            <button id="reset-btn" class="action-btn reset"> {% t '초기화' %} </button>
         </div>
     </aside>
 
     <!-- 우측 메인 뷰 -->
     <main class="music-main-view" id="music-main-view">
         <div class="main-view-header">
-            <h1 id="main-view-title">오늘의 트렌딩 믹스</h1>
+            <h1 id="main-view-title"> {% t '오늘의 트렌딩 믹스' %} </h1>
         </div>
         <div class="main-view-content">
             <!-- AI 추천 결과 섹션 (초기에는 숨김) -->
@@ -566,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error("트렌딩 믹스 로딩 실패:", error);
-            hotlistGrid.innerHTML = `<p style="color:#ff6b6b;">트렌딩 믹스를 불러오지 못했습니다.</p>`;
+            hotlistGrid.innerHTML = `<p style="color:#ff6b6b;"> {% t '트렌딩 믹스를 불러오지 못했습니다.' %} </p>`;
         }
     }
 

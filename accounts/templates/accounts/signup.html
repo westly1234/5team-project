@@ -1,9 +1,11 @@
+{% load static custom_translate i18n %}
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원가입</title>
+    <title> {% t '회원가입' %} </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
     // ✅ CSRF 토큰을 쿠키에서 추출
@@ -255,15 +257,15 @@
 <body>
     <div class="signup-container-wrapper">
         <div class="signup-container">
-            <h2 class="form-title">회원가입</h2>
+            <h2 class="form-title"> {% t '회원가입' %} </h2>
 
             <form method="post" id="signupForm">
                 {% csrf_token %}
 
                 <div class="form-group">
-                    <label><strong>회원 유형:</strong></label>
-                    <input type="radio" name="user_type" value="company" id="user_type_company" required> <label for="user_type_company">기업</label>
-                    <input type="radio" name="user_type" value="normal" id="user_type_normal" required> <label for="user_type_normal">일반</label>
+                    <label><strong> {% t '회원 유형:' %} </strong></label>
+                    <input type="radio" name="user_type" value="company" id="user_type_company" required> <label for="user_type_company"> {% t '기업' %} </label>
+                    <input type="radio" name="user_type" value="normal" id="user_type_normal" required> <label for="user_type_normal"> {% t '일반' %} </label>
                 </div>
 
                 <div id="surveyActionArea" class="survey-status-area hidden">
@@ -273,7 +275,7 @@
                     {{ form.as_p }}
                 </div>
                 
-                <button type="submit" id="submitSignup" class="submit-button hidden">가입하기</button>
+                <button type="submit" id="submitSignup" class="submit-button hidden"> {% t '가입하기' %} </button>
             </form>
         </div>
     </div>
@@ -292,33 +294,33 @@
                     <!-- Step 1: 기본 건강 정보 -->
                     <div class="step-container">
                         <div class="form-card">
-                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">기본 건강 정보</h2>
+                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800"> {% t '기본 건강 정보' %} </h2>
                             <div class="label-group">
-                                <label for="blood-type" class="block text-lg font-medium text-gray-700 mb-2">혈액형</label>
+                                <label for="blood-type" class="block text-lg font-medium text-gray-700 mb-2"> {% t '혈액형' %} </label>
                                 <select id="blood-type" name="blood_type" required
                                     class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">선택하세요</option>
-                                    <option value="A_RH+">A형 RH+</option>
-                                    <option value="A_RH-">A형 RH-</option>
-                                    <option value="B_RH+">B형 RH+</option>
-                                    <option value="B_RH-">B형 RH-</option>
-                                    <option value="O_RH+">O형 RH+</option>
-                                    <option value="O_RH-">O형 RH-</option>
-                                    <option value="AB_RH+">AB형 RH+</option>
-                                    <option value="AB_RH-">AB형 RH-</option>
-                                    <option value="UNKNOWN">모름</option>
+                                    <option value=""> {% t '선택하세요' %} </option>
+                                    <option value="A_RH+"> {% t 'A형 RH+' %} </option>
+                                    <option value="A_RH-"> {% t 'A형 RH-' %} </option>
+                                    <option value="B_RH+"> {% t 'B형 RH+' %} </option>
+                                    <option value="B_RH-"> {% t 'B형 RH-' %} </option>
+                                    <option value="O_RH+"> {% t 'O형 RH+' %} </option>
+                                    <option value="O_RH-"> {% t 'O형 RH-' %} </option>
+                                    <option value="AB_RH+"> {% t 'AB형 RH+' %} </option>
+                                    <option value="AB_RH-"> {% t 'AB형 RH-' %} </option>
+                                    <option value="UNKNOWN"> {% t '모름' %} </option>
                                 </select>
                             </div>
                             <div class="label-group">
-                                <h3 class="text-lg font-medium text-gray-700 mb-3">알레르기 유무 및 종류 (중복 선택 가능)</h3>
+                                <h3 class="text-lg font-medium text-gray-700 mb-3"> {% t '알레르기 유무 및 종류 (중복 선택 가능)' %} </h3>
                                 <div id="allergy-group">
-                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="none" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>없음</span></label>
-                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="food" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>음식</span></label>
-                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="drug" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>약물</span></label>
-                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="pollen" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>꽃가루</span></label>
-                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="dust_mite" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>집먼지 진드기</span></label>
-                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="animal_fur" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>동물 털</span></label>
-                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span>기타</span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="none" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '없음' %} </span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="food" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '음식' %} </span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="drug" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '약물' %} </span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="pollen" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '꽃가루' %} </span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="dust_mite" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '집먼지 진드기' %} </span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="animal_fur" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '동물 털' %} </span></label>
+                                    <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span> {% t '기타' %} </span></label>
                                 </div>
                                 <textarea id="allergy-details" name="allergy_details" rows="3" class="border border-gray-300 mt-2 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="알레르기 종류 및 반응을 상세히 적어주세요. (예: 복숭아 - 두드러기, 페니실린 - 호흡곤란)"></textarea>
                             </div>
@@ -328,24 +330,24 @@
                     <!-- Step 2: 과거 병력 -->
                     <div class="step-container">
                         <div class="form-card">
-                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">과거 병력</h2>
+                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800"> {% t '과거 병력' %} </h2>
                             <div class="label-group">
-                                <h3 class="text-lg font-medium text-gray-700 mb-4">다음 중 진단받은 적이 있는 만성 질환이 있다면 모두 선택해주세요.</h3>
+                                <h3 class="text-lg font-medium text-gray-700 mb-4"> {% t '다음 중 진단받은 적이 있는 만성 질환이 있다면 모두 선택해주세요.' %} </h3>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="chronic-disease-group">
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="none" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>해당 없음</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="hypertension" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>고혈압</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="diabetes" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>당뇨병</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="dyslipidemia" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>고지혈증</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="thyroid" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>갑상선 질환</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="heart" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>심장 질환</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="cerebrovascular" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>뇌혈관 질환</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="respiratory" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>호흡기 질환</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="digestive" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>소화기 질환</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="kidney" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>신장 질환</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="arthritis" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>관절염</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="none" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '해당 없음' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="hypertension" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '고혈압' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="diabetes" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '당뇨병' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="dyslipidemia" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '고지혈증' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="thyroid" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '갑상선 질환' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="heart" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '심장 질환' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="cerebrovascular" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '뇌혈관 질환' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="respiratory" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '호흡기 질환' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="digestive" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '소화기 질환' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="kidney" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '신장 질환' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="arthritis" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '관절염' %} </span></label>
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="cancer" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>암</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="mental_health" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>정신 건강 문제</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span>기타</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="mental_health" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '정신 건강 문제' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span> {% t '기타' %} </span></label>
                                 </div>
                                 <textarea id="chronic-disease-details" name="chronic_disease_details" rows="3" class="border border-gray-300 mt-3 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="기타 만성 질환명 또는 상세 정보를 입력해주세요."></textarea>
                             </div>
@@ -359,7 +361,7 @@
                     <!-- Step 3: 현재 복용 약물 및 영양제 -->
                     <div class="step-container">
                         <div class="form-card">
-                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">현재 복용 약물 및 영양제</h2>
+                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800"> {% t '현재 복용 약물 및 영양제' %} </h2>
                             <div class="label-group">
                                 <label for="current-medication" class="block text-lg font-medium text-gray-700 mb-2">현재 처방받아 복용 중인 약물이 있다면 모두 적어주세요. 없다면 '없음'으로 기재.</label>
                                 <textarea id="current-medication" name="current_medication" rows="3" required class="border border-gray-300 p-3 w-full text-base rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 고혈압약 (아침 식후 1정), 당뇨약 (저녁 식후 1정) 또는 없음"></textarea>
@@ -374,39 +376,39 @@
                     <!-- Step 4: 생활 습관 -->
                     <div class="step-container">
                         <div class="form-card">
-                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">생활 습관</h2>
+                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800"> {% t '생활 습관' %} </h2>
                             <div class="label-group">
-                                <h3 class="text-lg font-medium text-gray-700 mb-2">흡연 여부</h3>
+                                <h3 class="text-lg font-medium text-gray-700 mb-2"> {% t '흡연 여부' %} </h3>
                                 <select id="smoking-status" name="smoking_status" required class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">선택하세요</option>
-                                    <option value="never">흡연 안 함 (비흡연)</option>
-                                    <option value="ex_smoker">과거 흡연했으나 현재 금연</option>
-                                    <option value="current_smoker">현재 흡연 중</option>
+                                    <option value=""> {% t '선택하세요' %} </option>
+                                    <option value="never"> {% t '흡연 안 함 (비흡연)' %} </option>
+                                    <option value="ex_smoker"> {% t '과거 흡연했으나 현재 금연' %} </option>
+                                    <option value="current_smoker"> {% t '현재 흡연 중' %} </option>
                                 </select>
                                 <div id="smoking-details-container" class="mt-4 hidden space-y-3">
                                     <div>
-                                        <label for="smoking-period" class="block text-sm font-medium text-gray-600 mb-1">흡연 기간 (년)</label>
+                                        <label for="smoking-period" class="block text-sm font-medium text-gray-600 mb-1"> {% t '흡연 기간 (년)' %} </label>
                                         <input type="number" id="smoking-period" name="smoking_period" min="0" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 5">
                                     </div>
                                     <div>
-                                        <label for="smoking-amount" class="block text-sm font-medium text-gray-600 mb-1">하루 평균 흡연량 (개비)</label>
+                                        <label for="smoking-amount" class="block text-sm font-medium text-gray-600 mb-1"> {% t '하루 평균 흡연량 (개비)' %} </label>
                                         <input type="number" id="smoking-amount" name="smoking_amount" min="0" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 10">
                                     </div>
                                 </div>
                             </div>
                             <div class="label-group">
-                                <h3 class="text-lg font-medium text-gray-700 mb-2">음주 빈도</h3>
+                                <h3 class="text-lg font-medium text-gray-700 mb-2"> {% t '음주 빈도' %} </h3>
                                 <select id="drinking-frequency" name="drinking_frequency" required class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">선택하세요</option>
-                                    <option value="none">전혀 안 마심</option>
-                                    <option value="monthly_1_less">월 1회 미만</option>
-                                    <option value="monthly_2_3">월 2~3회</option>
-                                    <option value="weekly_1_2">주 1~2회</option>
-                                    <option value="weekly_3_4">주 3~4회</option>
-                                    <option value="daily">거의 매일</option>
+                                    <option value=""> {% t '선택하세요' %} </option>
+                                    <option value="none"> {% t '전혀 안 마심' %} </option>
+                                    <option value="monthly_1_less"> {% t '월 1회 미만' %} </option>
+                                    <option value="monthly_2_3"> {% t '월 2~3회' %} </option>
+                                    <option value="weekly_1_2"> {% t '주 1~2회' %} </option>
+                                    <option value="weekly_3_4"> {% t '주 3~4회' %} </option>
+                                    <option value="daily"> {% t '거의 매일' %} </option>
                                 </select>
                                 <div id="drinking-details-container" class="mt-4 hidden">
-                                    <label for="drinking-amount" class="block text-sm font-medium text-gray-600 mb-1">1회 평균 음주량</label>
+                                    <label for="drinking-amount" class="block text-sm font-medium text-gray-600 mb-1"> {% t '1회 평균 음주량' %} </label>
                                     <input type="text" id="drinking-amount" name="drinking_amount" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 소주 1병 또는 맥주 2캔">
                                 </div>
                             </div>
@@ -416,18 +418,18 @@
                     <!-- Step 5: 가족력 -->
                     <div class="step-container">
                         <div class="form-card">
-                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800">가족력 (부모, 형제자매)</h2>
+                            <h2 class="text-3xl font-bold mb-10 text-center text-gray-800"> {% t '가족력 (부모, 형제자매)' %} </h2>
                             <div class="label-group">
-                                <h3 class="text-lg font-medium text-gray-700 mb-4">직계 가족 중 다음 질환을 앓았거나 앓고 계신 분이 있다면 모두 선택해주세요.</h3>
+                                <h3 class="text-lg font-medium text-gray-700 mb-4"> {% t '직계 가족 중 다음 질환을 앓았거나 앓고 계신 분이 있다면 모두 선택해주세요.' %} </h3>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="family-history-group">
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="none" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>해당 없음</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="hypertension" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>고혈압</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="diabetes" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>당뇨병</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="heart_disease" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>심장 질환</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="stroke" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>뇌졸중</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="none" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '해당 없음' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="hypertension" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '고혈압' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="diabetes" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '당뇨병' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="heart_disease" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '심장 질환' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="stroke" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '뇌졸중' %} </span></label>
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="cancer" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>암</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="dementia" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>치매</span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span>기타</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="dementia" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '치매' %} </span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span> {% t '기타' %} </span></label>
                                 </div>
                                 <textarea id="family-history-details" name="family_history_details" rows="3" class="border border-gray-300 mt-3 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="기타 가족력 또는 상세 정보를 입력해주세요."></textarea>
                             </div>
@@ -440,11 +442,11 @@
                 <div class="max-w-lg mx-auto flex justify-between items-center">
                     <button id="prev-button" type="button"
                         class="bg-gray-500 hover:bg-gray-600 text-white px-7 py-3.5 text-lg rounded-lg font-semibold transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled>이전</button>
+                        disabled> {% t '이전' %} </button>
                     <div class="text-sm text-gray-600 font-medium"><span id="current-step-display">1</span> / <span
                             id="total-steps-display">5</span></div>
                     <button id="next-button" type="button"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 text-lg rounded-lg font-semibold transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed">다음</button>
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 text-lg rounded-lg font-semibold transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"> {% t '다음' %} </button>
                 </div>
             </div>
         </form>
@@ -875,7 +877,7 @@
                     surveyActionArea.classList.remove('hidden');
                     surveyActionArea.innerHTML = `
                         <p class="survey-complete-text">✅ 설문 작성 완료</p>
-                        <button type="button" id="editSurveyDataBtn" class="survey-button" style="background-color: #ffc107; color: #212529;">내용 수정하기</button>
+                        <button type="button" id="editSurveyDataBtn" class="survey-button" style="background-color: #ffc107; color: #212529;"> {% t '내용 수정하기' %} </button>
                     `;
                     const editBtn = document.getElementById('editSurveyDataBtn');
                     if(editBtn) editBtn.addEventListener('click', openSurveyForEdit);
@@ -888,7 +890,7 @@
                         <p class="notice-text">
                             <span style="color: red;">*필수</span> 더 나은 서비스 제공을 위해 간단한 질문지 작성이 필요합니다.<br>양해 부탁드립니다.
                         </p>
-                        <button type="button" id="startSurveyBtn" class="survey-button">질문지 작성하기</button>
+                        <button type="button" id="startSurveyBtn" class="survey-button"> {% t '질문지 작성하기' %} </button>
                     `;
                     const startBtn = document.getElementById('startSurveyBtn');
                     if(startBtn) startBtn.addEventListener('click', function() {

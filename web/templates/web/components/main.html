@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 건강 파트너 - 메인</title>
+    <title> {% t 'AI 건강 파트너 - 메인' %} </title>
     <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
     <style>
         body {
@@ -199,14 +199,14 @@
     <!-- ▼▼▼▼▼ HTML 구조 변경: 제목과 탭 메뉴를 슬라이더 섹션 안으로 이동 ▼▼▼▼▼ -->
     <div class="dynamic-bg-slider-section">
         <div class="main-title-area">
-            <h1>모든 순간을 위한 AI 건강 파트너</h1>
+            <h1> {% t '모든 순간을 위한 AI 건강 파트너' %} </h1>
         </div>
         <div class="tab-menu-container">
-            <button class="tab-button active" data-slide-index="0"><span class="icon">🏋️</span>운동</button>
-            <button class="tab-button" data-slide-index="1"><span class="icon">🧘</span>스트레칭</button>
-            <button class="tab-button" data-slide-index="2"><span class="icon">🥗</span>식단</button>
-            <button class="tab-button" data-slide-index="3"><span class="icon">💡</span>영양 상식</button>
-            <button class="tab-button" data-slide-index="4"><span class="icon">🤖</span>AI 챗봇</button>
+            <button class="tab-button active" data-slide-index="0"><span class="icon">🏋️</span> {% t '운동' %} </button>
+            <button class="tab-button" data-slide-index="1"><span class="icon">🧘</span> {% t '스트레칭' %} </button>
+            <button class="tab-button" data-slide-index="2"><span class="icon">🥗</span> {% t '식단' %} </button>
+            <button class="tab-button" data-slide-index="3"><span class="icon">💡</span> {% t '영양 상식' %} </button>
+            <button class="tab-button" data-slide-index="4"><span class="icon">🤖</span> {% t 'AI 챗봇' %} </button>
         </div>
 
         <div class="swiper-container-main-feature">
@@ -215,8 +215,8 @@
                 <div class="swiper-slide" data-hover-bg-color="#a0c4ff">
                     <div class="slide-card-layout card-bg-light-blue">
                         <div class="text-area">
-                            <h2>AI 맞춤형<br>운동 프로그램</h2>
-                            <p>AI가 분석한 당신만을 위한 최적의 운동 루틴을 경험하고, 건강 목표를 효과적으로 달성하세요.</p>
+                            <h2> {% t 'AI 맞춤형' %} <br> {% t '운동 프로그램' %} </h2>
+                            <p> {% t 'AI가 분석한 당신만을 위한 최적의 운동 루틴을 경험하고, 건강 목표를 효과적으로 달성하세요.' %} </p>
                             <a href="#" class="cta-button">지금 시작하기</a>
                         </div>
                         <div class="image-area">
@@ -228,9 +228,9 @@
                 <div class="swiper-slide" data-hover-bg-color="#28a745">
                      <div class="slide-card-layout card-bg-green">
                         <div class="text-area">
-                            <h2>유연성을 위한<br>스트레칭 가이드</h2>
-                            <p>전문가가 단계별로 안내하는 스트레칭으로 몸의 긴장을 풀고 유연성을 향상시켜보세요.</p>
-                            <a href="#" class="cta-button">가이드 보기</a>
+                            <h2> {% t '유연성을 위한' %} <br> {% t '스트레칭 가이드' %} </h2>
+                            <p> {% t '전문가가 단계별로 안내하는 스트레칭으로 몸의 긴장을 풀고 유연성을 향상시켜보세요.' %} </p>
+                            <a href="#" class="cta-button"> {% t '가이드 보기' %} </a>
                         </div>
                         <div class="image-area">
                             <img src="{% static 'images/요가하는 사람.jpg' %}" alt="스트레칭 가이드">
@@ -240,9 +240,9 @@
                 <div class="swiper-slide" data-hover-bg-color="#fd7e14">
                     <div class="slide-card-layout card-bg-orange">
                          <div class="text-area">
-                            <h2>AI 스마트<br>식단 플래너</h2>
-                            <p>개인의 목표와 취향에 맞는 건강하고 맛있는 식단을 AI가 매일 새롭게 추천해 드립니다.</p>
-                            <a href="#" class="cta-button">식단 확인하기</a>
+                            <h2> {% t 'AI 스마트' %} <br> {% t '식단 플래너' %} </h2>
+                            <p> {% t '개인의 목표와 취향에 맞는 건강하고 맛있는 식단을 AI가 매일 새롭게 추천해 드립니다.' %} </p>
+                            <a href="#" class="cta-button"> {% t '식단 확인하기' %} </a>
                         </div>
                         <div class="image-area">
                             <img src="{% static 'images/식단 접시.jpg' %}" alt="AI 식단 플래너">
@@ -252,8 +252,8 @@
                 <div class="swiper-slide" data-hover-bg-color="#20c997">
                     <div class="slide-card-layout card-bg-teal">
                         <div class="text-area">
-                            <h2>똑똑하게 챙기는<br>영양 상식</h2>
-                            <p>복잡한 영양 정보를 쉽고 재미있는 퀴즈와 팁으로 알아보고 건강한 습관을 만드세요.</p>
+                            <h2> {% t '똑똑하게 챙기는' %} <br> {% t '영양 상식' %} </h2>
+                            <p> {% t '복잡한 영양 정보를 쉽고 재미있는 퀴즈와 팁으로 알아보고 건강한 습관을 만드세요.' %} </p>
                             <a href="#" class="cta-button">상식 배우기</a>
                         </div>
                         <div class="image-area">
@@ -264,9 +264,9 @@
                 <div class="swiper-slide" data-hover-bg-color="#6f42c1">
                     <div class="slide-card-layout card-bg-purple">
                         <div class="text-area">
-                            <h2>24시간 대기<br>AI 건강 챗봇</h2>
-                            <p>궁금한 건강 정보나 사소한 고민까지, 언제든지 AI 챗봇에게 편하게 물어보고 답변을 받으세요.</p>
-                            <a href="#" class="cta-button">챗봇과 대화하기</a>
+                            <h2> {% t '24시간 대기' %} <br> {% t 'AI 건강 챗봇' %} </h2>
+                            <p> {% t '궁금한 건강 정보나 사소한 고민까지, 언제든지 AI 챗봇에게 편하게 물어보고 답변을 받으세요.' %} </p>
+                            <a href="#" class="cta-button"> {% t '챗봇과 대화하기' %} </a>
                         </div>
                         <div class="image-area">
                             <img src="{% static 'images/AI 챗봇.jpg' %}" alt="AI 챗봇">

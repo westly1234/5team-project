@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -79,18 +79,18 @@
     <aside class="dark-sidebar">
         <div class="dashboard-header">HealthWise</div>
         <ul class="sidebar-nav">
-            <li><a href="{% url 'web:services' %}" class="nav-item {% if active_menu == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2-fill icon"></i> 대시보드 홈</a></li>
-            <li><a href="{% url 'routine:select' %}" class="nav-item {% if active_menu == 'routine' %}active{% endif %}"><i class="bi bi-person-arms-up icon"></i> 운동 루틴 생성</a></li>
-            <li><a href="{% url 'routine:my_routines' %}" class="nav-item {% if active_menu == 'routine_list' %}active{% endif %}"><i class="bi bi-list-task icon"></i> 내 루틴 목록</a></li>
+            <li><a href="{% url 'web:services' %}" class="nav-item {% if active_menu == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2-fill icon"></i> {% t '대시보드 홈' %} </a></li>
+            <li><a href="{% url 'routine:select' %}" class="nav-item {% if active_menu == 'routine' %}active{% endif %}"><i class="bi bi-person-arms-up icon"></i> {% t '운동 루틴 생성' %} </a></li>
+            <li><a href="{% url 'routine:my_routines' %}" class="nav-item {% if active_menu == 'routine_list' %}active{% endif %}"><i class="bi bi-list-task icon"></i> {% t '내 루틴 목록' %} </a></li>
             
             <!-- ✅ 식단 관련 메뉴 수정 및 추가 -->
-            <li><a href="{% url 'diet:diet_report' %}" class="nav-item {% if active_menu == 'diet_report' %}active{% endif %}"><i class="bi bi-pie-chart-fill icon"></i> 식단 대시보드</a></li>
-            <li><a href="{% url 'diet:diet_analysis' %}" class="nav-item {% if active_menu == 'diet_analysis' %}active{% endif %}"><i class="bi bi-camera-fill icon"></i> 식단 기록하기</a></li>
+            <li><a href="{% url 'diet:diet_report' %}" class="nav-item {% if active_menu == 'diet_report' %}active{% endif %}"><i class="bi bi-pie-chart-fill icon"></i> {% t '식단 대시보드' %} </a></li>
+            <li><a href="{% url 'diet:diet_analysis' %}" class="nav-item {% if active_menu == 'diet_analysis' %}active{% endif %}"><i class="bi bi-camera-fill icon"></i> {% t '식단 기록하기' %} </a></li>
             
-            <li><a href="{% url 'place:search' %}" class="nav-item {% if active_menu == 'place' %}active{% endif %}"><i class="bi bi-geo-alt-fill icon"></i> 운동 장소</a></li>
-            <li><a href="{% url 'music:music_playlist' %}" class="nav-item {% if active_menu == 'music' %}active{% endif %}"><i class="bi bi-music-note-beamed icon"></i> AI 음악 추천</a></li>
-            <li><a href="{% url 'chatbot:ui' %}" class="nav-item {% if active_menu == 'chatbot' %}active{% endif %}"><i class="bi bi-chat-dots-fill icon"></i> AI 챗봇 상담</a></li>
-            <li><a href="{% url 'achievements:list' %}" class="nav-item {% if active_menu == 'achievements' %}active{% endif %}"><i class="bi bi-award-fill icon"></i> 나의 업적</a></li>
+            <li><a href="{% url 'place:search' %}" class="nav-item {% if active_menu == 'place' %}active{% endif %}"><i class="bi bi-geo-alt-fill icon"></i> {% t '운동 장소' %} </a></li>
+            <li><a href="{% url 'music:music_playlist' %}" class="nav-item {% if active_menu == 'music' %}active{% endif %}"><i class="bi bi-music-note-beamed icon"></i> {% t 'AI 음악 추천' %} </a></li>
+            <li><a href="{% url 'chatbot:ui' %}" class="nav-item {% if active_menu == 'chatbot' %}active{% endif %}"><i class="bi bi-chat-dots-fill icon"></i> {% t 'AI 챗봇 상담' %} </a></li>
+            <li><a href="{% url 'achievements:list' %}" class="nav-item {% if active_menu == 'achievements' %}active{% endif %}"><i class="bi bi-award-fill icon"></i> {% t '나의 업적' %} </a></li>
         </ul>
     </aside>
     <div class="sidebar-handle">

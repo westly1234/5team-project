@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}HealthWise - 혁신적인 AI 헬스케어{% endblock %}
 
@@ -48,9 +48,9 @@
     <!-- ✅ [핵심 수정] video 태그를 완전히 삭제했습니다. -->
     <div class="hero-content">
         <h1>AI Healthcare</h1>
-        <p>스크롤하여 혁신적인 기능들을 확인하세요</p>
-        <a href="#mainContent" class="hero-btn">자세히 보기</a>
-        <a href="{% url 'web:services' %}" class="hero-btn">시작하기</a>
+        <p> {% t '스크롤하여 혁신적인 기능들을 확인하세요' %} </p>
+        <a href="#mainContent" class="hero-btn"> {% t '자세히 보기' %} </a>
+        <a href="{% url 'web:services' %}" class="hero-btn"> {% t '시작하기' %} </a>
     </div>
 </section>
 
@@ -128,36 +128,36 @@
             <div class="feature-panel active">
                 <div class="feature-image"><img src="{% static 'images/hand7.jpg' %}" alt="AI 건강 상담"></div>
                 <div class="feature-text">
-                    <h2>AI 건강 상담</h2>
-                    <p>최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석합니다. 사용자의 건강 상태를 분석하여 맞춤 운동과 식단을 알려줍니다.</p>
-                    <ul class="feature-list"><li>실시간 나의 상태 분석</li><li>실시간 건강 모니터링</li><li>개인 맞춤형 건강 리포트</li><li>조기 진단 알림 시스템</li></ul>
+                    <h2> {% t 'AI 건강 상담' %} </h2>
+                    <p> {% t '최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석합니다. 사용자의 건강 상태를 분석하여 맞춤 운동과 식단을 알려줍니다.' %} </p>
+                    <ul class="feature-list"><li> {% t '실시간 나의 상태 분석' %} </li><li> {% t '실시간 건강 모니터링' %} </li><li> {% t '개인 맞춤형 건강 리포트' %} </li><li> {% t '조기 진단 알림 시스템' %} </li></ul>
                 </div>
             </div>
             <!-- 패널 2 -->
             <div class="feature-panel">
                 <div class="feature-image"><img src="{% static 'images/hand8.jpg' %}" alt="장소 서비스"></div>
                 <div class="feature-text">
-                    <h2>내 위치 맞춤 장소 서비스</h2>
-                    <p>원하는 장소나 내 주변 운동 장소를 한눈에 보여주는 서비스 입니다.</p>
-                    <ul class="feature-list"><li>모든 운동 장소 확인 가능</li><li>실시간 데이터 동기화</li><li>전지역 내 위치 맞춤 서비스</li><li>운동 종류별 위치 탐색</li></ul>
+                    <h2> {% t '내 위치 맞춤 장소 서비스' %} </h2>
+                    <p> {% t '원하는 장소나 내 주변 운동 장소를 한눈에 보여주는 서비스 입니다.' %} </p>
+                    <ul class="feature-list"><li> {% t '모든 운동 장소 확인 가능' %} </li><li> {% t '실시간 데이터 동기화' %} </li><li> {% t '전지역 내 위치 맞춤 서비스' %} </li><li> {% t '운동 종류별 위치 탐색' %} </li></ul>
                 </div>
             </div>
             <!-- 패널 3 -->
             <div class="feature-panel">
                 <div class="feature-image"><img src="{% static 'images/hand3.JPG' %}" alt="운동 코칭"></div>
                 <div class="feature-text">
-                    <h2>맞춤형 운동 코칭</h2>
-                    <p>AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계합니다. 컴퓨터 비전 기술로 운동 자세를 실시간으로 분석하고 교정합니다.</p>
-                    <ul class="feature-list"><li>개인별 맞춤 운동 프로그램</li><li>실시간 자세 교정</li><li>운동 효과 분석</li><li>부상 예방 가이드</li></ul>
+                    <h2> {% t '맞춤형 운동 코칭' %} </h2>
+                    <p> {% t 'AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계합니다. 컴퓨터 비전 기술로 운동 자세를 실시간으로 분석하고 교정합니다.' %} </p>
+                    <ul class="feature-list"><li> {% t '개인별 맞춤 운동 프로그램' %} </li><li> {% t '실시간 자세 교정' %} </li><li> {% t '운동 효과 분석' %} </li><li> {% t '부상 예방 가이드' %} </li></ul>
                 </div>
             </div>
             <!-- 패널 4 -->
             <div class="feature-panel">
                 <div class="feature-image"><img src="{% static 'images/hand4.png' %}" alt="영양 관리"></div>
                 <div class="feature-text">
-                    <h2>스마트 영양 관리</h2>
-                    <p>음식 사진만으로 칼로리와 영양소를 정확하게 분석합니다. 개인의 건강 목표와 상태에 맞는 식단을 AI가 추천해드립니다.</p>
-                    <ul class="feature-list"><li>AI 기반 음식 인식</li><li>영양소 자동 계산</li><li>맞춤형 식단 추천</li><li>알레르기 성분 체크</li></ul>
+                    <h2> {% t '스마트 영양 관리' %} </h2>
+                    <p> {% t '음식 사진만으로 칼로리와 영양소를 정확하게 분석합니다. 개인의 건강 목표와 상태에 맞는 식단을 AI가 추천해드립니다.' %} </p>
+                    <ul class="feature-list"><li> {% t 'AI 기반 음식 인식' %} </li><li> {% t '영양소 자동 계산' %} </li><li> {% t '맞춤형 식단 추천' %} </li><li> {% t '알레르기 성분 체크' %} </li></ul>
                 </div>
             </div>
         </div>

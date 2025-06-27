@@ -1,5 +1,5 @@
 {% extends 'web/base_simple.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 {% block title %}AI 체형 분석 v2.1{% endblock %}
 
 {% block content %}
@@ -239,9 +239,9 @@
                     <strong class="form-section-title">1. 성별</strong>
                     <div class="gender-selector">
                         <input type="radio" id="gender_male" name="gender" value="male" required>
-                        <label for="gender_male"><i class="bi bi-gender-male"></i> 남성</label>
+                        <label for="gender_male"><i class="bi bi-gender-male"></i> {% t '남성' %} </label>
                         <input type="radio" id="gender_female" name="gender" value="female">
-                        <label for="gender_female"><i class="bi bi-gender-female"></i> 여성</label>
+                        <label for="gender_female"><i class="bi bi-gender-female"></i> {% t '여성' %} </label>
                     </div>
                 </div>
                 
@@ -261,14 +261,13 @@
                 </div>
         
                 <button type="submit" id="submit-btn" disabled>
-                    <i class="bi bi-stars"></i> 분석 시작하기
-                </button>
+                    <i class="bi bi-stars"></i> {% t '분석 시작하기' %} </button>
             </form>
         </div>
 
         <!-- 오른쪽: 결과 패널 -->
         <div class="panel results-panel">
-            <h2 class="panel-title"><i class="bi bi-clipboard-data"></i>분석 리포트</h2>
+            <h2 class="panel-title"><i class="bi bi-clipboard-data"></i> {% t '분석 리포트' %} </h2>
             
             <div class="results-placeholder" id="results-placeholder">
                 <div id="loader" style="display: none;"></div>
@@ -290,11 +289,11 @@
                     </div>
                 </div>
                 <div class="result-section">
-                    <h3><i class="bi bi-rulers"></i>측정된 체형</h3>
+                    <h3><i class="bi bi-rulers"></i> {% t '측정된 체형' %} </h3>
                     <p id="result-shape"></p>
                 </div>
                 <div class="result-section">
-                    <h3><i class="bi bi-magic"></i>추천 아이템</h3>
+                    <h3><i class="bi bi-magic"></i> {% t '추천 아이템' %} </h3>
                     <div id="result-fits-tags"></div>
                 </div>
                 <div class="result-section">

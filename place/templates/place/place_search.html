@@ -1,5 +1,5 @@
 {% extends "web/dashboard_sliding_base.html" %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}운동 장소 찾기 - HealthWise{% endblock %}
 
@@ -159,26 +159,24 @@
 <div class="map-container">
     <div id="map"></div>
     <div id="control-panel">
-        <h1><i class="bi bi-geo-alt-fill"></i> 내 주변 운동 장소 찾기</h1>
+        <h1><i class="bi bi-geo-alt-fill"></i> {% t '내 주변 운동 장소 찾기' %} </h1>
         <div class="status" id="status">위치 정보를 가져오는 중...</div>
         <button class="action-button my-location-btn" onclick="moveToCurrentLocation()">
-            <i class="bi bi-cursor-fill"></i> 내 현재 위치로 이동
-        </button>
+            <i class="bi bi-cursor-fill"></i> {% t '내 현재 위치로 이동' %} </button>
         <button class="action-button" id="reSearchBtn" onclick="reSearch()" style="display: none;">
-            <i class="bi bi-arrow-repeat"></i> 이 지역에서 다시 검색
-        </button>
+            <i class="bi bi-arrow-repeat"></i> {% t '이 지역에서 다시 검색' %} </button>
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="운동 시설 직접 검색">
             <button onclick="searchCustom()"><i class="bi bi-search"></i></button>
         </div>
         
         <div id="category-grid">
-            <button class="category-grid-btn active" onclick="searchCategory('헬스장')"><i class="bi bi-person-arms-up"></i> 헬스장</button>
-            <button class="category-grid-btn" onclick="searchCategory('요가')"><i class="bi bi-peace-fill"></i> 요가</button>
-            <button class="category-grid-btn" onclick="searchCategory('수영장')"><i class="bi bi-water"></i> 수영장</button>
-            <button class="category-grid-btn" onclick="searchCategory('테니스장')"><i class="bi bi-dribbble"></i> 테니스</button>
-            <button class="category-grid-btn" onclick="searchCategory('축구장')"><i class="bi bi-record-circle-fill"></i> 축구장</button>
-            <button class="category-grid-btn" onclick="searchCategory('탁구장')"><i class="bi bi-disc-fill"></i> 탁구장</button>
+            <button class="category-grid-btn active" onclick="searchCategory('헬스장')"><i class="bi bi-person-arms-up"></i> {% t '헬스장' %} </button>
+            <button class="category-grid-btn" onclick="searchCategory('요가')"><i class="bi bi-peace-fill"></i> {% t '요가' %} </button>
+            <button class="category-grid-btn" onclick="searchCategory('수영장')"><i class="bi bi-water"></i> {% t '수영장' %} </button>
+            <button class="category-grid-btn" onclick="searchCategory('테니스장')"><i class="bi bi-dribbble"></i> {% t '테니스' %} </button>
+            <button class="category-grid-btn" onclick="searchCategory('축구장')"><i class="bi bi-record-circle-fill"></i> {% t '축구장' %} </button>
+            <button class="category-grid-btn" onclick="searchCategory('탁구장')"><i class="bi bi-disc-fill"></i> {% t '탁구장' %} </button>
         </div>
 
         <div class="results-container">
@@ -186,7 +184,7 @@
             <div id="results">
                 <div class="empty-results" id="initial-message">
                     <i class="bi bi-compass"></i>
-                    <span>위치 정보를 기반으로 주변 시설을 찾습니다.<br>위 카테고리를 선택하거나 직접 검색해보세요.</span>
+                    <span> {% t '위치 정보를 기반으로 주변 시설을 찾습니다.' %} <br> {% t '위 카테고리를 선택하거나 직접 검색해보세요.' %} </span>
                 </div>
             </div>
         </div>
@@ -289,13 +287,13 @@
             showEmptyResultsMessage();
         } else {
             updateStatus(`❌ 검색 중 오류가 발생했습니다: ${status}`, 'error');
-            resultsEl.innerHTML = `<div class="empty-results"><i class="bi bi-exclamation-triangle-fill"></i><span>오류가 발생했습니다.<br>잠시 후 다시 시도해주세요.</span></div>`;
+            resultsEl.innerHTML = `<div class="empty-results"><i class="bi bi-exclamation-triangle-fill"></i><span> {% t '오류가 발생했습니다.<br>잠시 후 다시 시도해주세요.' %} </span></div>`;
         }
     }
     
     function showEmptyResultsMessage() {
         updateStatus(`ℹ️ 주변에 관련 시설이 없습니다.`, 'info');
-        resultsEl.innerHTML = `<div class="empty-results"><i class="bi bi-emoji-frown"></i><span>검색 결과가 없습니다.<br>지도 위치를 옮기거나 다른 키워드로 검색해보세요.</span></div>`;
+        resultsEl.innerHTML = `<div class="empty-results"><i class="bi bi-emoji-frown"></i><span> {% t '검색 결과가 없습니다.<br>지도 위치를 옮기거나 다른 키워드로 검색해보세요.' %} </span></div>`;
         resultsHeaderEl.style.display = 'none';
     }
 
@@ -337,7 +335,7 @@
 
     function displayInfowindow(marker, place) {
         document.querySelectorAll('.result-item.active').forEach(item => item.classList.remove('active'));
-        const content = `<div class="custom-infowindow-content"><strong>${place.place_name}</strong><div class="info-item"><span class="label">주소:</span> ${place.road_address_name || place.address_name}</div>${place.phone ? `<div class="info-item"><span class="label">전화:</span> ${place.phone}</div>` : ''}<div class="link-actions"><a href="${place.place_url}" target="_blank" class="details-link">상세정보</a><a href="https://map.kakao.com/link/to/${encodeURIComponent(place.place_name)},${place.y},${place.x}" target="_blank" class="directions-link">길찾기</a></div></div>`;
+        const content = `<div class="custom-infowindow-content"><strong>${place.place_name}</strong><div class="info-item"><span class="label"> {% t '주소:' %} </span> ${place.road_address_name || place.address_name}</div>${place.phone ? `<div class="info-item"><span class="label"> {% t '전화:' %} </span> ${place.phone}</div>` : ''}<div class="link-actions"><a href="${place.place_url}" target="_blank" class="details-link"> {% t '상세정보' %} </a><a href="https://map.kakao.com/link/to/${encodeURIComponent(place.place_name)},${place.y},${place.x}" target="_blank" class="directions-link"> {% t '길찾기' %} </a></div></div>`;
         infowindow.setContent(content); infowindow.open(map, marker);
     }
 

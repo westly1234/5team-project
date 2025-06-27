@@ -1,5 +1,5 @@
 {% extends 'web/base_simple.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 {% block title %}내가 찜한 브랜드{% endblock %}
 
 {% block content %}
@@ -50,8 +50,8 @@
 
 <div class="store-container">
     <header class="store-header">
-        <h1>내가 찜한 브랜드</h1>
-        <p>찜한 브랜드들을 모아보세요. 찜하기는 스토어 페이지에서 가능합니다.</p>
+        <h1> {% t '내가 찜한 브랜드' %} </h1>
+        <p> {% t '찜한 브랜드들을 모아보세요. 찜하기는 스토어 페이지에서 가능합니다.' %} </p>
     </header>
     <div class="product-grid" id="favorites-grid">
         {% for brand in favorite_brands %}
@@ -60,7 +60,7 @@
     </div>
     <div class="no-results" id="no-favorites-message"
      {% if not favorite_brands %}style="display:block;"{% else %}style="display:none;"{% endif %}>
-        <p>아직 찜한 브랜드가 없습니다.</p>
+        <p> {% t '아직 찜한 브랜드가 없습니다.' %} </p>
     </div>
 </div>
 
@@ -74,12 +74,12 @@
             <p id="modal-brand-description"></p>
             <div class="modal-reviews-section">
                 <div id="review-form-wrapper"></div>
-                <h4>최신 리뷰</h4>
+                <h4> {% t '최신 리뷰' %} </h4>
                 <div id="review-list-wrapper"></div>
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#" target="_blank" rel="noopener noreferrer" class="go-to-site-btn" id="modal-brand-link">홈페이지 방문</a>
+            <a href="#" target="_blank" rel="noopener noreferrer" class="go-to-site-btn" id="modal-brand-link"> {% t '홈페이지 방문' %} </a>
         </div>
     </div>
 </div>

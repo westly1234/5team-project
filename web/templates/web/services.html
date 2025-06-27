@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}종합 대시보드 - HealthWise{% endblock %}
 
@@ -186,16 +186,16 @@
     <aside class="dark-sidebar">
         <div class="logo">HealthWise</div>
         <ul class="sidebar-nav">
-            <li><a href="{% url 'web:services' %}" class="nav-item {% if active_menu == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2-fill icon"></i> 대시보드 홈</a></li>
-            <li><a href="{% url 'routine:select' %}" class="nav-item {% if active_menu == 'routine' %}active{% endif %}"><i class="bi bi-person-arms-up icon"></i> 운동 루틴 생성</a></li>
-            <li><a href="{% url 'routine:my_routines' %}" class="nav-item {% if active_menu == 'routine_list' %}active{% endif %}"><i class="bi bi-list-task icon"></i> 내 루틴 목록</a></li>
-            <li><a href="{% url 'diet:diet_report' %}" class="nav-item {% if active_menu == 'diet_report' %}active{% endif %}"><i class="bi bi-pie-chart-fill icon"></i> 식단 대시보드</a></li>
-            <li><a href="{% url 'diet:diet_analysis' %}" class="nav-item {% if active_menu == 'diet_analysis' %}active{% endif %}"><i class="bi bi-camera-fill icon"></i> 식단 기록하기</a></li>
-            <li><a href="{% url 'place:search' %}" class="nav-item {% if active_menu == 'place' %}active{% endif %}"><i class="bi bi-geo-alt-fill icon"></i> 운동 장소</a></li>
-            <li><a href="{% url 'achievements:list' %}" class="nav-item {% if active_menu == 'achievements' %}active{% endif %}"><i class="bi bi-award-fill icon"></i> 나의 업적</a></li>
-            <li><a href="{% url 'music:music_playlist' %}" class="nav-item {% if active_menu == 'music' %}active{% endif %}"><i class="bi bi-music-note-beamed icon"></i> AI 음악 추천</a></li>
+            <li><a href="{% url 'web:services' %}" class="nav-item {% if active_menu == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2-fill icon"></i> {% t '대시보드 홈' %} </a></li>
+            <li><a href="{% url 'routine:select' %}" class="nav-item {% if active_menu == 'routine' %}active{% endif %}"><i class="bi bi-person-arms-up icon"></i> {% t '운동 루틴 생성' %} </a></li>
+            <li><a href="{% url 'routine:my_routines' %}" class="nav-item {% if active_menu == 'routine_list' %}active{% endif %}"><i class="bi bi-list-task icon"></i> {% t '내 루틴 목록' %} </a></li>
+            <li><a href="{% url 'diet:diet_report' %}" class="nav-item {% if active_menu == 'diet_report' %}active{% endif %}"><i class="bi bi-pie-chart-fill icon"></i> {% t '식단 대시보드' %} </a></li>
+            <li><a href="{% url 'diet:diet_analysis' %}" class="nav-item {% if active_menu == 'diet_analysis' %}active{% endif %}"><i class="bi bi-camera-fill icon"></i> {% t '식단 기록하기' %} </a></li>
+            <li><a href="{% url 'place:search' %}" class="nav-item {% if active_menu == 'place' %}active{% endif %}"><i class="bi bi-geo-alt-fill icon"></i> {% t '운동 장소' %} </a></li>
+            <li><a href="{% url 'achievements:list' %}" class="nav-item {% if active_menu == 'achievements' %}active{% endif %}"><i class="bi bi-award-fill icon"></i> {% t '나의 업적' %} </a></li>
+            <li><a href="{% url 'music:music_playlist' %}" class="nav-item {% if active_menu == 'music' %}active{% endif %}"><i class="bi bi-music-note-beamed icon"></i> {% t 'AI 음악 추천' %} </a></li>
             <!-- 충돌 해결 후 -->
-            <li><a href="{% url 'chatbot:ui' %}" class="nav-item {% if active_menu == 'chatbot' %}active{% endif %}"><i class="bi bi-chat-dots-fill icon"></i> AI 챗봇 상담</a></li>
+            <li><a href="{% url 'chatbot:ui' %}" class="nav-item {% if active_menu == 'chatbot' %}active{% endif %}"><i class="bi bi-chat-dots-fill icon"></i> {% t 'AI 챗봇 상담' %} </a></li>
             
 
 
@@ -227,9 +227,9 @@
                         </li>
                         {% empty %}
                         <li class="exercise-item">
-                            <span class="exercise-name">아직 등록된 운동이 없습니다.</span>
+                            <span class="exercise-name"> {% t '아직 등록된 운동이 없습니다.' %} </span>
                             <span class="exercise-details">
-                                <a href="{% url 'routine:select' %}" style="color: #4ecdc4; text-decoration: none;">루틴 생성하기</a>
+                                <a href="{% url 'routine:select' %}" style="color: #4ecdc4; text-decoration: none;"> {% t '루틴 생성하기' %} </a>
                             </span>
                         </li>
                         {% endfor %}
@@ -256,12 +256,12 @@
                         <div class="user-email">{{ user.email }}</div>
                     </div>
                     <div class="profile-stats">
-                        <div class="stat"><div class="value">{{ user.profile.height|default:"-" }}<small>cm</small></div><div class="label">키</div></div>
-                        <div class="stat"><div class="value">{{ user.profile.current_weight|default:"-" }}<small>kg</small></div><div class="label">체중</div></div>
-                        <div class="stat"><div class="value">{{ user.profile.target_weight|default:"-" }}<small>kg</small></div><div class="label">목표 체중</div></div>
-                        <div class="stat"><div class="value">{{ user.profile.skeletal_muscle_mass|default:"-" }}<small>kg</small></div><div class="label">골격근량</div></div>
-                        <div class="stat"><div class="value">{{ user.profile.body_fat_mass|default:"-" }}<small>kg</small></div><div class="label">체지방량</div></div>
-                        <div class="stat"><div class="value">{% if user.profile.body_fat_percentage is not None %}{{ user.profile.body_fat_percentage|floatformat:1 }}<small>%</small>{% else %}-{% endif %}</div><div class="label">체지방률</div></div>
+                        <div class="stat"><div class="value">{{ user.profile.height|default:"-" }}<small>cm</small></div><div class="label"> {% t '키' %} </div></div>
+                        <div class="stat"><div class="value">{{ user.profile.current_weight|default:"-" }}<small> {% t 'kg' %} </small></div><div class="label"> {% t '체중' %} </div></div>
+                        <div class="stat"><div class="value">{{ user.profile.target_weight|default:"-" }}<small> {% t 'kg' %} </small></div><div class="label"> {% t '목표 체중' %} </div></div>
+                        <div class="stat"><div class="value">{{ user.profile.skeletal_muscle_mass|default:"-" }}<small> {% t 'kg' %} </small></div><div class="label"> {% t '골격근량' %} </div></div>
+                        <div class="stat"><div class="value">{{ user.profile.body_fat_mass|default:"-" }}<small> {% t 'kg' %} </small></div><div class="label"> {% t '체지방량' %} </div></div>
+                        <div class="stat"><div class="value">{% if user.profile.body_fat_percentage is not None %}{{ user.profile.body_fat_percentage|floatformat:1 }}<small>%</small>{% else %}-{% endif %}</div><div class="label"> {% t '체지방률' %} </div></div>
                     </div>
                  </div>
             </a>
@@ -272,7 +272,7 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <i class="bi bi-graph-up-arrow icon" style="color: #4ECDC4;"></i>
-                        <span class="title">체중 변화 (kg)</span>
+                        <span class="title"> {% t '체중 변화 (kg)' %} </span>
                     </div>
                     <div class="card-content">
                         <div class="chart-container">
@@ -285,7 +285,7 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <i class="bi bi-person-arms-up icon" style="color: #FF6B6B;"></i>
-                        <span class="title">골격근량 변화 (kg)</span>
+                        <span class="title"> {% t '골격근량 변화 (kg)' %} </span>
                     </div>
                     <div class="card-content">
                         <div class="chart-container">
@@ -298,7 +298,7 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <i class="bi bi-universal-access-circle icon" style="color: #FFE66D;"></i>
-                        <span class="title">체지방량 변화 (kg)</span>
+                        <span class="title"> {% t '체지방량 변화 (kg)' %} </span>
                     </div>
                     <div class="card-content">
                         <div class="chart-container">
@@ -313,7 +313,7 @@
             <div class="dashboard-card diet-card">
                 <div class="card-header">
                     <i class="bi bi-pie-chart-fill icon" style="color: #4ECDC4;"></i>
-                    <span class="title">오늘의 식단 요약</span>
+                    <span class="title"> {% t '오늘의 식단 요약' %} </span>
                 </div>
                 <div class="card-content">
                     <div class="diet-chart-container">
@@ -325,9 +325,9 @@
                             </div>
                         </div>
                         <ul class="diet-details-list">
-                            <li class="nutrient-item carbs"><div class="nutrient-label"><span class="name"><span class="color-dot"></span>탄수화물</span><span class="value">{{ today_diet_summary.carbs|floatformat:1 }}g</span></div><div class="nutrient-bar"><div class="nutrient-bar-inner" id="carbs-bar"></div></div></li>
-                            <li class="nutrient-item protein"><div class="nutrient-label"><span class="name"><span class="color-dot"></span>단백질</span><span class="value">{{ today_diet_summary.protein|floatformat:1 }}g</span></div><div class="nutrient-bar"><div class="nutrient-bar-inner" id="protein-bar"></div></div></li>
-                            <li class="nutrient-item fat"><div class="nutrient-label"><span class="name"><span class="color-dot"></span>지방</span><span class="value">{{ today_diet_summary.fat|floatformat:1 }}g</span></div><div class="nutrient-bar"><div class="nutrient-bar-inner" id="fat-bar"></div></div></li>
+                            <li class="nutrient-item carbs"><div class="nutrient-label"><span class="name"><span class="color-dot"></span> {% t '탄수화물' %} </span><span class="value">{{ today_diet_summary.carbs|floatformat:1 }}g</span></div><div class="nutrient-bar"><div class="nutrient-bar-inner" id="carbs-bar"></div></div></li>
+                            <li class="nutrient-item protein"><div class="nutrient-label"><span class="name"><span class="color-dot"></span> {% t '단백질' %} </span><span class="value">{{ today_diet_summary.protein|floatformat:1 }}g</span></div><div class="nutrient-bar"><div class="nutrient-bar-inner" id="protein-bar"></div></div></li>
+                            <li class="nutrient-item fat"><div class="nutrient-label"><span class="name"><span class="color-dot"></span> {% t '지방' %} </span><span class="value">{{ today_diet_summary.fat|floatformat:1 }}g</span></div><div class="nutrient-bar"><div class="nutrient-bar-inner" id="fat-bar"></div></div></li>
                         </ul>
                     </div>
                 </div>

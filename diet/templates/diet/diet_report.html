@@ -1,5 +1,5 @@
 {% extends 'web/dashboard_sliding_base.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}식단 대시보드{% endblock %}
 
@@ -55,14 +55,14 @@
     <header class="text-left mb-8">
         <div class="border-l-4 border-purple-400 pl-4">
             <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Diet Dashboard</h1>
-            <p class="text-md text-gray-400 mt-2">일일 식단 요약과 주간 섭취 트렌드를 확인하세요.</p>
+            <p class="text-md text-gray-400 mt-2"> {% t '일일 식단 요약과 주간 섭취 트렌드를 확인하세요.' %} </p>
         </div>
     </header>
 
     <!-- 날짜 선택기 -->
     <div class="mb-8 max-w-sm">
         <form id="date-form" method="get" action="{% url 'diet:diet_report' %}">
-            <label for="date-picker" class="block text-sm font-medium text-gray-400 mb-1">날짜 선택</label>
+            <label for="date-picker" class="block text-sm font-medium text-gray-400 mb-1"> {% t '날짜 선택' %} </label>
             <input type="date" id="date-picker" name="date" value="{{ selected_date|date:'Y-m-d' }}" 
                    onchange="document.getElementById('date-form').submit()"
                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-purple-500 focus:border-purple-500 cursor-pointer">
@@ -75,7 +75,7 @@
             <!-- 3대 영양소 도넛 차트 카드 -->
             <div class="bg-gray-800/50 backdrop-blur-sm border border-white/10 p-6 rounded-2xl animate-fade-in-up" style="animation-delay: 0.1s;">
                 <h3 class="text-xl font-bold text-white mb-1">{{ selected_date|date:"Y년 m월 d일" }} 섭취량</h3>
-                <p class="text-gray-400 text-sm mb-4">총 영양 구성</p>
+                <p class="text-gray-400 text-sm mb-4"> {% t '총 영양 구성' %} </p>
                 <div class="relative h-64">
                     <canvas id="nutrientDoughnutChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -92,7 +92,7 @@
 
             <!-- 오늘의 식사 목록 카드 -->
             <div class="bg-gray-800/50 backdrop-blur-sm border border-white/10 p-6 rounded-2xl animate-fade-in-up" style="animation-delay: 0.2s;">
-                <h3 class="text-xl font-bold text-white mb-4">오늘의 식사 목록</h3>
+                <h3 class="text-xl font-bold text-white mb-4"> {% t '오늘의 식사 목록' %} </h3>
                 <div class="space-y-3 max-h-80 overflow-y-auto pr-2" id="daily-meals-list">
                     {% for meal in daily_meals %}
                         <div class="relative meal-card" data-meal-id="{{ meal.id }}">
@@ -120,8 +120,8 @@
                     {% empty %}
                         <div class="text-center py-8" id="no-meals-message">
                             <i class="bi bi-egg-fried text-4xl text-gray-600 mb-3"></i>
-                            <p class="text-gray-500">이 날짜에 기록된 식사가 없습니다.</p>
-                            <a href="{% url 'diet:diet_analysis' %}" class="mt-4 inline-block text-blue-400 hover:text-blue-300 font-semibold transition-colors">식사 기록하러 가기 →</a>
+                            <p class="text-gray-500"> {% t '이 날짜에 기록된 식사가 없습니다.' %} </p>
+                            <a href="{% url 'diet:diet_analysis' %}" class="mt-4 inline-block text-blue-400 hover:text-blue-300 font-semibold transition-colors"> {% t '식사 기록하러 가기 →' %} </a>
                         </div>
                     {% endfor %}
                 </div>
@@ -131,15 +131,15 @@
         <!-- 2. 주간 트렌드 및 요약 (오른쪽) -->
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-gray-800/50 backdrop-blur-sm border border-white/10 p-6 rounded-2xl animate-fade-in-up" style="animation-delay: 0.3s;">
-                <h3 class="text-xl font-bold text-white mb-4">최근 7일 칼로리 섭취 추이</h3>
+                <h3 class="text-xl font-bold text-white mb-4"> {% t '최근 7일 칼로리 섭취 추이' %} </h3>
                 <div class="h-80"><canvas id="calorieChart"></canvas></div>
             </div>
             
             <div class="bg-gray-800/50 backdrop-blur-sm border border-white/10 p-6 rounded-2xl animate-fade-in-up" style="animation-delay: 0.4s;">
-                <h3 class="text-xl font-bold text-white mb-4">주간 통계 요약</h3>
+                <h3 class="text-xl font-bold text-white mb-4"> {% t '주간 통계 요약' %} </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                     <div class="bg-gray-900/70 p-4 rounded-lg">
-                        <p class="text-sm text-gray-400 mb-1">평균 섭취 칼로리</p>
+                        <p class="text-sm text-gray-400 mb-1"> {% t '평균 섭취 칼로리' %} </p>
                         <p class="text-2xl font-bold text-purple-400">{{ weekly_summary.average|floatformat:0 }} <span class="text-lg font-medium">kcal</span></p>
                     </div>
                     <div class="bg-gray-900/70 p-4 rounded-lg">

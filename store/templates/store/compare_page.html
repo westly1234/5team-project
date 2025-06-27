@@ -1,5 +1,5 @@
 {% extends 'web/base_simple.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 {% block title %}브랜드 비교하기{% endblock %}
 
 {% block content %}
@@ -31,10 +31,10 @@
 </style>
 
 <div class="compare-container" id="compare-container">
-    <h1>브랜드 비교</h1>
-    <p>선택하신 브랜드의 특징을 한 눈에 비교해보세요.</p>
+    <h1> {% t '브랜드 비교' %} </h1>
+    <p> {% t '선택하신 브랜드의 특징을 한 눈에 비교해보세요.' %} </p>
     <div id="compare-table-wrapper">
-        <p>브랜드 정보를 불러오는 중...</p>
+        <p> {% t '브랜드 정보를 불러오는 중...' %} </p>
     </div>
 </div>
 
@@ -81,7 +81,7 @@
             tableHTML += '</tr>';
 
             // 카테고리
-            tableHTML += '<tr><td class="feature-name">카테고리</td>';
+            tableHTML += '<tr><td class="feature-name"> {% t '카테고리' %} </td>';
             brands.forEach(brand => {
                 tableHTML += `<td class="tag-list">${brand.categories.map(c => `<span>${c}</span>`).join('')}</td>`;
             });
@@ -95,7 +95,7 @@
             tableHTML += '</tr>';
 
             // 핵심 태그
-            tableHTML += '<tr><td class="feature-name">핵심 태그</td>';
+            tableHTML += '<tr><td class="feature-name"> {% t '핵심 태그' %} </td>';
             brands.forEach(brand => {
                 // 태그가 없을 경우 '태그 없음' 텍스트를 표시
                 const tagsHTML = brand.tags.length > 0 ? brand.tags.map(t => `<span>${t}</span>`).join('') : '<span>태그 없음</span>';

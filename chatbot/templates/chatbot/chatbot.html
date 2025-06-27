@@ -1,5 +1,5 @@
 {% extends 'web/dashboard_sliding_base.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}AI 챗봇 상담 v2.1{% endblock %}
 
@@ -236,7 +236,7 @@
         <div id="main-wrapper">
             <div id="sidebar">
                 <h2 id="sidebar-header">AI 상담</h2>
-                <button id="new-dialog-btn"><i class="bi bi-plus-lg"></i><span>새 대화 시작</span></button>
+                <button id="new-dialog-btn"><i class="bi bi-plus-lg"></i><span> {% t 'new_dialog_btn' %} </span></button>
                 <input type="text" id="search-box" placeholder="대화 기록 검색...">
                 <div id="file-list"></div>
             </div>
@@ -592,7 +592,7 @@
                 card.id = `file-card-${d.id}`;
                 card.className = "file-card";
                 
-                card.innerHTML = `<h5></h5><small>${d.timestamp}</small><div class="menu-button"><i class="bi bi-three-dots-vertical"></i></div><div class="menu-popup" id="menu-${d.id}"><button class="rename-btn"><i class="bi bi-pencil"></i> 제목 수정</button><button class="delete-btn"><i class="bi bi-trash3"></i> 삭제</button></div>`;
+                card.innerHTML = `<h5></h5><small>${d.timestamp}</small><div class="menu-button"><i class="bi bi-three-dots-vertical"></i></div><div class="menu-popup" id="menu-${d.id}"><button class="rename-btn"><i class="bi bi-pencil"></i> {% t 'rename_btn' %} </button><button class="delete-btn"><i class="bi bi-trash3"></i> {% t 'delete_btn' %} </button></div>`;
                 const h5 = card.querySelector('h5');
                 h5.textContent = d.title || "(제목 없음)";
                 h5.dataset.fullText = h5.textContent;

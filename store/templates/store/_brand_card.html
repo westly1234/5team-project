@@ -1,3 +1,4 @@
+{% load static custom_translate i18n %}
 {# store/templates/store/_brand_card.html (수정 적용본) #}
 <div class="product-card" style="position: relative;">
     
@@ -30,14 +31,12 @@
 
         {# ✅ 조건부 렌더링으로 '자세히 보기' 숨기기 #}
         {% if not hide_quick_view %}
-        <button class="quick-view-btn" data-brandid="{{ brand.id }}">
-            자세히 보기
-        </button>
+        <button class="quick-view-btn" data-brandid="{{ brand.id }}"> {% t '자세히 보기' %} </button>
         {% endif %}
 
         <div class="compare-checkbox-wrapper">
             <input type="checkbox" id="compare-{{ brand.id }}" class="compare-checkbox" data-brandid="{{ brand.id }}">
-            <label for="compare-{{ brand.id }}">브랜드 비교하기</label>
+            <label for="compare-{{ brand.id }}"> {% t '브랜드 비교하기' %} </label>
         </div>
     </div>
 </div>

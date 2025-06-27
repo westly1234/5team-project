@@ -9,6 +9,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('i18n/', include('django.conf.urls.i18n')),
     path("accounts/", include("accounts.urls")),
     path('save-survey/', accounts_views.save_survey_view, name='save_survey_ajax'),
     path('services/', web_views.services_page, name='services_page'),
