@@ -1,38 +1,52 @@
 # achievements/models.py
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings # ⭐️ User 모델은 settings에서 가져오는 것이 좋습니다.
+from django.utils.translation import gettext_lazy as _ # ⭐️ 번역 함수 import
 
 class Achievement(models.Model):
-    # 업적 카테고리 (필터링에 용이)
+    # ⭐️ 카테고리 선택지를 _()로 감쌉니다.
     CATEGORY_CHOICES = [
-        ('DIET', '식단'),
-        ('WORKOUT', '운동'),
-        ('CONSISTENCY', '꾸준함'),
-        ('EXPLORE', '탐험'),
-        ('CHATBOT', '챗봇'),
+        ('DIET', _('식단')),
+        ('WORKOUT', _('운동')),
+        ('CONSISTENCY', _('꾸준함')),
+        ('EXPLORE', _('탐험')),
+        ('CHATBOT', _('챗봇')),
     ]
 
-    name = models.CharField(max_length=100, unique=True, verbose_name="업적 이름")
-    # 업적 달성 시 부여할 칭호 (없는 경우도 있음)
-    title_reward = models.CharField(max_length=100, blank=True, null=True, verbose_name="보상 칭호")
-    description = models.TextField(verbose_name="업적 설명")
-    # 뱃지 이미지 (SVG 또는 PNG)
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='WORKOUT', verbose_name="카테고리")
-    is_secret = models.BooleanField(default=False, verbose_name="숨겨진 업적 여부")
-    # 로직에서 업적을 쉽게 찾기 위한 고유 코드네임
-    codename = models.CharField(max_length=100, unique=True, null=True, blank=True, help_text="개발용 고유 코드")
+    # --- 원본 필드 (번역 대상 아님) ---
+    codename = models.CharField(max_length=100, unique=True, null=True, blank=True, help_text=_("개발용 고유 코드"))
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='WORKOUT')
+    is_secret = models.BooleanField(default=False)
+
+    # --- ⭐️ 번역이 필요한 필드들 ⭐️ ---
+    name = models.CharField(max_length=100, unique=True)
+    title_reward = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField()
+    
+    name_en = models.CharField(max_length=100, blank=True, null=True)
+    title_reward_en = models.CharField(max_length=100, blank=True, null=True)
+    description_en = models.TextField(blank=True, null=True)
+
+    name_es = models.CharField(max_length=100, blank=True, null=True)
+    title_reward_es = models.CharField(max_length=100, blank=True, null=True)
+    description_es = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = _("업적")
+        verbose_name_plural = _("업적 목록")
+
 class UserAchievement(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="사용자")
-    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE, verbose_name="달성한 업적")
-    awarded_at = models.DateTimeField(auto_now_add=True, verbose_name="달성 일시")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name=_("사용자"))
+    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE, verbose_name=_("달성한 업적"))
+    awarded_at = models.DateTimeField(auto_now_add=True, verbose_name=_("달성 일시"))
 
     class Meta:
-        # 한 유저는 같은 업적을 한 번만 달성할 수 있도록 제약
         unique_together = ('user', 'achievement')
+        verbose_name = _("사용자 달성 업적")
+        verbose_name_plural = _("사용자 달성 업적 목록")
 
     def __str__(self):
         return f"{self.user.username} - {self.achievement.name}"

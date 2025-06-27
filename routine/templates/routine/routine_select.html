@@ -1,7 +1,7 @@
 {% extends 'web/dashboard_sliding_base.html' %}
 {% load static custom_translate i18n %}
 
-{% block title %}AI 운동 루틴 생성{% endblock %}
+{% block title %}{% t 'AI 운동 루틴 생성' %}{% endblock %}
 
 {% block page_content %}
 <script src="https://cdn.tailwindcss.com"></script>
@@ -51,8 +51,8 @@
 <div class="p-6 sm:p-8">
     <header class="text-left mb-12">
         <div class="border-l-4 border-emerald-400 pl-4">
-            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Routine Builder</h1>
-            <p class="text-md text-gray-400 mt-2">AI의 도움을 받거나 직접 운동을 조합하여 나만의 루틴을 만드세요.</p>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">{% t 'Routine Builder' %}</h1>
+            <p class="text-md text-gray-400 mt-2">{% t 'AI의 도움을 받거나 직접 운동을 조합하여 나만의 루틴을 만드세요.' %}</p>
         </div>
     </header>
 
@@ -65,7 +65,7 @@
                     <div>
                         <label for="part" class="block text-sm font-medium text-gray-400 mb-1"> {% t '운동 부위' %} </label>
                         <select id="part" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-blue-500 focus:border-blue-500">
-                            <option> {% t '하체' %} </option><option> {% t '등' %} </option><option> {% t '가슴' %} </option><option> {% t '어깨' %} </option><option>팔</option><option> {% t '복근' %} </option>
+                            <option> {% t '하체' %} </option><option> {% t '등' %} </option><option> {% t '가슴' %} </option><option> {% t '어깨' %} </option><option>{% t '팔' %}</option><option> {% t '복근' %} </option>
                         </select>
                     </div>
                     <div>
@@ -94,7 +94,7 @@
                      <button onclick="loadExercises('등', this)" class="group muscle-button">💪<span class="button-text"> {% t '등' %} </span></button>
                      <button onclick="loadExercises('가슴', this)" class="group muscle-button">🔥<span class="button-text"> {% t '가슴' %} </span></button>
                      <button onclick="loadExercises('어깨', this)" class="group muscle-button">🏋️<span class="button-text"> {% t '어깨' %} </span></button>
-                     <button onclick="loadExercises('팔', this)" class="group muscle-button">🦾<span class="button-text">팔</span></button>
+                     <button onclick="loadExercises('팔', this)" class="group muscle-button">🦾<span class="button-text">{% t '팔' %}</span></button>
                      <button onclick="loadExercises('복근', this)" class="group muscle-button">🍫<span class="button-text"> {% t '복근' %} </span></button>
                      <button onclick="loadExercises('유산소', this)" class="group muscle-button">🏃<span class="button-text"> {% t '유산소' %} </span></button>
                 </div>
