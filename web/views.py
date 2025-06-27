@@ -1,4 +1,4 @@
-# web/views.py
+# web/views.py - 전체 코드를 이걸로 교체하세요.
 
 import json
 import re
@@ -9,8 +9,11 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Inquiry
 
-# --- 다른 앱의 모델 및 서비스 import ---
+# --- 다른 앱의 모델 및 서비스 import (기존 코드와 동일) ---
 try:
     from routine.models import Routine
 except ImportError:
@@ -22,7 +25,6 @@ except ImportError:
     Meal = None
     
 try:
-    # ✅ UserAchievement 모델을 추가로 import 해야 합니다.
     from accounts.models import BodyCompositionRecord, Profile, UserAchievement 
 except ImportError:
     BodyCompositionRecord, Profile, UserAchievement = None, None, None
@@ -33,7 +35,7 @@ except ImportError:
     check_and_award_achievement = None
 
 
-# --- 헬퍼 함수 (변경 없음) ---
+# --- 헬퍼 함수 (기존 코드와 동일) ---
 def parse_nutrition_value(value_str):
     if isinstance(value_str, (int, float)):
         return value_str
@@ -44,7 +46,7 @@ def parse_nutrition_value(value_str):
     return 0
 
 
-# --- 기본 뷰 함수 (변경 없음) ---
+# --- 기본 뷰 함수 (기존 코드와 동일) ---
 def home(request):
     return render(request, 'web/index.html')
 
@@ -80,8 +82,7 @@ def start_trial(request):
     return render(request, 'web/start_trial.html')
 
 
-# --- 대시보드 뷰 함수 (통합 버전) ---
-
+# --- 대시보드 뷰 함수 (기존 코드와 동일) ---
 @login_required
 def services_page(request):
     user = request.user
@@ -104,7 +105,6 @@ def services_page(request):
         except Profile.DoesNotExist:
             context['profile'] = None
 
-    # ✅ [핵심 수정] 'is_active' 대신 실제 필드 이름인 'activated_by_profile'을 사용합니다.
     if Profile:
         try:
             profile = Profile.objects.select_related('active_title__achievement').get(user=user)
@@ -114,8 +114,6 @@ def services_page(request):
             context['profile'] = None
             context['active_title'] = None
 
-
-    # --- 1. 최근 운동 루틴 가져오기 (이하 코드는 변경 없음) ---
     latest_routine = None
     if Routine:
         try:
@@ -129,7 +127,6 @@ def services_page(request):
             latest_routine = None
     context['latest_routine'] = latest_routine
 
-    # --- 2. 오늘의 식단 요약 정보 가져오기 ---
     today_diet_summary = defaultdict(float)
     if Meal:
         daily_meals = Meal.objects.filter(user=user, created_at__date=today)
@@ -142,7 +139,6 @@ def services_page(request):
                 today_diet_summary['fat'] += parse_nutrition_value(nutrition.get('fat', 0))
     context['today_diet_summary'] = dict(today_diet_summary)
 
-    # --- 3. 인바디 차트 데이터 준비 ---
     inbody_chart_data = {'labels': [], 'weights': [], 'muscles': [], 'fats': []}
     if BodyCompositionRecord:
         all_records = BodyCompositionRecord.objects.filter(user=user).order_by('created_at')
@@ -157,7 +153,6 @@ def services_page(request):
         inbody_chart_data['fats'] = [rec.body_fat_mass for rec in final_records_list]
     context['inbody_chart_data'] = json.dumps(inbody_chart_data)
 
-    # --- 4. 식단 구성 도넛 차트 데이터 준비 ---
     diet_chart_data = {
         'carbs': round(today_diet_summary['carbs'], 1),
         'protein': round(today_diet_summary['protein'], 1),
@@ -166,3 +161,56 @@ def services_page(request):
     context['diet_chart_data'] = json.dumps(diet_chart_data) 
     
     return render(request, 'web/services.html', context)
+
+# --- 고객 지원 관련 뷰 ---
+
+def support_view(request):
+    """고객 지원 FAQ 페이지를 보여주는 뷰"""
+    return render(request, 'web/support.html')
+
+
+def inquiry_view(request):
+    """1:1 문의 폼을 보여주고, 제출된 문의를 처리하는 뷰"""
+    
+    if request.method == 'POST':
+        inquiry_user = request.user if request.user.is_authenticated else None
+        
+        user_email = request.POST.get('email')
+        subject = request.POST.get('subject')
+
+        Inquiry.objects.create(
+            user=inquiry_user,
+            category=request.POST.get('category'),
+            email=user_email,
+            subject=subject,
+            message=request.POST.get('message')
+        )
+
+        messages.success(request, '문의가 성공적으로 접수되었습니다. 빠른 시일 내에 답변드리겠습니다.')
+
+        try:
+            email_subject = f"[HealthWise] '{subject}' 문의가 정상적으로 접수되었습니다."
+            email_message = f"""
+안녕하세요, HealthWise입니다.
+
+고객님의 소중한 문의가 성공적으로 접수되었습니다.
+담당자가 내용을 확인한 후, 최대한 빠른 시일 내에 답변드리겠습니다.
+
+더 나은 서비스를 만드는 데 도움을 주셔서 감사합니다.
+
+- HealthWise 드림 -
+"""
+            send_mail(
+                subject=email_subject,
+                message=email_message,
+                from_email=None,
+                recipient_list=[user_email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"사용자에게 접수 확인 메일 발송 실패: {e}")
+
+        # 'web' 그룹에 속한 'support' URL로 이동합니다.
+        return redirect('web:support')
+
+    return render(request, 'web/inquiry.html')
