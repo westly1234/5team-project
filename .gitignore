@@ -1,2 +1,4 @@
 __pyache__/
 *.pyc
+"*.pyc" 
+"__pycache__/" 
