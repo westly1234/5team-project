@@ -1,5 +1,5 @@
 {% extends "web/dashboard_sliding_base.html" %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}AI 뮤직 허브 - HealthWise{% endblock %}
 
@@ -178,17 +178,17 @@
         padding: 16px;
         border-radius: 8px;
         transition: background-color 0.3s ease;
-        cursor: pointer;
-        position: relative; /* 오버레이 기준 */
+        position: relative;
     }
     .spotify-card:hover {
         background: #282828;
     }
-    .spotify-card a {
+    .spotify-card .card-main-link {
         text-decoration: none;
         color: inherit;
         display: flex;
         flex-direction: column;
+        height: 100%;
     }
     .card-img-wrapper {
         position: relative;
@@ -201,14 +201,12 @@
         object-fit: cover;
         border-radius: 8px;
     }
-    .spotify-card.artist .card-img-wrapper img {
-        border-radius: 50%; /* 아티스트는 원형 이미지 */
-    }
     .card-title {
         font-weight: 700;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        margin-bottom: auto; /* 카드 높이가 달라도 제목을 위로, 부제를 아래로 정렬 */
     }
     .card-subtitle {
         color: #b3b3b3;
@@ -235,6 +233,7 @@
         opacity: 0;
         transform: translateY(8px);
         transition: opacity 0.3s ease, transform 0.3s ease;
+        cursor: pointer;
     }
     .spotify-card:hover .play-icon-overlay {
         opacity: 1;
@@ -244,6 +243,39 @@
         font-size: 1.5rem;
         color: #000;
     }
+
+    /* ✨ [수정됨] 보관하기 버튼 스타일 ✨ */
+    .save-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0,0,0,0.7);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.2s ease, background-color 0.2s ease;
+        z-index: 10;
+    }
+    .spotify-card:hover .save-btn, .save-btn.saved {
+        opacity: 1;
+    }
+    .save-btn:hover {
+        background: #000;
+        transform: scale(1.1);
+    }
+    .save-btn.saved {
+        background: #4ecdc4; /* HealthWise 테마 컬러 */
+        color: #000;
+    }
+    /* 문제가 되었던 ::before 선택자 제거 */
 
     /* 로딩 스피너 */
     .loader-wrapper {
@@ -266,41 +298,41 @@
     <!-- 좌측 컨트롤 패널 -->
     <aside class="music-nav-sidebar">
         <div class="sidebar-block">
-            <h2 class="block-title">AI 뮤직 큐레이션</h2>
+            <h2 class="block-title"> {% t 'AI 뮤직 큐레이션' %} </h2>
             <div id="ai-controls">
                 <div id="exercise-group" class="sidebar-options-list">
-                    <div class="option-item" data-value="헬스"><i class="bi bi-person-arms-up icon"></i> 헬스</div>
-                    <div class="option-item" data-value="요가 또는 필라테스"><i class="bi bi-peace icon"></i> 요가/필라테스</div>
-                    <div class="option-item" data-value="조깅"><i class="bi bi-person-walking icon"></i> 조깅</div>
-                    <div class="option-item" data-value="고강도 인터벌 트레이닝 (HIIT)"><i class="bi bi-fire icon"></i> HIIT</div>
+                    <div class="option-item" data-value="헬스"><i class="bi bi-person-arms-up icon"></i> {% t '헬스' %} </div>
+                    <div class="option-item" data-value="요가 또는 필라테스"><i class="bi bi-peace icon"></i> {% t '요가/필라테스' %} </div>
+                    <div class="option-item" data-value="조깅"><i class="bi bi-person-walking icon"></i> {% t '조깅' %} </div>
+                    <div class="option-item" data-value="고강도 인터벌 트레이닝 (HIIT)"><i class="bi bi-fire icon"></i> {% t 'HIIT' %} </div>
                 </div>
                 <hr style="border-color: #2a2a2a; margin: 16px 0;">
                 <div id="mood-group" class="sidebar-options-list">
-                    <div class="option-item" data-value="최고로 집중해서"><i class="bi bi-headphones icon"></i> 집중 모드</div>
-                    <div class="option-item" data-value="지치지만 이겨내고 싶을 때"><i class="bi bi-rocket-takeoff icon"></i> 한계 돌파</div>
-                    <div class="option-item" data-value="에너지 넘치게"><i class="bi bi-lightning-charge icon"></i> 에너지 폭발</div>
-                    <div class="option-item" data-value="편안하고 차분하게"><i class="bi bi-cup-hot icon"></i> 편안한 휴식</div>
+                    <div class="option-item" data-value="최고로 집중해서"><i class="bi bi-headphones icon"></i> {% t '집중 모드' %} </div>
+                    <div class="option-item" data-value="지치지만 이겨내고 싶을 때"><i class="bi bi-rocket-takeoff icon"></i> {% t '한계 돌파' %} </div>
+                    <div class="option-item" data-value="에너지 넘치게"><i class="bi bi-lightning-charge icon"></i> {% t '에너지 폭발' %} </div>
+                    <div class="option-item" data-value="편안하고 차분하게"><i class="bi bi-cup-hot icon"></i> {% t '편안한 휴식' %} </div>
                 </div>
                  <hr style="border-color: #2a2a2a; margin: 16px 0;">
                 <div id="genre-group" class="sidebar-options-list">
-                    <div class="option-item" data-value="신나는 K-Pop"><i class="bi bi-mic icon"></i> K-Pop</div>
-                    <div class="option-item" data-value="힙합"><i class="bi bi-boombox icon"></i> 힙합</div>
-                    <div class="option-item" data-value="EDM"><i class="bi bi-speaker icon"></i> EDM</div>
-                    <div class="option-item" data-value="팝송"><i class="bi bi-globe-americas icon"></i> 팝송</div>
+                    <div class="option-item" data-value="신나는 K-Pop"><i class="bi bi-mic icon"></i> {% t 'K-Pop' %} </div>
+                    <div class="option-item" data-value="힙합"><i class="bi bi-boombox icon"></i> {% t '힙합' %} </div>
+                    <div class="option-item" data-value="EDM"><i class="bi bi-speaker icon"></i> {% t 'EDM' %} </div>
+                    <div class="option-item" data-value="팝송"><i class="bi bi-globe-americas icon"></i> {% t '팝송' %} </div>
                     <div class="option-item" data-value="락"><i class="bi bi-music-note-beamed icon"></i> 락</div>
                 </div>
             </div>
         </div>
         <div class="sidebar-footer">
-            <button id="request-ai-btn" class="action-btn recommend">AI 추천 받기</button>
-            <button id="reset-btn" class="action-btn reset">초기화</button>
+            <button id="request-ai-btn" class="action-btn recommend"> {% t 'AI 추천 받기' %} </button>
+            <button id="reset-btn" class="action-btn reset"> {% t '초기화' %} </button>
         </div>
     </aside>
 
     <!-- 우측 메인 뷰 -->
-    <main class="music-main-view">
+    <main class="music-main-view" id="music-main-view">
         <div class="main-view-header">
-            <h1 id="main-view-title">오늘의 트렌딩 믹스</h1>
+            <h1 id="main-view-title"> {% t '오늘의 트렌딩 믹스' %} </h1>
         </div>
         <div class="main-view-content">
             <!-- AI 추천 결과 섹션 (초기에는 숨김) -->
@@ -322,11 +354,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const youtubeKey = "{{ youtube_api_key }}";
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // --- DOM 요소 ---
     const controls = document.getElementById('ai-controls');
     const requestBtn = document.getElementById('request-ai-btn');
     const resetBtn = document.getElementById('reset-btn');
     
+    const mainView = document.getElementById('music-main-view');
     const mainViewHeader = document.querySelector('.main-view-header');
     const mainViewTitle = document.getElementById('main-view-title');
     const trendingSection = document.getElementById('trending-section');
@@ -334,24 +366,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsGrid = document.getElementById('results-grid');
     const hotlistGrid = document.getElementById('hotlist-grid');
 
-    // --- 상태 변수 ---
     let selectedExercise = null, selectedMood = null, selectedGenre = null;
-
-    // --- 로더 HTML ---
     const loaderHTML = `<div class="loader-wrapper"><div class="loader"></div></div>`;
 
-    // --- 이벤트 리스너 설정 ---
     controls.addEventListener('click', (e) => {
         const item = e.target.closest('.option-item');
         if (!item) return;
-
         const group = item.parentElement;
-        // 같은 그룹 내 다른 선택 해제
         group.querySelector('.selected')?.classList.remove('selected');
-        // 현재 아이템 선택
         item.classList.add('selected');
-
-        // 상태 업데이트
         const groupID = group.id;
         if (groupID === 'exercise-group') selectedExercise = item.dataset.value;
         else if (groupID === 'mood-group') selectedMood = item.dataset.value;
@@ -361,32 +384,79 @@ document.addEventListener('DOMContentLoaded', () => {
     requestBtn.addEventListener('click', handleAIRequest);
     resetBtn.addEventListener('click', handleReset);
 
-    // --- 핵심 기능 함수 ---
+    // ✨ [수정된] 이벤트 위임을 사용하여 보관하기 버튼 클릭 처리 (토글 기능 구현)
+    mainView.addEventListener('click', async (e) => {
+        const saveBtn = e.target.closest('.save-btn');
+        if (!saveBtn) return;
+
+        // 현재 상태 확인 (저장되어 있는지 아닌지)
+        const isSaved = saveBtn.classList.contains('saved');
+        const action = isSaved ? 'unsave' : 'save'; // 백엔드에 보낼 액션 결정
+        
+        const videoId = saveBtn.dataset.videoId;
+        const videoTitle = saveBtn.dataset.videoTitle;
+        const icon = saveBtn.querySelector('i');
+
+        try {
+            saveBtn.disabled = true; // 중복 클릭 방지
+
+            const res = await fetch('/music/api/preference/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({
+                    videoId: videoId,
+                    videoTitle: videoTitle,
+                    action: action // 'save' 또는 'unsave' 액션을 함께 보냄
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || '요청 처리 실패');
+
+            // 성공 시 UI 토글
+            saveBtn.classList.toggle('saved');
+
+            if (action === 'save') {
+                // 저장 성공: 체크 아이콘으로 변경
+                icon.classList.remove('bi-plus-circle');
+                icon.classList.add('bi-check-circle-fill');
+                saveBtn.title = '보관함에서 제거';
+            } else {
+                // 저장 취소 성공: 플러스 아이콘으로 변경
+                icon.classList.remove('bi-check-circle-fill');
+                icon.classList.add('bi-plus-circle');
+                saveBtn.title = '내 보관함에 추가';
+            }
+            // alert(data.message); // 사용자 피드백 (필요 시 활성화)
+
+        } catch (error) {
+            console.error("보관 처리 실패:", error);
+            alert(error.message);
+        } finally {
+            saveBtn.disabled = false; // 버튼 다시 활성화
+        }
+    });
+
     async function handleAIRequest() {
         if (!selectedExercise || !selectedMood) {
             alert('운동과 분위기를 모두 선택해주세요!');
             return;
         }
-
         setLoadingState(true);
         try {
             const res = await fetch('/music/api/ai-keywords/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
                 body: JSON.stringify({
-                    exercise: selectedExercise,
-                    mood: selectedMood,
-                    genres: selectedGenre ? [selectedGenre] : [] // 장르는 단일 선택
+                    exercise: selectedExercise, mood: selectedMood,
+                    genres: selectedGenre ? [selectedGenre] : []
                 })
             });
             const data = await res.json();
             if (!res.ok || data.error) throw new Error(data.error || 'AI 키워드 생성 실패');
-
             await fetchMusicFromKeywords(data.keywords);
-
         } catch (error) {
             console.error("AI 요청 오류:", error);
-            resultsGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center;">추천 음악을 가져오는 데 실패했습니다.</p>`;
+            resultsGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center;">추천 음악을 가져오는 데 실패했습니다: ${error.message}</p>`;
         } finally {
             setLoadingState(false);
         }
@@ -395,34 +465,35 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchMusicFromKeywords(keywords) {
         try {
             const searchPromises = keywords.map(keyword =>
-                fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(keyword)}&type=video&key=${youtubeKey}`)
+                fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q=${encodeURIComponent(keyword)}&type=video&videoEmbeddable=true&key=${youtubeKey}`)
                 .then(res => res.ok ? res.json() : Promise.reject(new Error(`YouTube API Error: ${res.status}`)))
             );
-            
             const ytResults = await Promise.all(searchPromises);
             
-            resultsGrid.innerHTML = ''; // 로더 제거
+            resultsGrid.innerHTML = '';
             ytResults.forEach((ytData, index) => {
                 if (ytData.items && ytData.items.length > 0) {
                     const video = ytData.items[0];
-                    const card = createSpotifyCard(video, `키워드: ${keywords[index]}`);
+                    const card = createSpotifyCard(video, `AI 추천: ${keywords[index]}`);
                     resultsGrid.appendChild(card);
                 }
             });
-
             if (resultsGrid.innerHTML === '') {
-                resultsGrid.innerHTML = '<p style="color: #aaa; text-align: center;">추천 음악을 찾지 못했습니다.</p>';
+                resultsGrid.innerHTML = '<p style="color: #aaa; text-align: center;">추천 음악을 찾지 못했습니다. 다른 키워드로 시도해보세요.</p>';
             }
         } catch(error) {
             console.error("YouTube 검색 오류:", error);
-            throw error; // 상위 catch 블록으로 에러 전파
+            throw error;
         }
     }
     
     function setLoadingState(isLoading) {
         requestBtn.disabled = isLoading;
-        requestBtn.innerHTML = isLoading ? '<span class="spinner-border spinner-border-sm"></span> 분석 중...' : 'AI 추천 받기';
-
+        if (isLoading) {
+             requestBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 분석 중...';
+        } else {
+             requestBtn.innerHTML = 'AI 추천 받기';
+        }
         if (isLoading) {
             trendingSection.style.display = 'none';
             aiResultsSection.style.display = 'block';
@@ -434,13 +505,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleReset() {
-        // 선택 초기화
         controls.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-        selectedExercise = null;
-        selectedMood = null;
-        selectedGenre = null;
-
-        // UI 초기화
+        selectedExercise = null; selectedMood = null; selectedGenre = null;
         trendingSection.style.display = 'block';
         aiResultsSection.style.display = 'none';
         resultsGrid.innerHTML = '';
@@ -449,41 +515,47 @@ document.addEventListener('DOMContentLoaded', () => {
         resetBtn.style.display = 'none';
     }
 
-
-    // --- 유틸리티 함수 ---
-    function createSpotifyCard(item, subtitleText) {
+    // ✨ [수정된] createSpotifyCard 함수
+    function createSpotifyCard(item, subtitleText, is_saved = false) {
         const isPlaylist = item.kind === 'youtube#playlist';
-        const id = isPlaylist ? item.id : item.id.videoId;
-        const url = isPlaylist ? `https://www.youtube.com/playlist?list=${id}` : `https://www.youtube.com/watch?v=${id}`;
+        const videoId = isPlaylist ? item.id : item.id.videoId;
+        const url = isPlaylist ? `https://www.youtube.com/playlist?list=${videoId}` : `https://www.youtube.com/watch?v=${videoId}`;
         const thumbnailUrl = item.snippet.thumbnails.high.url;
         const title = item.snippet.title;
         const cardSubtitle = subtitleText || item.snippet.channelTitle;
 
         const card = document.createElement('div');
         card.className = 'spotify-card';
+
+        // is_saved 상태에 따라 클래스와 title을 동적으로 설정
+        const savedClass = is_saved ? 'saved' : '';
+        const buttonTitle = is_saved ? '보관함에서 제거' : '내 보관함에 추가';
+        const iconClass = is_saved ? 'bi-check-circle-fill' : 'bi-plus-circle';
+
         card.innerHTML = `
-            <a href="${url}" target="_blank">
+            <button class="save-btn ${savedClass}" title="${buttonTitle}" 
+                    data-video-id="${videoId}" 
+                    data-video-title="${title.replace(/"/g, '"')}">
+                <i class="bi ${iconClass}"></i>
+            </button>
+            <a href="${url}" target="_blank" class="card-main-link">
                 <div class="card-img-wrapper">
                     <img src="${thumbnailUrl}" alt="${title}" loading="lazy">
                     <div class="play-icon-overlay"><i class="bi bi-play-fill"></i></div>
                 </div>
                 <div class="card-title">${title}</div>
-                <div class="card-subtitle">${cardSubtitle}</div>
-            </a>`;
+            </a>
+            <div class="card-subtitle">${cardSubtitle}</div>
+            `;
         return card;
     }
 
     async function loadTrendingMixes() {
         hotlistGrid.innerHTML = loaderHTML;
-        const playlistIds = [
-            'PL4fGSI1pDJn5kI81J1fYC0_B5P5vIqSD_', // K-Hitlist
-            'PL4fGSI1pDJn5Fh5bT4I4r0n3429_m82s2', // BEAT ON (댄스)
-            'PL4fGSI1pDJn4J4b9I5B-g-ajG_i8Z_5D_', // 감성 발라드
-            'PL4fGSI1pDJn5r_42M4u4-l5iSTa2H4V8a'  // Pop on the Rise
-        ];
-        
+        const playlistIds = [ 'PL4fGSI1pDJn5kI81J1fYC0_B5P5vIqSD_', 'PL4fGSI1pDJn5Fh5bT4I4r0n3429_m82s2', 'PL4fGSI1pDJn4J4b9I5B-g-ajG_i8Z_5D_', 'PL4fGSI1pDJn5r_42M4u4-l5iSTa2H4V8a' ];
         try {
             const res = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&id=${playlistIds.join(',')}&key=${youtubeKey}`);
+            if (!res.ok) throw new Error(`API Error ${res.status}`);
             const data = await res.json();
             if (data.error) throw new Error(data.error.message);
             
@@ -494,11 +566,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error("트렌딩 믹스 로딩 실패:", error);
-            hotlistGrid.innerHTML = `<p style="color:#ff6b6b;">트렌딩 믹스를 불러오지 못했습니다.</p>`;
+            hotlistGrid.innerHTML = `<p style="color:#ff6b6b;"> {% t '트렌딩 믹스를 불러오지 못했습니다.' %} </p>`;
         }
     }
 
-    // --- 초기화 ---
     loadTrendingMixes();
 });
 </script>

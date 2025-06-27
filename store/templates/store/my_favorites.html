@@ -1,0 +1,237 @@
+{% extends 'web/base_simple.html' %}
+{% load static custom_translate i18n %}
+{% block title %}내가 찜한 브랜드{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+    /* CSS는 이전과 동일합니다. 수정할 필요 없습니다. */
+    .store-container { max-width: 1200px; margin: 4rem auto; padding: 0 2rem; color: #fff; }
+    .store-header { text-align: center; margin-bottom: 3rem; }
+    .store-header h1 { font-size: 2.5rem; font-weight: 700; }
+    .store-header p { font-size: 1.1rem; color: rgba(255, 255, 255, 0.7); margin-top: 0.5rem; }
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
+    .product-card { position: relative; display: flex; flex-direction: column; background: #2a2a2e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; }
+    .thumbnail-wrapper { width: 100%; height: 180px; display: flex; text-decoration: none; align-items: center; justify-content: center; background-color: #1c1c20; }
+    .thumbnail-wrapper img { max-width: 80%; max-height: 80%; object-fit: contain; }
+    .card-body { padding: 1.25rem; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+    .product-name { font-size: 1.1rem; font-weight: 600; }
+    .category-tags-wrapper { min-height: 22px; margin-bottom: 0.5rem; }
+    .category-tag { font-size: 0.75rem; background-color: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 12px; margin: 2px; display: inline-block; }
+    .quick-view-btn { font-family: inherit; font-size: 0.9rem; font-weight: 600; margin-top: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+    .quick-view-btn:hover { background: #4ecdc4; color: #0a0a0a; border-color: #4ecdc4; }
+    .no-results { text-align: center; padding: 4rem 1rem; color: rgba(255, 255, 255, 0.6); grid-column: 1 / -1; }
+    .favorite-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .favorite-btn.favorited { color: #ff6b6b; }
+    .product-card:not(:hover) .favorite-btn { opacity: 0.7; }
+    .compare-checkbox-wrapper { display: none; }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); visibility: hidden; opacity: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.3s ease, visibility 0.3s ease; }
+    .modal-overlay.active { visibility: visible; opacity: 1; }
+    .modal-content { background: #1c1c20; padding: 2.5rem; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
+    .modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    .modal-title { font-size: 1.8rem; font-weight: 700; color: #fff; }
+    .modal-close { font-size: 2rem; color: #fff; cursor: pointer; background:none; border:none; line-height: 1; }
+    .modal-body p { color: rgba(255,255,255,0.8); line-height: 1.7; font-size: 1rem; white-space: pre-wrap; margin: 0; }
+    .modal-footer { margin-top: 2rem; text-align: right; }
+    .go-to-site-btn { background-color: #4ecdc4; color: #0a0a0a; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; transition: all 0.2s; }
+    .go-to-site-btn:hover { background-color: #fff; }
+    .modal-reviews-section { margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; }
+    .review-form-wrapper { margin-bottom: 2rem; }
+    .star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 5px; }
+    .star-rating input[type="radio"] { display: none; }
+    .star-rating label { font-size: 2rem; color: #555; cursor: pointer; transition: color 0.2s; }
+    .star-rating input[type="radio"]:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: #ffc107; }
+    .review-textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #444; border-radius: 8px; padding: 1rem; color: #fff; margin-top: 1rem; min-height: 100px; }
+    .review-submit-btn { float: right; margin-top: 1rem; }
+    .review-list .review-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1rem 0; }
+    .review-list .review-item:last-child { border-bottom: none; }
+</style>
+
+<div class="store-container">
+    <header class="store-header">
+        <h1> {% t '내가 찜한 브랜드' %} </h1>
+        <p> {% t '찜한 브랜드들을 모아보세요. 찜하기는 스토어 페이지에서 가능합니다.' %} </p>
+    </header>
+    <div class="product-grid" id="favorites-grid">
+        {% for brand in favorite_brands %}
+            {% include "store/_brand_card.html" with brand=brand %}
+        {% endfor %}
+    </div>
+    <div class="no-results" id="no-favorites-message"
+     {% if not favorite_brands %}style="display:block;"{% else %}style="display:none;"{% endif %}>
+        <p> {% t '아직 찜한 브랜드가 없습니다.' %} </p>
+    </div>
+</div>
+
+<div class="modal-overlay" id="quick-view-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modal-brand-name"></h2>
+            <button class="modal-close" id="modal-close-btn">×</button>
+        </div>
+        <div class="modal-body">
+            <p id="modal-brand-description"></p>
+            <div class="modal-reviews-section">
+                <div id="review-form-wrapper"></div>
+                <h4> {% t '최신 리뷰' %} </h4>
+                <div id="review-list-wrapper"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#" target="_blank" rel="noopener noreferrer" class="go-to-site-btn" id="modal-brand-link"> {% t '홈페이지 방문' %} </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    function toggleFavorite(buttonElement, brandId) {
+        const url = `{% url 'store:toggle_favorite_api' 0 %}`.replace('0', brandId);
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                buttonElement.classList.toggle('favorited', data.favorited);
+                if (!data.favorited) {
+                    const cardToRemove = buttonElement.closest('.product-card');
+                    if (cardToRemove) {
+                        cardToRemove.style.transition = 'opacity 0.3s ease';
+                        cardToRemove.style.opacity = '0';
+                        setTimeout(() => {
+                            cardToRemove.remove();
+                            checkIfFavoritesEmpty();
+                        }, 300);
+                    }
+                }
+            }
+        });
+    }
+    
+    function checkIfFavoritesEmpty() {
+        const grid = document.getElementById('favorites-grid');
+        const message = document.getElementById('no-favorites-message');
+        if (grid && message && grid.querySelectorAll('.product-card').length === 0) {
+            message.style.display = 'block';
+        }
+    }
+
+    function submitReview(event, brandId) {
+        event.preventDefault();
+        const form = event.target;
+        const rating = form.querySelector('input[name="rating"]:checked');
+        const content = form.querySelector('textarea[name="content"]');
+        if (!rating) { alert('평점을 선택해주세요.'); return; }
+        const url = `{% url 'store:add_review_api' 0 %}`.replace('0', brandId);
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify({ rating: rating.value, content: content.value })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                alert(data.message);
+                document.getElementById('modal-close-btn').click();
+            } else {
+                alert(data.message || '리뷰 등록에 실패했습니다.');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.querySelector('.store-container');
+        const modal = document.getElementById('quick-view-modal');
+
+        // ✅ 수정: my_favorites.html에서도 스코프 문제를 해결한 모달 로직 적용
+        if (modal && container) {
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+            const modalBrandName = document.getElementById('modal-brand-name');
+            const modalBrandDesc = document.getElementById('modal-brand-description');
+            const modalBrandLink = document.getElementById('modal-brand-link');
+            const reviewFormWrapper = document.getElementById('review-form-wrapper');
+            const reviewListWrapper = document.getElementById('review-list-wrapper');
+
+            const openModal = (brandId) => {
+                modal.classList.add('active');
+                modalBrandName.textContent = '불러오는 중...';
+                modalBrandDesc.textContent = "정보를 불러오는 중...";
+                reviewFormWrapper.innerHTML = '';
+                reviewListWrapper.innerHTML = '<p>리뷰를 불러오는 중...</p>';
+
+                const url = `{% url 'store:brand_detail_api' 0 %}`.replace('0', brandId);
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        modalBrandName.textContent = data.name;
+                        modalBrandDesc.textContent = data.detailed_description;
+                        modalBrandLink.href = data.link;
+
+                        if (data.is_authenticated) {
+                            const userRating = data.user_review ? data.user_review.rating : 0;
+                            const userContent = data.user_review ? data.user_review.content : '';
+                            reviewFormWrapper.innerHTML = `
+                                <h4>리뷰 작성/수정</h4>
+                                <form id="review-form" onsubmit="submitReview(event, ${brandId})">
+                                    <div class="star-rating">
+                                        ${[5,4,3,2,1].map(i => `<input type="radio" id="star${i}" name="rating" value="${i}" ${userRating == i ? 'checked' : ''} required><label for="star${i}">★</label>`).join('')}
+                                    </div>
+                                    <textarea name="content" class="review-textarea" placeholder="리뷰를 남겨주세요...">${userContent}</textarea>
+                                    <button type="submit" class="go-to-site-btn review-submit-btn">리뷰 등록</button>
+                                </form>`;
+                        }
+
+                        if (data.reviews && data.reviews.length > 0) {
+                            reviewListWrapper.innerHTML = `<div class="review-list">${data.reviews.map(review => `
+                                <div class="review-item">
+                                    <strong>${review.user_username}</strong> - <span>${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</span>
+                                    <p>${review.content}</p>
+                                    <small>${review.created_at}</small>
+                                </div>`).join('')}</div>`;
+                        } else {
+                            reviewListWrapper.innerHTML = '<p>아직 작성된 리뷰가 없습니다.</p>';
+                        }
+                    });
+            };
+            
+            const closeModal = () => modal.classList.remove('active');
+
+            // 찜하기/자세히보기 이벤트 위임
+            container.addEventListener('click', (e) => {
+                const favoriteButton = e.target.closest('[data-action="toggle-favorite"]');
+                const quickViewButton = e.target.closest('.quick-view-btn');
+
+                if (favoriteButton) {
+                    e.preventDefault();
+                    toggleFavorite(favoriteButton, favoriteButton.dataset.brandid);
+                } else if (quickViewButton) {
+                    e.preventDefault();
+                    openModal(quickViewButton.dataset.brandid);
+                }
+            });
+
+            modalCloseBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+            document.addEventListener('keydown', (e) => { if (e.key === "Escape") closeModal(); });
+        }
+    });
+</script>
+{% endblock %}

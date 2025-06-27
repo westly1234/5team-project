@@ -1,20 +1,42 @@
-{# store/templates/store/_brand_card.html #}
+{% load static custom_translate i18n %}
+{# store/templates/store/_brand_card.html (수정 적용본) #}
+<div class="product-card" style="position: relative;">
+    
+    {% if user.is_authenticated %}
+        <button 
+            class="favorite-btn {% if brand.id in favorite_brand_ids %}favorited{% endif %}"
+            data-brandid="{{ brand.id }}"
+            data-action="toggle-favorite"
+            title="찜하기">
+            <i class="bi bi-heart-fill"></i>
+        </button>
+    {% endif %}
 
-<a href="{{ brand.link }}" target="_blank" rel="noopener noreferrer" class="product-card">
-    <div class="thumbnail-wrapper">
+    <a href="{{ brand.link }}" target="_blank" rel="noopener noreferrer" class="thumbnail-wrapper">
         {% if brand.thumbnail %}
-            {# ✅ 로고 이미지가 있는 경우 #}
             <img src="{{ brand.thumbnail.url }}" alt="{{ brand.name }} 로고">
         {% else %}
-            {# ✅ 로고가 없는 경우, 브랜드 이름의 첫 글자를 보여주는 플레이스홀더 #}
             <div class="thumbnail-placeholder">
                 <span>{{ brand.name|first }}</span>
             </div>
         {% endif %}
-    </div>
+    </a>
     <div class="card-body">
         <h3 class="product-name">{{ brand.name }}</h3>
-        {# ✅ 카테고리 태그를 카드 본문 안으로 이동시켜 디자인 개선 #}
-        <span class="category-tag">{{ brand.get_category_display }}</span>
+        <div class="category-tags-wrapper" style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; min-height: 22px; margin-bottom: 0.5rem;">
+            {% for category in brand.categories.all %}
+                <span class="category-tag">{{ category.name }}</span>
+            {% endfor %}
+        </div>
+
+        {# ✅ 조건부 렌더링으로 '자세히 보기' 숨기기 #}
+        {% if not hide_quick_view %}
+        <button class="quick-view-btn" data-brandid="{{ brand.id }}"> {% t '자세히 보기' %} </button>
+        {% endif %}
+
+        <div class="compare-checkbox-wrapper">
+            <input type="checkbox" id="compare-{{ brand.id }}" class="compare-checkbox" data-brandid="{{ brand.id }}">
+            <label for="compare-{{ brand.id }}"> {% t '브랜드 비교하기' %} </label>
+        </div>
     </div>
-</a>
+</div>

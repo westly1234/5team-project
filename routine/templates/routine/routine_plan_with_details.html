@@ -1,11 +1,13 @@
 {% extends 'web/dashboard_sliding_base.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}{{ routine_title }}{% endblock %}
 
 {% block page_content %}
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
+    /* === 애니메이션 및 유틸리티 === */
     @keyframes slide-in-fwd { 0% { transform: translateY(50px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
     .slide-in-fwd { animation: slide-in-fwd 0.6s cubic-bezier(0.250, 0.460, 0.450, 0.940) both; }
     @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -13,135 +15,198 @@
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+    .page-wrapper { background: linear-gradient(180deg, rgba(17, 24, 39, 0) 0%, rgba(17, 24, 39, 0.8) 100%), #111827; }
 
-    /* 수정 모드 관련 스타일 */
+    /* === 수정 모드 토글 === */
     .edit-mode-item { display: none !important; }
-    .view-mode-item { display: block; }
+    .view-mode-item { display: block; } /* 기본값 */
+    .view-mode-item-inline-flex { display: inline-flex; } /* 버튼 그룹용 */
     body.edit-mode .edit-mode-item { display: block !important; }
     body.edit-mode .edit-mode-item-flex { display: flex !important; }
-    body.edit-mode .view-mode-item { display: none !important; }
-    body.edit-mode .routine-exercise-card { border-left: 4px solid #8b5cf6; }
+    body.edit-mode .view-mode-item, body.edit-mode .view-mode-item-inline-flex { display: none !important; }
+    body.edit-mode .routine-exercise-card { border-left-color: #8b5cf6; }
+    body.edit-mode #action-panel { display: none !important; } /* 수정모드에선 액션패널 숨기기 */
+
+    /* === 우측 액션 패널 스타일 === */
+    #action-panel.analysis-active #panel-buttons-view { display: none; }
+    #action-panel:not(.analysis-active) #panel-analysis-view { display: none; }
+    #panel-analysis-content h1, #panel-analysis-content h2, #panel-analysis-content h3, #panel-analysis-content h4 { font-weight: 700; margin-top: 1.25em; margin-bottom: 0.75em; color: #a78bfa; }
+    #panel-analysis-content h3 { font-size: 1.125rem; }
+    #panel-analysis-content p { color: #d1d5db; margin-bottom: 0.75rem; line-height: 1.6; }
+    #panel-analysis-content ul { list-style-type: disc; padding-left: 1.25rem; color: #d1d5db; margin-bottom: 1rem; }
+    #panel-analysis-content li { margin-bottom: 0.5rem; }
+    #panel-analysis-content strong { color: #f9fafb; }
 </style>
 
-<form id="edit-routine-form" method="POST" action="{% if routine_obj %}{% url 'routine:edit_routine' routine_obj.id %}{% endif %}">
-    {% csrf_token %}
-    <input type="hidden" name="exercises_data" id="exercises_data_input">
-    
-    <div class="p-4 sm:p-8">
-        <!-- 1. 헤더 -->
-        <header class="text-left mb-8 max-w-4xl mx-auto">
-            <div class="border-l-4 border-cyan-400 pl-4">
-                <div class="view-mode-item">
-                    <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">{{ routine_title }}</h1>
-                </div>
+<div class="p-4 sm:p-6 lg:p-8 page-wrapper min-h-full">
+    <!-- 페이지 헤더 -->
+    <header class="text-left mb-8 max-w-7xl mx-auto">
+        <a href="{% url 'routine:my_routines' %}" class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition mb-4">
+            <i class="bi bi-arrow-left"></i> 내 루틴 목록으로 돌아가기
+        </a>
+        <div class="border-l-4 border-cyan-400 pl-4">
+            <div class="view-mode-item">
+                <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">{{ routine_title }}</h1>
+            </div>
+            <!-- 수정 모드 제목 입력 폼 -->
+            <form id="edit-routine-form" method="POST" action="{% if routine_obj %}{% url 'routine:edit_routine' routine_obj.id %}{% endif %}">
+                {% csrf_token %}
+                <input type="hidden" name="exercises_data" id="exercises_data_input">
                 <div class="edit-mode-item">
                     <input type="text" name="routine_name" value="{{ routine_title }}" class="text-3xl sm:text-4xl font-bold tracking-tight text-white bg-transparent border-b-2 border-violet-500 focus:outline-none w-full p-1">
                 </div>
-                <p class="text-md text-gray-400 mt-2">아래 운동 계획을 확인하고 오늘의 목표를 달성해보세요.</p>
-            </div>
-        </header>
-
-        {% if messages %}
-        <div class="max-w-4xl mx-auto mb-6 space-y-3">
-            {% for message in messages %}
-            <div class="{% if message.tags == 'error' %}bg-red-500/20 border-red-500 text-red-300{% else %}bg-emerald-500/20 border-emerald-500 text-emerald-300{% endif %} px-4 py-3 rounded-lg relative" role="alert">
-                <strong class="font-bold">{% if message.tags == 'error' %}오류:{% else %}알림:{% endif %} </strong>
-                <span class="block sm:inline">{{ message }}</span>
-            </div>
-            {% endfor %}
+            </form>
+            <p class="text-md text-gray-400 mt-2">오늘의 운동 계획을 확인하고 목표를 달성해보세요.</p>
         </div>
-        {% endif %}
+    </header>
 
-        <!-- 2. 루틴 목록 -->
-        <div id="routine-list-container" class="space-y-8 max-w-4xl mx-auto">
-            {% for item in routine %}
-            <div class="routine-exercise-card slide-in-fwd relative bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg flex flex-col md:flex-row items-center gap-6 p-6 transition-colors duration-300" style="--delay: {{ forloop.counter0 }}; animation-delay: calc(var(--delay) * 150ms);">
-                <input type="hidden" class="exercise-name" value="{{ item.name }}">
-                <input type="hidden" class="exercise-type" value="{{ item.exercise_type }}">
-                <div class="flex-shrink-0 text-5xl font-black text-gray-700 order-number">{{ forloop.counter|stringformat:"02d" }}</div>
-                <img src="{{ item.gif_url }}" alt="{{ item.name }}" class="w-40 h-40 sm:w-48 sm:h-48 rounded-xl object-cover border-2 border-gray-700 flex-shrink-0">
-                
-                <div class="flex-grow text-center md:text-left">
-                    <p class="text-sm font-semibold text-violet-400 mb-1">{{ item.muscle_group }}</p>
-                    <h2 class="text-2xl font-bold text-white mb-4">{{ item.name }}</h2>
-                    
-                    <div class="view-mode-item">
-                        {% if item.exercise_type == 'cardio' %}
-                            <p class="text-lg text-gray-300"><span class="font-bold text-cyan-400">{{ item.duration_minutes }}</span> 분</p>
-                        {% else %}
-                            <div class="flex items-center justify-center md:justify-start space-x-6 text-gray-300">
-                                <div><span class="font-bold text-cyan-400 text-lg">{{ item.sets }}</span> <span class="text-sm">sets</span></div>
-                                <div><span class="font-bold text-cyan-400 text-lg">{{ item.reps }}</span> <span class="text-sm">reps</span></div>
-                                <div><span class="font-bold text-cyan-400 text-lg">{{ item.weight }}</span> <span class="text-sm">kg</span></div>
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="edit-mode-item">
-                        {% if item.exercise_type == 'cardio' %}
-                            <div class="flex items-center justify-center md:justify-start gap-2">
-                                <input type="number" class="exercise-duration bg-gray-900 text-white rounded p-2 w-24 text-center" value="{{ item.duration_minutes }}"> <span class="text-gray-400">분</span>
-                            </div>
-                        {% else %}
-                            <div class="flex items-center justify-center md:justify-start gap-4">
-                                <input type="number" class="exercise-sets bg-gray-900 text-white rounded p-2 w-20 text-center" value="{{ item.sets }}"> <span class="text-gray-400">sets</span>
-                                <input type="number" class="exercise-reps bg-gray-900 text-white rounded p-2 w-20 text-center" value="{{ item.reps }}"> <span class="text-gray-400">reps</span>
-                                <input type="number" class="exercise-weight bg-gray-900 text-white rounded p-2 w-20 text-center" value="{{ item.weight }}"> <span class="text-gray-400">kg</span>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <button type="button" onclick="showExerciseDetails('{{ item.name|escapejs }}', '{{ item.gif_url }}')" class="view-mode-item absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full bg-black/20 text-cyan-400 border border-white/10 transition-all duration-200 ease-in-out hover:bg-cyan-400 hover:text-black hover:scale-110 hover:shadow-lg hover:shadow-cyan-400/25" title="자세히 보기">
-                    <i class="bi bi-box-arrow-up-right text-xl"></i>
-                </button>
-                <button type="button" onclick="this.closest('.routine-exercise-card').remove(); renumberCards();" class="edit-mode-item absolute top-4 right-4 text-red-500 hover:text-red-400 transition-colors" title="이 운동 삭제">
-                    <i class="bi bi-x-circle-fill text-2xl"></i>
-                </button>
-            </div>
-            {% empty %}
-                <div id="empty-routine-placeholder" class="text-center py-16 px-6 bg-gray-800/50 rounded-2xl border border-dashed border-gray-700">
-                    <h3 class="text-xl font-bold text-white">루틴에 포함된 운동이 없습니다.</h3>
-                    <p class="text-gray-400 mt-2 view-mode-item">아래 '루틴 수정하기' 버튼을 눌러 운동을 추가해보세요.</p>
-                    <p class="text-gray-400 mt-2 edit-mode-item">'운동 추가하기' 섹션에서 새로운 운동을 추가하세요.</p>
-                </div>
-            {% endfor %}
+    {% if messages %}
+    <div class="max-w-7xl mx-auto mb-6 space-y-3">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'error' %}bg-red-500/20 border-red-500 text-red-300{% else %}bg-emerald-500/20 border-emerald-500 text-emerald-300{% endif %} px-4 py-3 rounded-lg relative" role="alert">
+            <strong class="font-bold">{% if message.tags == 'error' %}오류:{% else %}알림:{% endif %} </strong>
+            <span class="block sm:inline">{{ message }}</span>
         </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
-        <div id="add-exercise-section" class="edit-mode-item max-w-4xl mx-auto mt-8 p-6 bg-gray-900/50 rounded-2xl border border-dashed border-gray-600">
-            <h3 class="text-lg font-bold text-white mb-4">새 운동 추가하기</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div>
-                    <label for="muscle-group-select" class="block text-sm font-medium text-gray-400 mb-1">운동 부위</label>
-                    <select id="muscle-group-select" class="w-full bg-gray-700 text-white p-2 rounded-md border border-gray-600 focus:ring-violet-500 focus:border-violet-500">
-                        <option value="">부위 선택</option>
-                        {% for group in all_muscle_groups %}{% if group %}<option value="{{ group }}">{{ group }}</option>{% endif %}{% endfor %}
-                        <option value="유산소">유산소</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="exercise-select" class="block text-sm font-medium text-gray-400 mb-1">운동 선택</label>
-                    <select id="exercise-select" class="w-full bg-gray-700 text-white p-2 rounded-md border border-gray-600 focus:ring-violet-500 focus:border-violet-500" disabled>
-                        <option value="">운동을 선택하세요</option>
-                    </select>
-                </div>
-                <button id="add-exercise-btn" type="button" class="bg-violet-600 hover:bg-violet-500 text-white font-bold py-2 px-4 rounded-md transition-colors w-full md:w-auto" disabled>추가</button>
-            </div>
-        </div>
+    <!-- 메인 콘텐츠 그리드 (2단 레이아웃) -->
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
         
-        <div class="mt-16 text-center space-x-4">
-            <div class="view-mode-item inline-block">
-                <a href="{% url 'routine:my_routines' %}" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full transition-colors">목록으로</a>
-                {% if routine_obj %}<button type="button" onclick="toggleEditMode(true)" class="bg-violet-600 hover:bg-violet-500 text-white font-bold py-3 px-8 rounded-full transition-colors">루틴 수정하기</button>{% endif %}
+        <!-- 좌측: 루틴 목록 (lg 화면에서 2/3 차지) -->
+        <div class="lg:col-span-2">
+            <div id="routine-list-container" class="space-y-6">
+                {% for item in routine %}
+                <div class="routine-exercise-card slide-in-fwd relative bg-gray-800/60 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg flex flex-col sm:flex-row items-center gap-6 p-6 transition-all duration-300 border-l-4 border-transparent" style="--delay: {{ forloop.counter0 }}; animation-delay: calc(var(--delay) * 100ms);">
+                    <input type="hidden" class="exercise-name" value="{{ item.name }}">
+                    <input type="hidden" class="exercise-type" value="{{ item.exercise_type }}">
+                    <div class="flex-shrink-0 text-5xl font-black text-gray-700 order-number">{{ forloop.counter|stringformat:"02d" }}</div>
+                    <img src="{{ item.gif_url }}" alt="{{ item.name }}" class="w-32 h-32 sm:w-40 sm:h-40 rounded-xl object-cover border-2 border-gray-700 flex-shrink-0">
+                    
+                    <div class="flex-grow text-center sm:text-left">
+                        <p class="text-sm font-semibold text-violet-400 mb-1">{{ item.muscle_group }}</p>
+                        <h2 class="text-xl font-bold text-white mb-4">{{ item.name }}</h2>
+                        
+                        <div class="view-mode-item">
+                            {% if item.exercise_type == 'cardio' %}
+                                <p class="text-lg text-gray-300"><span class="font-bold text-cyan-400 text-2xl">{{ item.duration_minutes }}</span> 분</p>
+                            {% else %}
+                                <div class="flex items-center justify-center sm:justify-start space-x-6 text-gray-300">
+                                    <div><span class="font-bold text-cyan-400 text-2xl">{{ item.sets }}</span> <span class="text-sm"> {% t 'sets' %} </span></div>
+                                    <div><span class="font-bold text-cyan-400 text-2xl">{{ item.reps }}</span> <span class="text-sm"> {% t 'reps' %} </span></div>
+                                    <div><span class="font-bold text-cyan-400 text-2xl">{{ item.weight }}</span> <span class="text-sm"> {% t 'kg' %} </span></div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="edit-mode-item">
+                            {% if item.exercise_type == 'cardio' %}
+                                <div class="flex items-center justify-center sm:justify-start gap-2">
+                                    <input type="number" class="exercise-duration bg-gray-900 text-white rounded p-2 w-24 text-center" value="{{ item.duration_minutes }}"> <span class="text-gray-400">분</span>
+                                </div>
+                            {% else %}
+                                <div class="flex items-center justify-center sm:justify-start gap-4">
+                                    <input type="number" class="exercise-sets bg-gray-900 text-white rounded p-2 w-20 text-center" value="{{ item.sets }}"> <span class="text-gray-400"> {% t 'sets' %} </span>
+                                    <input type="number" class="exercise-reps bg-gray-900 text-white rounded p-2 w-20 text-center" value="{{ item.reps }}"> <span class="text-gray-400"> {% t 'reps' %} </span>
+                                    <input type="number" class="exercise-weight bg-gray-900 text-white rounded p-2 w-20 text-center" value="{{ item.weight }}"> <span class="text-gray-400"> {% t 'kg' %} </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <button type="button" onclick="showExerciseDetails('{{ item.name|escapejs }}', '{{ item.gif_url }}')" 
+                            class="bg-gray-700/50 text-cyan-300 hover:bg-gray-700 hover:text-cyan-200 transition-colors px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 sm:ml-auto">
+                        <i class="bi bi-camera-video"></i>
+                        운동 자세 보기
+                    </button>
+                    <button type="button" onclick="this.closest('.routine-exercise-card').remove(); renumberCards();" class="edit-mode-item absolute top-4 right-4 text-red-500 hover:text-red-400 transition-colors" title="이 운동 삭제">
+                        <i class="bi bi-x-circle-fill text-2xl"></i>
+                    </button>
+                </div>
+                {% empty %}
+                <div id="empty-routine-placeholder" class="text-center py-16 px-6 bg-gray-800/50 rounded-2xl border border-dashed border-gray-700">
+                    <h3 class="text-xl font-bold text-white"> {% t '루틴에 포함된 운동이 없습니다.' %} </h3>
+                    <p class="text-gray-400 mt-2 view-mode-item">우측의 '루틴 수정하기' 버튼을 눌러 운동을 추가해보세요.</p>
+                    <p class="text-gray-400 mt-2 edit-mode-item">아래 '새 운동 추가하기' 섹션에서 운동을 추가하세요.</p>
+                </div>
+                {% endfor %}
             </div>
-            <div class="edit-mode-item inline-block">
-                <button type="button" onclick="toggleEditMode(false)" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full transition-colors">취소</button>
-                <button type="button" onclick="saveRoutine()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-full transition-colors">수정 완료</button>
+
+            <!-- 수정 모드: 새 운동 추가 섹션 -->
+            <div id="add-exercise-section" class="edit-mode-item mt-8 p-6 bg-gray-900/50 rounded-2xl border border-dashed border-gray-600">
+                <h3 class="text-lg font-bold text-white mb-4"> {% t '새 운동 추가하기' %} </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label for="muscle-group-select" class="block text-sm font-medium text-gray-400 mb-1"> {% t '운동 부위' %} </label>
+                        <select id="muscle-group-select" class="w-full bg-gray-700 text-white p-2 rounded-md border border-gray-600 focus:ring-violet-500 focus:border-violet-500">
+                            <option value=""> {% t '부위 선택' %} </option>
+                            {% for group in all_muscle_groups %}{% if group %}<option value="{{ group }}">{{ group }}</option>{% endif %}{% endfor %}
+                            <option value="유산소"> {% t '유산소' %} </option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="exercise-select" class="block text-sm font-medium text-gray-400 mb-1"> {% t '운동 선택' %} </label>
+                        <select id="exercise-select" class="w-full bg-gray-700 text-white p-2 rounded-md border border-gray-600 focus:ring-violet-500 focus:border-violet-500" disabled>
+                            <option value=""> {% t '운동을 선택하세요' %} </option>
+                        </select>
+                    </div>
+                    <button id="add-exercise-btn" type="button" class="bg-violet-600 hover:bg-violet-500 text-white font-bold py-2 px-4 rounded-md transition-colors w-full md:w-auto" disabled> {% t '추가' %} </button>
+                </div>
+            </div>
+
+            <!-- 수정 모드: 하단 버튼 -->
+            <div class="mt-8 text-center space-x-4 edit-mode-item">
+                <button type="button" onclick="toggleEditMode(false)" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-full transition-colors"> {% t '취소' %} </button>
+                <button type="button" onclick="saveRoutine()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-full transition-colors"> {% t '수정 완료' %} </button>
+            </div>
+        </div>
+
+        <!-- 우측: 고정 액션 패널 (lg 화면에서 1/3 차지) -->
+        <div id="action-panel" class="lg:col-span-1 mt-8 lg:mt-0">
+            <div class="sticky top-24 bg-gray-800/80 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-2xl">
+                <!-- 1. 버튼 뷰 -->
+                <div id="panel-buttons-view">
+                    <h3 class="text-xl font-bold text-white mb-1">오늘의 목표</h3>
+                    <p class="text-gray-400 mb-6">이 루틴을 완료하고 건강한 하루를 만드세요!</p>
+                    
+                    {% if routine_obj %}
+                    <form action="{% url 'routine:complete_workout' routine_id=routine_obj.id %}" method="post" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg transition-transform hover:scale-105 mb-4 text-lg">
+                            <i class="bi bi-check-circle-fill mr-2"></i> {% t '운동 완료!' %} </button>
+                    </form>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button type="button" id="analyze-routine-btn" class="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-4 rounded-lg transition">
+                            <i class="bi bi-robot"></i>AI 분석
+                        </button>
+                        <button type="button" onclick="toggleEditMode(true)" class="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-3 px-4 rounded-lg transition">
+                            <i class="bi bi-pencil-square"></i>루틴 수정
+                        </button>
+                    </div>
+                    {% else %}
+                    <p class="text-center text-gray-500 py-8">저장된 루틴이 아니므로 액션을 수행할 수 없습니다.</p>
+                    {% endif %}
+                </div>
+                
+                <!-- 2. AI 분석 결과 뷰 -->
+                <div id="panel-analysis-view">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white m-0">AI 루틴 분석 결과</h3>
+                        <button id="back-to-buttons-btn" class="text-sm text-gray-400 hover:text-white transition">
+                            <i class="bi bi-arrow-left mr-1"></i>뒤로
+                        </button>
+                    </div>
+                    <div id="panel-analysis-content" class="text-sm max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                        <!-- AI 분석 결과가 여기에 동적으로 삽입 -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</form>
+</div>
 
+<!-- 모달 (기존과 동일) -->
 <div id="exercise-modal-backdrop" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm hidden z-40"></div>
 <div id="exercise-modal" class="fixed inset-0 flex items-center justify-center p-4 hidden z-50">
     <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col animate-pop-in">
@@ -155,20 +220,19 @@
     const youtubeSearchApiUrl = "{% url 'routine:api_youtube_search' %}";
     const exerciseApiUrl = "{% url 'routine:api_exercises' %}";
 
-    // --- 모달 로직 ---
+    // --- 모달 로직 (기존과 동일) ---
     const modal = document.getElementById('exercise-modal');
     const modalBackdrop = document.getElementById('exercise-modal-backdrop');
     modalBackdrop.addEventListener('click', hideExerciseDetails);
-    document.getElementById('modal-close-button').addEventListener('click', hideExerciseDetails);
+    document.getElementById('modal-close-button')?.addEventListener('click', hideExerciseDetails);
     document.addEventListener('keydown', (e) => e.key === "Escape" && !modal.classList.contains('hidden') && hideExerciseDetails());
-
     async function showExerciseDetails(exerciseName, gifUrl) {
         document.getElementById('modal-title').textContent = exerciseName;
         document.body.style.overflow = 'hidden';
         modal.classList.remove('hidden');
         modalBackdrop.classList.remove('hidden');
         const modalBody = document.getElementById('modal-body-content');
-        modalBody.innerHTML = `<div><h4 class="text-lg font-semibold text-emerald-400 mb-2">운동 자세 (GIF)</h4><img src="${gifUrl}" alt="${exerciseName} GIF" class="w-full rounded-lg border border-gray-600"></div><div><h4 class="text-lg font-semibold text-blue-400 mb-2">참고 영상 (YouTube)</h4><div id="modal-youtube-container" class="space-y-3"><div class="text-gray-400 text-center animate-pulse">YouTube 영상 검색 중...</div></div></div>`;
+        modalBody.innerHTML = `<div><h4 class="text-lg font-semibold text-emerald-400 mb-2">운동 자세 (GIF)</h4><img src="${gifUrl}" alt="${exerciseName} GIF" class="w-full rounded-lg border border-gray-600"></div><div><h4 class="text-lg font-semibold text-blue-400 mb-2"> {% t '참고 영상 (YouTube)' %} </h4><div id="modal-youtube-container" class="space-y-3"><div class="text-gray-400 text-center animate-pulse"> {% t 'YouTube 영상 검색 중...' %} </div></div></div>`;
         try {
             const response = await fetch(`${youtubeSearchApiUrl}?q=${encodeURIComponent(exerciseName + " 운동 방법")}`);
             const data = await response.json();
@@ -176,81 +240,105 @@
             youtubeContainer.innerHTML = '';
             if (data.videos && data.videos.length > 0) {
                 data.videos.forEach(v => youtubeContainer.innerHTML += `<a href="https://www.youtube.com/watch?v=${v.video_id}" target="_blank" rel="noopener noreferrer" class="block bg-gray-900/50 p-3 rounded-lg hover:bg-gray-700 transition-colors"><div class="flex gap-4 items-start"><img src="${v.thumbnail_url}" alt="${v.title}" class="w-24 h-16 object-cover rounded shrink-0"><div class="grow"><p class="text-sm text-gray-300 leading-tight line-clamp-2">${v.title}</p><p class="text-xs text-gray-500 mt-1">${v.channel_title}</p></div></div></a>`);
-            } else { youtubeContainer.innerHTML = `<div class="text-gray-500 text-center">관련 영상을 찾을 수 없습니다.</div>`; }
+            } else { youtubeContainer.innerHTML = `<div class="text-gray-500 text-center"> {% t '관련 영상을 찾을 수 없습니다.' %} </div>`; }
         } catch (error) { document.getElementById('modal-youtube-container').innerHTML = `<div class="text-red-400 text-center">영상 로딩 중 오류 발생.</div>`; }
     }
     function hideExerciseDetails() { document.body.style.overflow = ''; modal.classList.add('hidden'); modalBackdrop.classList.add('hidden'); }
 
-    // --- 수정 모드 로직 ---
-    function toggleEditMode(isEdit) {
-        if (isEdit) { document.body.classList.add('edit-mode'); }
-        else if (confirm("수정을 취소하시겠습니까? 변경사항이 저장되지 않습니다.")) { window.location.reload(); }
-    }
-    function renumberCards() {
-        document.querySelectorAll('.routine-exercise-card').forEach((card, index) => {
-            const numEl = card.querySelector('.order-number');
-            if (numEl) numEl.textContent = (index + 1).toString().padStart(2, '0');
+    // --- 수정 모드 로직 (기존과 동일) ---
+    function toggleEditMode(isEdit) { if (isEdit) { document.body.classList.add('edit-mode'); } else if (confirm("수정을 취소하시겠습니까? 변경사항이 저장되지 않습니다.")) { window.location.reload(); } }
+    function renumberCards() { document.querySelectorAll('.routine-exercise-card').forEach((card, index) => { const numEl = card.querySelector('.order-number'); if (numEl) numEl.textContent = (index + 1).toString().padStart(2, '0'); }); const placeholder = document.getElementById('empty-routine-placeholder'); if (placeholder) placeholder.style.display = document.querySelectorAll('.routine-exercise-card').length > 0 ? 'none' : 'block'; }
+    function saveRoutine() { const exerciseCards = document.querySelectorAll('.routine-exercise-card'); if (exerciseCards.length === 0) { alert("적어도 하나 이상의 운동을 포함해야 합니다."); return; } const exercisesData = Array.from(exerciseCards).map(card => { const type = card.querySelector('.exercise-type').value; const exercise = { name: card.querySelector('.exercise-name').value }; if (type === 'cardio') { exercise.duration_minutes = card.querySelector('.exercise-duration')?.value || 0; } else { exercise.sets = card.querySelector('.exercise-sets')?.value || 0; exercise.reps = card.querySelector('.exercise-reps')?.value || 0; exercise.weight = card.querySelector('.exercise-weight')?.value || 0; } return exercise; }); document.getElementById('exercises_data_input').value = JSON.stringify(exercisesData); if (confirm("수정된 내용을 저장하시겠습니까?")) { document.getElementById('edit-routine-form').submit(); } }
+
+    // --- AI 분석 기능 로직 (새로운 인터페이스에 맞게 수정) ---
+    function setupAIAnalysis() {
+        const analyzeBtn = document.getElementById('analyze-routine-btn');
+        const actionPanel = document.getElementById('action-panel');
+        const analysisContent = document.getElementById('panel-analysis-content');
+        const backBtn = document.getElementById('back-to-buttons-btn');
+
+        if (!analyzeBtn || !actionPanel || !analysisContent || !backBtn) return;
+
+        analyzeBtn.addEventListener('click', async () => {
+            actionPanel.classList.add('analysis-active');
+            analysisContent.innerHTML = '<div class="text-center text-gray-400 p-8 animate-pulse">🤖 AI가 루틴을 꼼꼼하게 분석하고 있습니다...</div>';
+            
+            const exerciseCards = document.querySelectorAll('.routine-exercise-card');
+            const exercisesData = Array.from(exerciseCards).map(card => {
+                const type = card.querySelector('.exercise-type').value;
+                const exercise = { name: card.querySelector('.exercise-name').value };
+                if (type === 'cardio') { const durationEl = card.querySelector('.exercise-duration'); exercise.duration_minutes = durationEl ? durationEl.value : card.querySelector('.view-mode-item p span').textContent; } 
+                else { const setsEl = card.querySelector('.exercise-sets'); if (setsEl) { exercise.sets = setsEl.value; exercise.reps = card.querySelector('.exercise-reps').value; exercise.weight = card.querySelector('.exercise-weight').value; } else { const values = card.querySelectorAll('.view-mode-item .flex div span:first-child'); exercise.sets = values[0]?.textContent || '0'; exercise.reps = values[1]?.textContent || '0'; exercise.weight = values[2]?.textContent || '0'; } }
+                return exercise;
+            });
+            
+            try {
+                const response = await fetch("{% if routine_obj %}{% url 'routine:api_analyze_routine' routine_obj.id %}{% endif %}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                    body: JSON.stringify(exercisesData)
+                });
+                if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || `서버 오류 (${response.status})`); }
+                const data = await response.json();
+                analysisContent.innerHTML = marked.parse(data.analysis);
+            } catch (error) {
+                console.error('AI Analysis Error:', error);
+                analysisContent.innerHTML = `<div class="text-center text-red-400 p-8">⚠️ AI 분석 중 오류가 발생했습니다: ${error.message}</div>`;
+            }
         });
-        const placeholder = document.getElementById('empty-routine-placeholder');
-        if (placeholder) placeholder.style.display = document.querySelectorAll('.routine-exercise-card').length > 0 ? 'none' : 'block';
-    }
-    function saveRoutine() {
-        const exerciseCards = document.querySelectorAll('.routine-exercise-card');
-        if (exerciseCards.length === 0) { alert("적어도 하나 이상의 운동을 포함해야 합니다."); return; }
-        const exercisesData = Array.from(exerciseCards).map(card => {
-            const type = card.querySelector('.exercise-type').value;
-            const exercise = { name: card.querySelector('.exercise-name').value };
-            if (type === 'cardio') { exercise.duration_minutes = card.querySelector('.exercise-duration')?.value || 0; }
-            else { exercise.sets = card.querySelector('.exercise-sets')?.value || 0; exercise.reps = card.querySelector('.exercise-reps')?.value || 0; exercise.weight = card.querySelector('.exercise-weight')?.value || 0; }
-            return exercise;
+
+        backBtn.addEventListener('click', () => {
+            actionPanel.classList.remove('analysis-active');
         });
-        document.getElementById('exercises_data_input').value = JSON.stringify(exercisesData);
-        if (confirm("수정된 내용을 저장하시겠습니까?")) { document.getElementById('edit-routine-form').submit(); }
     }
 
-    // --- 새 운동 추가 로직 ---
+    // --- 페이지 로드 및 이벤트 리스너 설정 ---
     document.addEventListener('DOMContentLoaded', function() {
-        const muscleGroupSelect = document.getElementById('muscle-group-select');
-        const exerciseSelect = document.getElementById('exercise-select');
-        const addBtn = document.getElementById('add-exercise-btn');
-        let exerciseCache = {};
-        muscleGroupSelect.addEventListener('change', async function() {
-            const group = this.value;
-            exerciseSelect.innerHTML = '<option value="">불러오는 중...</option>';
-            exerciseSelect.disabled = true; addBtn.disabled = true;
-            if (!group) { exerciseSelect.innerHTML = '<option value="">운동을 선택하세요</option>'; return; }
-            if (exerciseCache[group]) { populateExerciseSelect(exerciseCache[group]); }
-            else { const r = await fetch(`${exerciseApiUrl}?muscle_group=${group}`); const d = await r.json(); exerciseCache[group] = d.exercises; populateExerciseSelect(d.exercises); }
-        });
-        function populateExerciseSelect(exercises) {
-            exerciseSelect.innerHTML = '<option value="">운동을 선택하세요</option>';
-            exercises.forEach(ex => { const o = document.createElement('option'); o.value = JSON.stringify(ex); o.textContent = ex.name; exerciseSelect.appendChild(o); });
-            exerciseSelect.disabled = false;
-        }
-        exerciseSelect.addEventListener('change', () => { addBtn.disabled = !exerciseSelect.value; });
-        addBtn.addEventListener('click', function() {
-            if (!exerciseSelect.value) return;
-            const exerciseData = JSON.parse(exerciseSelect.value);
-            const container = document.getElementById('routine-list-container');
-            const newCard = document.createElement('div');
-            newCard.innerHTML = createExerciseCardHtml(exerciseData, container.children.length + 1);
-            container.appendChild(newCard.firstElementChild);
-            renumberCards();
-            exerciseSelect.value = ''; addBtn.disabled = true;
-        });
-        function createExerciseCardHtml(ex, order) {
-            const isCardio = ex.exercise_type === 'cardio';
-            const inputs = isCardio ? `<div class="flex items-center justify-center md:justify-start gap-2"><input type="number" class="exercise-duration bg-gray-900 text-white rounded p-2 w-24 text-center" value="30"> <span class="text-gray-400">분</span></div>`
-                : `<div class="flex items-center justify-center md:justify-start gap-4"><input type="number" class="exercise-sets bg-gray-900 text-white rounded p-2 w-20 text-center" value="3"> <span class="text-gray-400">sets</span><input type="number" class="exercise-reps bg-gray-900 text-white rounded p-2 w-20 text-center" value="12"> <span class="text-gray-400">reps</span><input type="number" class="exercise-weight bg-gray-900 text-white rounded p-2 w-20 text-center" value="10"> <span class="text-gray-400">kg</span></div>`;
-            return `<div class="routine-exercise-card slide-in-fwd relative bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg flex flex-col md:flex-row items-center gap-6 p-6 transition-colors duration-300" style="border-left: 4px solid #8b5cf6;">
-                <input type="hidden" class="exercise-name" value="${ex.name}"><input type="hidden" class="exercise-type" value="${ex.exercise_type}">
-                <div class="flex-shrink-0 text-5xl font-black text-gray-700 order-number">${String(order).padStart(2, '0')}</div>
-                <img src="${ex.gif_url}" alt="${ex.name}" class="w-40 h-40 sm:w-48 sm:h-48 rounded-xl object-cover border-2 border-gray-700 shrink-0">
-                <div class="flex-grow text-center md:text-left"><p class="text-sm font-semibold text-violet-400 mb-1">${ex.muscle_group}</p><h2 class="text-2xl font-bold text-white mb-4">${ex.name}</h2><div>${inputs}</div></div>
-                <button type="button" onclick="this.closest('.routine-exercise-card').remove(); renumberCards();" class="absolute top-4 right-4 text-red-500 hover:text-red-400" title="이 운동 삭제"><i class="bi bi-x-circle-fill text-2xl"></i></button>
-            </div>`;
-        }
+        // 새 운동 추가 로직
+        (function() {
+            const muscleGroupSelect = document.getElementById('muscle-group-select');
+            const exerciseSelect = document.getElementById('exercise-select');
+            const addBtn = document.getElementById('add-exercise-btn');
+            if(!muscleGroupSelect || !exerciseSelect || !addBtn) return;
+            let exerciseCache = {};
+            muscleGroupSelect.addEventListener('change', async function() {
+                const group = this.value;
+                exerciseSelect.innerHTML = '<option value=""> {% t '불러오는 중...' %} </option>';
+                exerciseSelect.disabled = true; addBtn.disabled = true;
+                if (!group) { exerciseSelect.innerHTML = '<option value=""> {% t '운동을 선택하세요' %} </option>'; return; }
+                if (exerciseCache[group]) { populateExerciseSelect(exerciseCache[group]); }
+                else { try { const r = await fetch(`${exerciseApiUrl}?muscle_group=${group}`); const d = await r.json(); exerciseCache[group] = d.exercises; populateExerciseSelect(d.exercises); } catch(e) { console.error(e); exerciseSelect.innerHTML = '<option value=""> {% t '오류 발생' %} </option>'; } }
+            });
+            function populateExerciseSelect(exercises) {
+                exerciseSelect.innerHTML = '<option value=""> {% t '운동을 선택하세요' %} </option>';
+                exercises.forEach(ex => { const o = document.createElement('option'); o.value = JSON.stringify(ex); o.textContent = ex.name; exerciseSelect.appendChild(o); });
+                exerciseSelect.disabled = false;
+            }
+            exerciseSelect.addEventListener('change', () => { addBtn.disabled = !exerciseSelect.value; });
+            addBtn.addEventListener('click', function() {
+                if (!exerciseSelect.value) return;
+                const exerciseData = JSON.parse(exerciseSelect.value);
+                const container = document.getElementById('routine-list-container');
+                const newCard = document.createElement('div');
+                const isCardio = exerciseData.exercise_type === 'cardio';
+                const inputs = isCardio ? `<div class="flex items-center justify-center sm:justify-start gap-2"><input type="number" class="exercise-duration bg-gray-900 text-white rounded p-2 w-24 text-center" value="30"> <span class="text-gray-400">분</span></div>`
+                    : `<div class="flex items-center justify-center sm:justify-start gap-4"><input type="number" class="exercise-sets bg-gray-900 text-white rounded p-2 w-20 text-center" value="3"> <span class="text-gray-400"> {% t 'sets' %} </span><input type="number" class="exercise-reps bg-gray-900 text-white rounded p-2 w-20 text-center" value="12"> <span class="text-gray-400"> {% t 'reps' %} </span><input type="number" class="exercise-weight bg-gray-900 text-white rounded p-2 w-20 text-center" value="10"> <span class="text-gray-400"> {% t 'kg' %} </span></div>`;
+                newCard.innerHTML = `<div class="routine-exercise-card slide-in-fwd relative bg-gray-800/60 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg flex flex-col sm:flex-row items-center gap-6 p-6 transition-all duration-300 border-l-4 border-violet-500">
+                    <input type="hidden" class="exercise-name" value="${exerciseData.name}"><input type="hidden" class="exercise-type" value="${exerciseData.exercise_type}">
+                    <div class="flex-shrink-0 text-5xl font-black text-gray-700 order-number">${String(container.children.length).padStart(2, '0')}</div>
+                    <img src="${exerciseData.gif_url}" alt="${exerciseData.name}" class="w-32 h-32 sm:w-40 sm:h-40 rounded-xl object-cover border-2 border-gray-700 shrink-0">
+                    <div class="flex-grow text-center sm:text-left"><p class="text-sm font-semibold text-violet-400 mb-1">${exerciseData.muscle_group}</p><h2 class="text-xl font-bold text-white mb-4">${exerciseData.name}</h2><div>${inputs}</div></div>
+                    <button type="button" onclick="this.closest('.routine-exercise-card').remove(); renumberCards();" class="absolute top-4 right-4 text-red-500 hover:text-red-400" title="이 운동 삭제"><i class="bi bi-x-circle-fill text-2xl"></i></button>
+                </div>`;
+                document.getElementById('empty-routine-placeholder')?.remove();
+                container.appendChild(newCard.firstElementChild);
+                renumberCards();
+                exerciseSelect.value = ''; addBtn.disabled = true;
+            });
+        })();
+        
+        // AI 분석 기능 초기화
+        setupAIAnalysis();
     });
 </script>
-
 {% endblock %}

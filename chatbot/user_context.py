@@ -3,9 +3,11 @@
 from django.contrib.auth.models import User
 from datetime import date, datetime, timedelta
 from web.models import HealthSurvey, FitnessProfile
-from routine.models import Routine
+from routine.models import Routine, WorkoutLog # ✅ WorkoutLog 추가
 from diet.models import Meal
-
+# ✅ 업적 모델과 프로필 모델 임포트
+from achievements.models import UserAchievement 
+from accounts.models import Profile
 
 def get_user_profile_context(user: User) -> str:
     """
@@ -21,6 +23,7 @@ def get_user_profile_context(user: User) -> str:
     context_parts.append("\n**[1. 피트니스 정보]**")
     try:
         fp = user.fitness_profile  # user.fitness_profile로 바로 접근
+        profile = user.profile
         
         # 나이 계산
         today = date.today()
@@ -35,10 +38,12 @@ def get_user_profile_context(user: User) -> str:
             bmi_info = f" (BMI: {bmi})"
 
         context_parts.append(f"- **기본 정보**: {age}, {fp.gender}")
-        context_parts.append(f"- **신체 정보**: {fp.height}cm, {fp.weight}kg{bmi_info}")
-        context_parts.append(f"- **운동 목표**: {fp.goal} ({fp.goal_text or '상세 목표 없음'})")
+        # ✅ profile 모델의 최신 정보 사용
+        context_parts.append(f"- **신체 정보**: {profile.height}cm, {profile.current_weight}kg{bmi_info}")
+        context_parts.append(f"- **체성분**: 골격근량 {profile.skeletal_muscle_mass or '미입력'}kg, 체지방량 {profile.body_fat_mass or '미입력'}kg")
+        context_parts.append(f"- **운동 목표**: {fp.goal} (목표 체중: {profile.target_weight or '미설정'}kg)")
         context_parts.append(f"- **운동 경력/빈도**: {fp.experience}, 주 {fp.frequency}회")
-        context_parts.append(f"- **선호 운동 타입**: {fp.types.replace(',', ', ')}") # 쉼표 뒤에 공백 추가
+        context_parts.append(f"- **선호 운동 타입**: {fp.types.replace(',', ', ')}")
         
     except (AttributeError, FitnessProfile.DoesNotExist) if FitnessProfile else (AttributeError,):
         context_parts.append("- (피트니스 프로필이 입력되지 않았습니다.)")
@@ -77,31 +82,24 @@ def get_user_profile_context(user: User) -> str:
         context_parts.append("- (건강 설문이 입력되지 않았습니다.)")
 
 
-    # --- 3. 최근 운동 기록 요약 (Routine) ---
-    context_parts.append("\n**[3. 최근 7일간 운동 기록]**")
+    # --- 3. 최근 운동 '완료' 기록 요약 (WorkoutLog) ---
+    # ⚠️ Routine(계획)이 아닌 WorkoutLog(실행 기록) 기준으로 변경
+    context_parts.append("\n**[3. 최근 7일간 운동 완료 기록]**")
     try:
-        recent_routines = Routine.objects.filter(
+        recent_logs = WorkoutLog.objects.filter(
             user=user,
-            created_at__gte=datetime.now() - timedelta(days=7)
-        ).order_by('-created_at')
+            completed_at__gte=datetime.now() - timedelta(days=7)
+        ).select_related('routine').order_by('-completed_at')
 
-        if recent_routines.exists():
-            for r in recent_routines:
-                exercise_details = []
-                for re in r.routineexercise_set.all():
-                    detail = f"{re.exercise.name}"
-                    if re.exercise.exercise_type == 'strength' and all([re.sets, re.reps]):
-                        detail += f"({re.sets}x{re.reps}, {re.weight or 0}kg)"
-                    elif re.exercise.exercise_type == 'cardio' and re.duration_minutes:
-                        detail += f"({re.duration_minutes}분)"
-                    exercise_details.append(detail)
-                
-                exercises_summary = ", ".join(exercise_details)
-                context_parts.append(f"- **{r.created_at.strftime('%y-%m-%d')}**: {r.name} - [{exercises_summary}]")
+        if recent_logs.exists():
+            for log in recent_logs:
+                # 운동 기록에 연결된 루틴이 있으면 루틴 이름, 없으면 "직접 운동" 등으로 표시
+                log_title = log.routine.name if log.routine else "직접 기록한 운동"
+                context_parts.append(f"- **{log.completed_at.strftime('%y-%m-%d')}**: {log_title} 완료")
         else:
             context_parts.append("- 기록 없음")
     except Exception as e:
-        print(f"운동 기록 조회 오류: {e}")
+        print(f"운동 완료 기록 조회 오류: {e}")
         context_parts.append("- (기록 조회 중 오류 발생)")
 
 
@@ -131,5 +129,29 @@ def get_user_profile_context(user: User) -> str:
     except Exception as e:
         print(f"식단 기록 조회 오류: {e}")
         context_parts.append("- (기록 조회 중 오류 발생)")
+    
+    # ✅ 5. 달성한 업적 정보 (UserAchievement) - ✨ 신규 추가 ✨
+    context_parts.append("\n**[5. 주요 달성 업적 및 칭호]**")
+    try:
+        # 사용자가 설정한 대표 칭호
+        active_title_str = "없음"
+        if user.profile.active_title:
+             # ForeignKey로 변경했을 경우의 코드
+            active_title_str = user.profile.active_title.achievement.title_reward
+        
+        context_parts.append(f"- **대표 칭호**: {active_title_str}")
+
+        # 최근에 달성한 업적 5개
+        recent_achievements = UserAchievement.objects.filter(user=user).select_related('achievement').order_by('-awarded_at')[:5]
+        
+        if recent_achievements.exists():
+            ach_list = [f"'{ach.achievement.name}'" for ach in recent_achievements]
+            context_parts.append(f"- **최근 달성 업적**: {', '.join(ach_list)}")
+        else:
+            context_parts.append("- **최근 달성 업적**: 아직 달성한 업적이 없습니다.")
+            
+    except Exception as e:
+        print(f"업적 정보 조회 오류: {e}")
+        context_parts.append("- (업적 정보 조회 중 오류 발생)")
         
     return "\n".join(context_parts)

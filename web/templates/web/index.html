@@ -1,100 +1,490 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 
-{% block title %}HealthWise - 히어로 배경 Pinterest 영상 (수정 시도){% endblock %}
+{% block title %}HealthWise - 혁신적인 AI 헬스케어{% endblock %}
 
 {% block content %}
+<style>
+    /* 상단바/푸터 스타일 유지를 위해 body, html 스타일은 건드리지 않습니다. */
+    .hero-btn {
+        display: inline-block; padding: 12px 28px; margin: 0 10px; border: 2px solid #fff;
+        background-color: transparent; color: #fff; text-decoration: none; font-size: 1rem;
+        font-weight: 600; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+    }
+    .hero-btn:hover { background-color: #fff; color: #000; }
+</style>
+
+<!-- ================================================================== -->
+<!-- 1. 히어로 섹션 -->
+<!-- ================================================================== -->
+<style>
+    .hero {
+        height: 100vh;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        overflow: hidden;
+        background-color: #000;
+        color: #fff;
+    }
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+</style>
+
 <section class="hero" id="hero">
-    <div class="hero-background-pinterest">
-        <div class="pinterest-bg-half left-video">
-            <a data-pin-do="embedPin" href="https://www.pinterest.com/pin/AWWWDdpWKzplppyqZV-9IVFuKOy7GE4WAUTbzALQpJLI6AU8AGUmyJmjo-sTMpY7VarRdk2npwW2TmFmyaGQZ5YDVQ/"></a>
-        </div>
-        <div class="pinterest-bg-half right-video">
-            <a data-pin-do="embedPin" href="https://www.pinterest.com/pin/775040147159241639/"></a>
-        </div>
-    </div>
-
-    <div class="parallax-elements">
-        <div class="parallax-circle parallax-circle-1"></div>
-        <div class="parallax-circle parallax-circle-2"></div>
-        <div class="parallax-circle parallax-circle-3"></div>
-    </div>
-
     <div class="hero-content">
         <h1>AI Healthcare</h1>
-        <p>스크롤하여 혁신적인 기능들을 확인하세요</p>
-        <button class="hero-btn">자세히 보기</button>
-        <a href="{% url 'web:services' %}" class="hero-btn">시작하기</a>
+        <p> {% t '스크롤하여 혁신적인 기능들을 확인하세요' %} </p>
+        <a href="#mainContent" class="hero-btn"> {% t '자세히 보기' %} </a>
+        <a href="{% url 'web:services' %}" class="hero-btn"> {% t '시작하기' %} </a>
     </div>
 </section>
 
-<div class="main-container">
-    <div class="text-side">
-        <div class="text-section" id="section-1">
-            <span class="section-number">01</span>
-            <div class="text-content active" data-section="1">
-                <h2>AI 건강 상담</h2>
-                <p>최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석합니다. 사용자의 건강 상태를 분석하여 맞춤 운동과 식단을 알려줍니다.</p>
-                <ul class="feature-list">
-                    <li>실시간 나의 상태 분석</li> <li>실시간 건강 모니터링</li>
-                    <li>개인 맞춤형 건강 리포트</li> <li>조기 진단 알림 시스템</li>
-                </ul>
+<!-- ================================================================ -->
+<!-- 2. 기능 소개 및 통계 섹션 (화면 고정 효과 적용) -->
+<!-- ================================================================ -->
+<style>
+    .features-sticky-wrapper {
+        position: relative;
+        height: 400vh;
+        background-color: #1a202c;
+    }
+    .features-content {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        color: #fff;
+    }
+    .feature-display-area {
+        width: 90%;
+        max-width: 1200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        flex-grow: 1;
+    }
+    .feature-panel {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 5%;
+        opacity: 0;
+        transition: opacity 0.6s ease-in-out;
+        pointer-events: none;
+    }
+    .feature-panel.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .feature-panel:nth-of-type(even) {
+        flex-direction: row-reverse;
+    }
+    .feature-image, .feature-text { flex: 1; }
+    .feature-image img { width: 100%; max-height: 50vh; object-fit: contain; }
+    .feature-text { text-align: left; }
+    .feature-text h2 { font-size: 3rem; margin-bottom: 2rem; font-weight: 600; }
+    .feature-text p { font-size: 1.1rem; line-height: 1.8; color: #ccc; margin-bottom: 2.5rem;}
+    .feature-text .feature-list { list-style-type: none; padding: 0; }
+    .feature-text .feature-list li { margin-bottom: 15px; font-size: 1.1rem; }
+    .feature-text .feature-list li::before { content: '✓'; margin-right: 12px; color: #a5e6ba; }
+    
+    .stats-container {
+        display: flex; justify-content: space-around; width: 90%; max-width: 1200px;
+        padding: 40px 0; border-top: 1px solid #333;
+    }
+    .stat-item { flex: 1; min-width: 200px; text-align: center; }
+    .stat-number { font-size: 3.5rem; font-weight: bold; color: #d89aff; margin-bottom: 10px; }
+    .stat-label { font-size: 1rem; color: #ccc; opacity: 0.9; }
+</style>
+
+<section class="features-sticky-wrapper" id="mainContent">
+    <div class="features-content">
+        <!-- 기능 내용이 바뀌는 영역 -->
+        <div class="feature-display-area">
+            <!-- 패널 1 -->
+            <div class="feature-panel active">
+                <div class="feature-image"><img src="{% static 'images/hand7.jpg' %}" alt="AI 건강 상담"></div>
+                <div class="feature-text">
+                    <h2> {% t 'AI 건강 상담' %} </h2>
+                    <p> {% t '최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석합니다. 사용자의 건강 상태를 분석하여 맞춤 운동과 식단을 알려줍니다.' %} </p>
+                    <ul class="feature-list"><li> {% t '실시간 나의 상태 분석' %} </li><li> {% t '실시간 건강 모니터링' %} </li><li> {% t '개인 맞춤형 건강 리포트' %} </li><li> {% t '조기 진단 알림 시스템' %} </li></ul>
+                </div>
+            </div>
+            <!-- 패널 2 -->
+            <div class="feature-panel">
+                <div class="feature-image"><img src="{% static 'images/hand8.jpg' %}" alt="장소 서비스"></div>
+                <div class="feature-text">
+                    <h2> {% t '내 위치 맞춤 장소 서비스' %} </h2>
+                    <p> {% t '원하는 장소나 내 주변 운동 장소를 한눈에 보여주는 서비스 입니다.' %} </p>
+                    <ul class="feature-list"><li> {% t '모든 운동 장소 확인 가능' %} </li><li> {% t '실시간 데이터 동기화' %} </li><li> {% t '전지역 내 위치 맞춤 서비스' %} </li><li> {% t '운동 종류별 위치 탐색' %} </li></ul>
+                </div>
+            </div>
+            <!-- 패널 3 -->
+            <div class="feature-panel">
+                <div class="feature-image"><img src="{% static 'images/hand3.JPG' %}" alt="운동 코칭"></div>
+                <div class="feature-text">
+                    <h2> {% t '맞춤형 운동 코칭' %} </h2>
+                    <p> {% t 'AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계합니다. 컴퓨터 비전 기술로 운동 자세를 실시간으로 분석하고 교정합니다.' %} </p>
+                    <ul class="feature-list"><li> {% t '개인별 맞춤 운동 프로그램' %} </li><li> {% t '실시간 자세 교정' %} </li><li> {% t '운동 효과 분석' %} </li><li> {% t '부상 예방 가이드' %} </li></ul>
+                </div>
+            </div>
+            <!-- 패널 4 -->
+            <div class="feature-panel">
+                <div class="feature-image"><img src="{% static 'images/hand4.png' %}" alt="영양 관리"></div>
+                <div class="feature-text">
+                    <h2> {% t '스마트 영양 관리' %} </h2>
+                    <p> {% t '음식 사진만으로 칼로리와 영양소를 정확하게 분석합니다. 개인의 건강 목표와 상태에 맞는 식단을 AI가 추천해드립니다.' %} </p>
+                    <ul class="feature-list"><li> {% t 'AI 기반 음식 인식' %} </li><li> {% t '영양소 자동 계산' %} </li><li> {% t '맞춤형 식단 추천' %} </li><li> {% t '알레르기 성분 체크' %} </li></ul>
+                </div>
             </div>
         </div>
-        <div class="text-section" id="section-2">
-            <span class="section-number">02</span>
-            <div class="text-content" data-section="2">
-                <h2>내 위치 맞춤 장소 서비스 </h2>
-                <p>원하는 장소나 내 주변 운동 장소를 한눈에 보여주는 서비스 입니다.</p>
-                <ul class="feature-list">
-                    <li>모든 운동 장소 확인 가능</li> <li>실시간 데이터 동기화</li>
-                    <li>전지역 내 위치 맞춤 서비스</li> <li>운동 종류별 위치 탐색</li>
-                </ul>
-            </div>
+        <!-- 통계 (고정) -->
+        <div class="stats-container">
+            <div class="stat-item"><div class="stat-number">97%</div><p class="stat-label">사용자 만족도</p></div>
+            <div class="stat-item"><div class="stat-number">85점</div><p class="stat-label">평균 건강 점수</p></div>
+            <div class="stat-item"><div class="stat-number">4.5h</div><p class="stat-label">주간 운동 시간</p></div>
+            <div class="stat-item"><div class="stat-number">15%</div><p class="stat-label">의료비 절감</p></div>
         </div>
-        <div class="text-section" id="section-3">
-            <span class="section-number">03</span>
-            <div class="text-content" data-section="3">
-                <h2>맞춤형 운동 코칭</h2>
-                <p>AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계합니다. 컴퓨터 비전 기술로 운동 자세를 실시간으로 분석하고 교정합니다.</p>
-                <ul class="feature-list">
-                    <li>개인별 맞춤 운동 프로그램</li> <li>실시간 자세 교정</li>
-                    <li>운동 효과 분석</li> <li>부상 예방 가이드</li>
-                </ul>
-            </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const mainContent = document.getElementById('mainContent');
+    const featurePanels = document.querySelectorAll('.feature-panel');
+    const viewDetailsBtn = document.querySelector('a[href="#mainContent"]');
+
+    if (viewDetailsBtn) {
+        viewDetailsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    window.addEventListener('scroll', () => {
+        const wrapperRect = mainContent.getBoundingClientRect();
+        
+        if (wrapperRect.top <= 0 && wrapperRect.bottom >= window.innerHeight) {
+            const progress = -wrapperRect.top / (mainContent.scrollHeight - window.innerHeight);
+            let activeIndex = Math.floor(progress * featurePanels.length);
+            activeIndex = Math.min(activeIndex, featurePanels.length - 1);
+
+            featurePanels.forEach((panel, index) => {
+                panel.classList.toggle('active', index === activeIndex);
+            });
+        }
+    });
+});
+</script>
+
+<!-- ================================================================ -->
+<!-- 3. 사용자 후기 섹션 -->
+<!-- ================================================================ -->
+<style>
+.testimonials-section {
+    background-color: #0b0a1d;
+    color: #fff;
+    padding: 100px 20px;
+    text-align: center;
+}
+.testimonials-section h2 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 70px;
+    background: linear-gradient(90deg, #f977ce, #a361ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+}
+.testimonial-cards-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+.testimonial-card {
+    background-color: #1c1a34;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 360px;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+.testimonial-header { display: flex; align-items: center; margin-bottom: 15px; }
+.testimonial-avatar { font-size: 2.5rem; margin-right: 15px; line-height: 1; }
+.testimonial-user h3 { font-size: 1.1rem; font-weight: 600; margin: 0 0 5px 0; }
+.testimonial-user p { font-size: 0.9rem; color: #a0aec0; margin: 0; }
+.testimonial-rating { margin-bottom: 20px; color: #ffc107; font-size: 1.1rem; }
+.testimonial-body { font-size: 1rem; line-height: 1.7; color: #e2e8f0; }
+</style>
+
+<section class="testimonials-section">
+    <h2>10만 직장인이 선택한 이유</h2>
+    <div class="testimonial-cards-container">
+        <!-- Testimonial 1: 김지훈 -->
+        <div class="testimonial-card">
+            <div class="testimonial-header"><span class="testimonial-avatar">👨‍💼</span><div class="testimonial-user"><h3>김지훈</h3><p>삼성전자 개발팀</p></div></div>
+            <div class="testimonial-rating">★★★★★</div>
+            <p class="testimonial-body">AI 컨설턴트 덕분에 3개월 만에 체중 10kg 감량했어요. 맞춤형 운동과 식단이 정말 효과적이었습니다.</p>
         </div>
-        <div class="text-section" id="section-4">
-            <span class="section-number">04</span>
-            <div class="text-content" data-section="4">
-                <h2>스마트 영양 관리</h2>
-                <p>음식 사진만으로 칼로리와 영양소를 정확하게 분석합니다. 개인의 건강 목표와 상태에 맞는 식단을 AI가 추천해드립니다.</p>
-                <ul class="feature-list">
-                    <li>AI 기반 음식 인식</li> <li>영양소 자동 계산</li>
-                    <li>맞춤형 식단 추천</li> <li>알레르기 성분 체크</li>
-                </ul>
-            </div>
+        <!-- Testimonial 2: 이서연 -->
+        <div class="testimonial-card">
+            <div class="testimonial-header"><span class="testimonial-avatar">👩‍💼</span><div class="testimonial-user"><h3>이서연</h3><p>LG화학 마케팅팀</p></div></div>
+            <div class="testimonial-rating">★★★★★</div>
+            <p class="testimonial-body">팀 운동 챌린지로 동료들과 재미있게 건강을 관리하고 있어요. 업무 스트레스도 많이 줄었습니다.</p>
         </div>
+        <!-- Testimonial 3: 박민수 -->
+        <div class="testimonial-card">
+            <div class="testimonial-header"><span class="testimonial-avatar">👨‍💻</span><div class="testimonial-user"><h3>박민수</h3><p>현대자동차 기획팀</p></div></div>
+            <div class="testimonial-rating">★★★★★</div>
+            <p class="testimonial-body">웨어러블 연동으로 실시간 건강 모니터링이 가능해서 좋아요. 건강 관리가 훨씬 쉬워졌습니다.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- 4. 파트너사 로고 스크롤 섹션 (새로 추가된 부분) -->
+<!-- ================================================================ -->
+<style>
+/* 카운팅 애니메이션을 위한 키프레임 (선택사항, 부드러운 등장 효과) */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.growth-partners-section {
+    background-color: #0b0a1d; /* 이전 섹션과 동일한 배경 */
+    padding: 100px 20px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.growth-partners-section h2 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 20px;
+    animation: fadeIn 1s ease-out;
+}
+
+.growth-partners-section .section-description {
+    font-size: 1.1rem;
+    color: #a0aec0;
+    margin-bottom: 60px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    animation: fadeIn 1s ease-out 0.2s;
+    animation-fill-mode: backwards; /* 애니메이션 시작 전까지 숨김 */
+}
+
+.growth-display {
+    margin-bottom: 80px;
+    animation: fadeIn 1s ease-out 0.4s;
+    animation-fill-mode: backwards;
+}
+
+.growth-number {
+    font-size: 9rem;
+    font-weight: 800;
+    line-height: 1;
+    /* 사용자 후기 제목과 동일한 그라데이션 적용 */
+    background: linear-gradient(90deg, #f977ce, #a361ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    display: inline-block;
+    position: relative;
+}
+
+/* 숫자 옆에 '%' 기호 추가 */
+.growth-number::after {
+    content: '%';
+    font-size: 0.3em; /* '%' 크기를 숫자보다 작게 */
+    font-weight: 600;
+    position: absolute;
+    top: 15%;
+    right: -0.6em; /* '%' 기호 위치 조정 */
+    background: none;
+    -webkit-text-fill-color: #a361ff; /* 그라데이션의 끝 색상과 맞춤 */
+}
+
+.growth-label {
+    font-size: 1.2rem;
+    color: #ccc;
+    margin-top: 10px;
+    font-weight: 500;
+}
+
+/* --- 로고 슬라이더 스타일 (이전과 동일) --- */
+@keyframes scroll-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+.logos-viewport {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+}
+.logos-track {
+    display: flex;
+    width: calc(230px * 40); /* 로고너비 150 + 좌우마진 80 = 230 */
+    animation: scroll-left 60s linear infinite;
+}
+.logos-viewport:hover .logos-track {
+    animation-play-state: paused;
+}
+.logo-item {
+    flex-shrink: 0;
+    width: 150px;
+    height: 60px;
+    margin: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.logo-item img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    filter: grayscale(100%) brightness(0.8);
+    opacity: 0.7;
+    transition: all 0.3s ease-in-out;
+}
+.logo-item:hover img {
+    filter: grayscale(0%) brightness(1);
+    opacity: 1;
+    transform: scale(1.1);
+}
+</style>
+
+<section class="growth-partners-section">
+    <h2>후원으로 성장률 상승</h2>
+    <p class="section-description">
+        최고의 파트너들과 함께 사용자의 건강 목표 달성률을 높여가고 있습니다.
+    </p>
+    
+    <div class="growth-display">
+        <!-- data-target에 목표 숫자를 넣으면 JS가 자동으로 카운팅합니다 -->
+        <div class="growth-number" data-target="185">0</div>
+        <p class="growth-label">사용자 목표 달성률</p>
     </div>
 
-    <div class="image-side">
-        <div class="image-wrapper">
-            <div class="image-box">
-                <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800" alt="AI 진단" class="sticky-image active" data-image="1">
-                <img src="{% static 'images/hand1.JPG' %}" alt="웨어러블" class="sticky-image" data-image="2">
-                <img src="{% static 'images/hand2.png' %}" alt="운동 이미지 (스티키)" class="sticky-image" data-image="3">
-                <img src="{% static 'images/hand3.PNG' %}" alt="영양" class="sticky-image" data-image="4">
-            </div>
-            <div class="image-indicators">
-                <div class="indicator active" data-indicator="1"></div> <div class="indicator" data-indicator="2"></div>
-                <div class="indicator" data-indicator="3"></div> <div class="indicator" data-indicator="4"></div>
-            </div>
-            <div class="page-number">
-                <span class="current-page">1</span> <span class="divider">/</span> <span class="total-pages">4</span>
-            </div>
-            <div class="swipe-hint">
-                <div class="swipe-icon"></div> <span>스와이프하여 이동</span>
-            </div>
+    <div class="logos-viewport">
+        <div class="logos-track">
+            <!-- 원본 로고 20개 -->
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+
+            <!-- 무한 스크롤을 위한 복제본 20개 -->
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- 숫자 카운팅 애니메이션을 위한 JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const counter = document.querySelector('.growth-number');
+    if (!counter) return;
+
+    const animateCounter = () => {
+        const target = +counter.getAttribute('data-target');
+        const duration = 2000; // 2초 동안 애니메이션
+        const start = 0;
+        let startTime = null;
+
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const currentNumber = Math.floor(progress * (target - start) + start);
+            
+            counter.innerText = currentNumber;
+
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        requestAnimationFrame(animation);
+    };
+
+    // 섹션이 화면에 보일 때 애니메이션 시작 (Intersection Observer API)
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter();
+                observer.unobserve(entry.target); // 한 번만 실행
+            }
+        });
+    }, { threshold: 0.5 }); // 섹션이 50% 보일 때 실행
+
+    observer.observe(document.querySelector('.growth-partners-section'));
+});
+</script>
+
 {% endblock %}

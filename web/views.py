@@ -1,20 +1,23 @@
-# MYSITE/web/views.py
+# web/views.py - 전체 코드를 이걸로 교체하세요.
 
 import json
 import re
+from collections import OrderedDict, defaultdict
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from collections import OrderedDict # ✅ 날짜 순서를 유지하며 중복을 제거하기 위해 import
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Inquiry
 
-# --- 다른 앱의 모델 import ---
+# --- 다른 앱의 모델 및 서비스 import (기존 코드와 동일) ---
 try:
-    from routine.models import Routine, RoutineExercise, Exercise
+    from routine.models import Routine
 except ImportError:
-    Routine, RoutineExercise, Exercise = None, None, None
+    Routine = None
 
 try:
     from diet.models import Meal
@@ -22,19 +25,28 @@ except ImportError:
     Meal = None
     
 try:
-    from accounts.models import BodyCompositionRecord
+    from accounts.models import BodyCompositionRecord, Profile, UserAchievement 
 except ImportError:
-    BodyCompositionRecord = None
+    BodyCompositionRecord, Profile, UserAchievement = None, None, None
 
-# --- 헬퍼 함수 ---
+try:
+    from achievements.services import check_and_award_achievement
+except ImportError:
+    check_and_award_achievement = None
+
+
+# --- 헬퍼 함수 (기존 코드와 동일) ---
 def parse_nutrition_value(value_str):
-    if isinstance(value_str, (int, float)): return value_str
+    if isinstance(value_str, (int, float)):
+        return value_str
     if isinstance(value_str, str):
         numbers = re.findall(r'\d+\.?\d*', value_str)
-        if numbers: return float(numbers[0])
+        if numbers:
+            return float(numbers[0])
     return 0
 
-# --- 기존 뷰 함수들은 그대로 유지 ---
+
+# --- 기본 뷰 함수 (기존 코드와 동일) ---
 def home(request):
     return render(request, 'web/index.html')
 
@@ -45,7 +57,9 @@ def auth_signup_view(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            if check_and_award_achievement:
+                check_and_award_achievement(request, user, 'first_visit',  extra_tags='achievement_unlocked')
             messages.success(request, '회원가입이 성공적으로 완료되었습니다. 로그인해주세요.')
             return redirect('login_page')
     else:
@@ -68,7 +82,7 @@ def start_trial(request):
     return render(request, 'web/start_trial.html')
 
 
-# --- 대시보드 뷰 함수 (핵심 수정) ---
+# --- 대시보드 뷰 함수 (기존 코드와 동일) ---
 @login_required
 def services_page(request):
     user = request.user
@@ -78,25 +92,42 @@ def services_page(request):
         'user': user,
         'active_menu': 'dashboard',
     }
+    
+    if check_and_award_achievement:
+        one_year_ago = today - timezone.timedelta(days=365)
+        if user.date_joined.date() <= one_year_ago:
+            check_and_award_achievement(request, user, 'anniversary_1year',  extra_tags='achievement_unlocked')
 
-    # --- 1. 최근 운동 루틴 가져오기 ---
+    if Profile:
+        try:
+            profile = Profile.objects.get(user=user)
+            context['profile'] = profile
+        except Profile.DoesNotExist:
+            context['profile'] = None
+
+    if Profile:
+        try:
+            profile = Profile.objects.select_related('active_title__achievement').get(user=user)
+            context['profile'] = profile
+            context['active_title'] = profile.active_title
+        except Profile.DoesNotExist:
+            context['profile'] = None
+            context['active_title'] = None
+
     latest_routine = None
     if Routine:
         try:
             latest_routine = Routine.objects.filter(user=user).prefetch_related('routineexercise_set__exercise').latest('created_at')
             exercises_in_routine = []
             for routine_ex in latest_routine.routineexercise_set.all()[:5]:
-                exercise_detail = {
-                    'name': routine_ex.exercise.name, 'sets': routine_ex.sets, 'reps': routine_ex.reps
-                }
+                exercise_detail = { 'name': routine_ex.exercise.name, 'sets': routine_ex.sets, 'reps': routine_ex.reps }
                 exercises_in_routine.append(exercise_detail)
             latest_routine.exercises_list = exercises_in_routine
         except Routine.DoesNotExist:
             latest_routine = None
     context['latest_routine'] = latest_routine
 
-    # --- 2. 오늘의 식단 요약 정보 가져오기 ---
-    today_diet_summary = {'total_kcal': 0, 'carbs': 0, 'protein': 0, 'fat': 0}
+    today_diet_summary = defaultdict(float)
     if Meal:
         daily_meals = Meal.objects.filter(user=user, created_at__date=today)
         for meal in daily_meals:
@@ -106,45 +137,80 @@ def services_page(request):
                 today_diet_summary['carbs'] += parse_nutrition_value(nutrition.get('carbohydrate', 0))
                 today_diet_summary['protein'] += parse_nutrition_value(nutrition.get('protein', 0))
                 today_diet_summary['fat'] += parse_nutrition_value(nutrition.get('fat', 0))
-    context['today_diet_summary'] = today_diet_summary
+    context['today_diet_summary'] = dict(today_diet_summary)
 
-    # --- 3. ✅ 인바디 스타일 그래프 데이터 준비 (수정된 로직) ---
-    inbody_chart_data = {
-        'labels': [], 'weights': [], 'muscles': [], 'fats': [],
-    }
+    inbody_chart_data = {'labels': [], 'weights': [], 'muscles': [], 'fats': []}
     if BodyCompositionRecord:
-        # 사용자의 모든 기록을 시간 순으로 가져옵니다.
         all_records = BodyCompositionRecord.objects.filter(user=user).order_by('created_at')
-
-        # 날짜별 마지막 기록만 저장할 OrderedDict를 사용합니다.
         daily_last_records = OrderedDict()
         for record in all_records:
             date_key = record.created_at.date()
-            # 딕셔너리에 계속 덮어쓰면, 자연스럽게 그날의 마지막 기록만 남게 됩니다.
             daily_last_records[date_key] = record
-
-        # 딕셔너리의 값(최종 레코드 객체 리스트)을 가져옵니다.
-        final_records_list = list(daily_last_records.values())
-        
-        # 차트 가독성을 위해 최근 30개의 데이터만 사용합니다.
-        if len(final_records_list) > 30:
-            final_records_list = final_records_list[-30:]
-
-        # 최종 필터링된 데이터로 차트용 리스트를 만듭니다.
+        final_records_list = list(daily_last_records.values())[-30:]
         inbody_chart_data['labels'] = [rec.created_at.strftime('%m/%d') for rec in final_records_list]
         inbody_chart_data['weights'] = [rec.weight for rec in final_records_list]
         inbody_chart_data['muscles'] = [rec.skeletal_muscle_mass for rec in final_records_list]
         inbody_chart_data['fats'] = [rec.body_fat_mass for rec in final_records_list]
-
     context['inbody_chart_data'] = json.dumps(inbody_chart_data)
 
-    # --- 4. 식단 구성 도넛 차트 데이터 준비 ---
     diet_chart_data = {
         'carbs': round(today_diet_summary['carbs'], 1),
         'protein': round(today_diet_summary['protein'], 1),
         'fat': round(today_diet_summary['fat'], 1),
     }
-    context['diet_chart_data'] = json.dumps(diet_chart_data)
+    context['diet_chart_data'] = json.dumps(diet_chart_data) 
     
-    # 템플릿 파일 이름을 'web/services.html'로 사용하고 있으므로 그대로 둡니다.
     return render(request, 'web/services.html', context)
+
+# --- 고객 지원 관련 뷰 ---
+
+def support_view(request):
+    """고객 지원 FAQ 페이지를 보여주는 뷰"""
+    return render(request, 'web/support.html')
+
+
+def inquiry_view(request):
+    """1:1 문의 폼을 보여주고, 제출된 문의를 처리하는 뷰"""
+    
+    if request.method == 'POST':
+        inquiry_user = request.user if request.user.is_authenticated else None
+        
+        user_email = request.POST.get('email')
+        subject = request.POST.get('subject')
+
+        Inquiry.objects.create(
+            user=inquiry_user,
+            category=request.POST.get('category'),
+            email=user_email,
+            subject=subject,
+            message=request.POST.get('message')
+        )
+
+        messages.success(request, '문의가 성공적으로 접수되었습니다. 빠른 시일 내에 답변드리겠습니다.')
+
+        try:
+            email_subject = f"[HealthWise] '{subject}' 문의가 정상적으로 접수되었습니다."
+            email_message = f"""
+안녕하세요, HealthWise입니다.
+
+고객님의 소중한 문의가 성공적으로 접수되었습니다.
+담당자가 내용을 확인한 후, 최대한 빠른 시일 내에 답변드리겠습니다.
+
+더 나은 서비스를 만드는 데 도움을 주셔서 감사합니다.
+
+- HealthWise 드림 -
+"""
+            send_mail(
+                subject=email_subject,
+                message=email_message,
+                from_email=None,
+                recipient_list=[user_email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"사용자에게 접수 확인 메일 발송 실패: {e}")
+
+        # 'web' 그룹에 속한 'support' URL로 이동합니다.
+        return redirect('web:support')
+
+    return render(request, 'web/inquiry.html')

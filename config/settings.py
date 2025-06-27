@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,12 +22,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "accounts.apps.AccountsConfig",
+    'achievements',
     'web.apps.WebConfig',
     'music',
     'place',
     'routine',
     'diet',
-    'chatbot.apps.ChatbotConfig',
+    'chatbot',
     'store',
 ]
 
@@ -38,6 +40,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -89,10 +92,14 @@ TIME_ZONE = 'Asia/Seoul'
 USE_I18N = True
 USE_TZ = True
 
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
+
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "assets",
+    os.path.join(BASE_DIR, 'assets'),# 'assets'를 'static'으로 변경
     #BASE_DIR / "mysite" / "web" / "templates" / "web" / "public" # 수정된 부분
 ]
 
@@ -120,6 +127,16 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
 KAKAO_MAP_API_KEY = os.getenv('KAKAO_MAP_API_KEY')
+COUPANG_ACCESS_KEY = os.getenv('COUPANG_ACCESS_KEY')
+COUPANG_SECRET_KEY = os.getenv('COUPANG_SECRET_KEY')
+
+# Language settings
+
+LANGUAGES = [
+    ('ko', _('Korean')),
+    ('en', _('English')),
+    ('es', _('Spanish')),
+]
 
 # config/settings.py 맨 아래에 추가
 

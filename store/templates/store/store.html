@@ -1,103 +1,475 @@
 {% extends 'web/base_simple.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 {% block title %}스토어 - 추천 브랜드{% endblock %}
+
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
-    /* ... (기존 .store-container, .store-header, .filter-search-bar 등의 스타일은 그대로 둡니다) ... */
+    /* 기본 CSS */
     .store-container { max-width: 1200px; margin: 4rem auto; padding: 0 2rem; color: #fff; }
     .store-header { text-align: center; margin-bottom: 3rem; }
     .store-header h1 { font-size: 2.5rem; font-weight: 700; background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #ffe66d); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
     .store-header p { font-size: 1.1rem; color: rgba(255, 255, 255, 0.7); margin-top: 0.5rem; }
     .section-title { font-size: 1.5rem; font-weight: 600; color: #fff; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; gap: 0.75rem; }
-    .section-title .icon { color: #4ecdc4; }
-    .filter-search-bar { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; margin-top: 2rem; margin-bottom: 3rem; display: flex; flex-direction: column; gap: 1.5rem; }
-    .filter-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
+    .product-card { position: relative; display: flex; flex-direction: column; background: #2a2a2e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; }
+    .product-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); border-color: #4ecdc4; }
+    .thumbnail-wrapper { width: 100%; height: 180px; display: flex; text-decoration: none; align-items: center; justify-content: center; background-color: #1c1c20; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    .thumbnail-wrapper img { display: block; max-width: 80%; max-height: 80%; object-fit: contain; transition: transform 0.3s ease; }
+    .thumbnail-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+    .thumbnail-placeholder span { font-size: 4rem; font-weight: 800; color: rgba(255,255,255,0.1); }
+    .card-body { padding: 1.25rem; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+    .product-name { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.75rem; }
+    .category-tag { font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; background-color: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.8); }
+    .store-pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 4rem; }
+    .store-pagination a, .store-pagination span { color: rgba(255, 255, 255, 0.7); text-decoration: none; padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; transition: all 0.2s ease; }
+    .store-pagination a:hover { background-color: #4ecdc4; color: #0a0a0a; border-color: #4ecdc4; }
+    .store-pagination .current { font-weight: bold; background-color: #4ecdc4; color: #0a0a0a; border-color: #4ecdc4; }
+    .no-results { text-align: center; grid-column: 1 / -1; padding: 4rem 1rem; color: rgba(255, 255, 255, 0.6); }
+    .filter-bar-optimized { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1rem 1.5rem; margin-top: 2rem; margin-bottom: 3rem; }
+    .category-filter-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .filter-btn { font-family: inherit; font-weight: 600; font-size: 0.9rem; color: rgba(255, 255, 255, 0.6); background-color: transparent; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; padding: 8px 12px; text-decoration: none; transition: all 0.2s ease; }
     .filter-btn:hover { background-color: rgba(255, 255, 255, 0.1); color: #fff; border-color: #4ecdc4; }
     .filter-btn.active { background-color: #4ecdc4; color: #0a0a0a; border-color: #4ecdc4; }
-    .search-form { display: flex; width: 100%; max-width: 500px; margin: 0 auto; }
-    .search-input { flex-grow: 1; background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 12px 16px; border-radius: 8px 0 0 8px; font-size: 1rem; outline: none; }
-    .search-input:focus { border-color: #4ecdc4; box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.3); }
-    .search-btn { background-color: #4ecdc4; border: none; color: #0a0a0a; padding: 0 20px; font-size: 1.2rem; border-radius: 0 8px 8px 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
-    .product-card { display: flex; flex-direction: column; text-decoration: none; background: #1a1a1a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; position: relative; }
-    .product-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); border-color: #4ecdc4; }
+    .name-search-group { position: relative; display: flex; align-items: center; background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; overflow: visible; }
+    .name-search-group:focus-within { border-color: #4ecdc4; box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.3); }
+    .alphabet-dropdown { position: relative; }
+    .dropdown-toggle { font-family: inherit; background: transparent; border: none; border-right: 1px solid rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.8); padding: 12px 16px; cursor: pointer; font-size: 1rem; }
+    .dropdown-menu { display: none; position: absolute; top: 110%; right: 0; background-color: #2a2a2e; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 1rem; z-index: 10; min-width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .dropdown-menu.show { display: grid; }
+    .dropdown-menu a { display: block; text-align: center; padding: 8px; border-radius: 4px; color: rgba(255, 255, 255, 0.7); text-decoration: none; transition: background-color 0.2s; }
+    .dropdown-menu a:hover { background-color: rgba(255, 255, 255, 0.1); color: #fff; }
+    .search-input-optimized { background: transparent; border: none; color: #fff; padding: 12px 16px; font-size: 1rem; outline: none; width: 200px; }
+    .search-btn-optimized { background: transparent; border: none; color: rgba(255, 255, 255, 0.6); padding: 0 16px; font-size: 1.2rem; cursor: pointer; }
+    .quick-view-btn { font-family: inherit; font-size: 0.9rem; font-weight: 600; margin-top: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+    .quick-view-btn:hover { background: #4ecdc4; color: #0a0a0a; border-color: #4ecdc4; }
+    .favorite-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 16px; line-height: 1; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+    .favorite-btn.favorited { color: #ff6b6b; }
+    .favorite-btn:hover { background: rgba(255, 107, 107, 0.7); }
+    .compare-checkbox-wrapper { margin-top: 1rem; }
+    .compare-checkbox-wrapper label { color: rgba(255,255,255,0.6); cursor: pointer; font-size: 0.9rem; }
     
-    /* ✅ [핵심 수정] 썸네일 컨테이너 스타일 */
-    .thumbnail-wrapper {
-        width: 100%;
-        height: 180px; /* 고정된 높이를 주어 모든 카드의 높이를 통일합니다. */
+    .compare-bar {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translate(-50%, 120%);
+        width: 90%;
+        max-width: 600px;
+        background-color: #2a2a2e;
+        color: #fff;
+        padding: 1rem 1.5rem;
+        border-radius: 12px 12px 0 0;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
-        background-color: #fff; /* 로고가 잘 보이도록 흰색 배경을 유지합니다. */
-        transition: background-color 0.3s ease;
+        transition: transform 0.4s ease-in-out;
+        z-index: 1000;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-bottom: none;
     }
-    
-    /* ✅ [핵심 수정] 이미지 스타일 */
-    .thumbnail-wrapper img {
-        display: block;
-        max-width: 80%;   /* 로고의 최대 너비를 제한하여 여백을 확보합니다. */
-        max-height: 80%;  /* 로고의 최대 높이를 제한하여 여백을 확보합니다. */
-        object-fit: contain; /* 이미지 비율을 유지하면서 컨테이너 안에 맞춥니다. */
-        transition: transform 0.3s ease;
+    .compare-bar.visible {
+        transform: translate(-50%, 0);
     }
-    
-    /* ✅ [신규] 로고가 없을 때 보여줄 플레이스홀더 스타일 */
-    .thumbnail-placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
+    #compare-count { font-weight: 600; }
+    .compare-bar-btn {
+        background-color: #4ecdc4; color: #111; text-decoration: none; padding: 10px 20px;
+        border-radius: 8px; font-weight: 700; transition: background-color 0.2s;
     }
-    .thumbnail-placeholder span {
-        font-size: 4rem;
-        font-weight: 800;
-        color: rgba(0, 0, 0, 0.1);
+    .compare-bar-btn:hover { background-color: #fff; }
+    
+    .loader { border: 4px solid rgba(255,255,255,0.2); border-top: 4px solid #4ecdc4; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 4rem auto; display: none; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    .analyzer-banner {
+        display: flex; justify-content: space-between; align-items: center; padding: 2.5rem 3rem;
+        background: linear-gradient(135deg, #2a2a2e 0%, #1c1c20 100%);
+        border-radius: 16px; margin-bottom: 3rem; border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
-    
-    /* 카드에 마우스를 올렸을 때 로고가 살짝 커지는 효과 */
-    .product-card:hover .thumbnail-wrapper img {
-        transform: scale(1.05);
+    .analyzer-banner-content h3 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; }
+    .analyzer-banner-content p { font-size: 1rem; color: rgba(255, 255, 255, 0.7); max-width: 450px; }
+    .analyzer-banner-action .btn-start-analysis {
+        background-color: #4ecdc4; color: #111; text-decoration: none; padding: 14px 28px;
+        border-radius: 8px; font-weight: 700; transition: all 0.3s ease;
+        display: inline-flex; align-items: center; gap: 10px;
     }
+    .analyzer-banner-action .btn-start-analysis:hover { background-color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3); }
+    .analyzer-banner-action .btn-start-analysis i { font-size: 1.2rem; }
     
-    .card-body { padding: 1.25rem; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background-color: #242424; }
-    .product-name { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 0.75rem; }
-    
-    /* ✅ [핵심 수정] 카테고리 태그 스타일 */
-    .category-tag {
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 20px; /* 둥근 알약 모양 */
-        background-color: rgba(255, 255, 255, 0.1);
-        color: rgba(255, 255, 255, 0.8);
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); visibility: hidden; opacity: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.3s ease, visibility 0.3s ease; }
+    .modal-overlay.active { visibility: visible; opacity: 1; }
+    .modal-content { background: #1c1c20; padding: 2.5rem; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transform: scale(0.95); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
+    .modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    .modal-title { font-size: 1.8rem; font-weight: 700; color: #fff; }
+    .modal-close { font-size: 2rem; color: #fff; cursor: pointer; background:none; border:none; line-height: 1; }
+    .modal-body p { color: rgba(255,255,255,0.8); line-height: 1.7; font-size: 1rem; white-space: pre-wrap; margin: 0; }
+    .modal-footer { margin-top: 2rem; text-align: right; }
+    .go-to-site-btn { background-color: #4ecdc4; color: #0a0a0a; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; transition: all 0.2s; }
+    .go-to-site-btn:hover { background-color: #fff; }
+    .modal-reviews-section { margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; }
+    .review-form-wrapper { margin-bottom: 2rem; }
+    .star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 5px; }
+    .star-rating input[type="radio"] { display: none; }
+    .star-rating label { font-size: 2rem; color: #555; cursor: pointer; transition: color 0.2s; }
+    .star-rating input[type="radio"]:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: #ffc107; }
+    .review-textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #444; border-radius: 8px; padding: 1rem; color: #fff; margin-top: 1rem; min-height: 100px; }
+    .review-submit-btn { float: right; margin-top: 1rem; }
+    .review-list .review-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1rem 0; }
+    .review-list .review-item:last-child { border-bottom: none; }
+</style>
+
+<div class="store-container">
+    <header class="store-header"><h1>HealthWise Store</h1><p> {% t '엄선된 헬스 & 피트니스 브랜드를 만나보세요.' %} </p></header>
+
+    <div class="filter-bar-optimized">
+        <div class="category-filter-group" id="category-filter-group">
+            <a href="{% url 'store:home' %}" data-category="" class="filter-btn {% if not current_category %}active{% endif %}"> {% t '전체' %} </a>
+            {% for category_obj in categories %}
+                <a href="?category={{ category_obj.code }}" data-category="{{ category_obj.code }}" class="filter-btn {% if current_category == category_obj.code %}active{% endif %}">{{ category_obj.name }}</a>
+            {% endfor %}
+        </div>
+        <div class="name-search-group">
+            <div class="alphabet-dropdown">
+                <button class="dropdown-toggle" id="alphabet-dropdown-toggle" type="button">A-Z</button>
+                <div class="dropdown-menu" id="alphabet-dropdown-menu">
+                    <a href="?{% if current_category %}category={{ current_category }}{% endif %}"> {% t '전체' %} </a>
+                    {% for letter in alphabet %}
+                        <a href="?starts_with={{ letter }}{% if current_category %}&category={{ current_category }}{% endif %}">{{ letter }}</a>
+                    {% endfor %}
+                    <a href="?starts_with=0-9{% if current_category %}&category={{ current_category }}{% endif %}">0-9</a>
+                </div>
+            </div>
+            <input type="search" name="q" id="search-input" class="search-input-optimized" placeholder="브랜드 이름 검색..." value="{{ search_query|default:'' }}">
+            <button type="button" class="search-btn-optimized"><i class="bi bi-search"></i></button>
+        </div>
+    </div>
+
+    <div class="analyzer-banner">
+        <div class="analyzer-banner-content">
+            <h3> {% t '내 몸에 딱 맞는 스타일을 찾아보세요' %} </h3>
+            <p> {% t '사진 한 장으로 AI가 당신의 체형을 분석하고, 어울리는 옷 스타일을 추천해 드립니다.' %} </p>
+        </div>
+        <div class="analyzer-banner-action">
+            <a href="{% url 'store:body_shape_analyzer' %}" class="btn-start-analysis">
+                <i class="bi bi-robot"></i>
+                <span> {% t '분석 시작하기' %} </span>
+            </a>
+        </div>
+    </div>
+
+    <h2 class="section-title"><i class="bi bi-grid-3x3-gap-fill icon"></i> {% t '전체 브랜드 목록' %} </h2>
+    <div id="brand-list-container">
+        {% include 'store/partials/brand_grid.html' %}
+    </div>
+    <div class="loader" id="loader"></div>
+</div>
+
+<div class="compare-bar" id="compare-bar">
+    <span id="compare-count"></span>
+    <a href="#" class="compare-bar-btn" id="compare-action-btn"> {% t '비교하기' %} </a>
+</div>
+<div class="modal-overlay" id="quick-view-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modal-brand-name"></h2>
+            <button class="modal-close" id="modal-close-btn">×</button>
+        </div>
+        <div class="modal-body">
+            <p id="modal-brand-description"></p>
+            <div class="modal-reviews-section">
+                <div id="review-form-wrapper"></div>
+                <h4> {% t '최신 리뷰' %} </h4>
+                <div id="review-list-wrapper"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#" target="_blank" rel="noopener noreferrer" class="go-to-site-btn" id="modal-brand-link"> {% t '홈페이지 방문' %} </a>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ 스크립트가 block content의 맨 아래, </body> 태그 바로 앞에 위치하도록 합니다. -->
+<script>
+    // ✅ 1. 비교하기 기능 관련 스크립트
+    // DOMContentLoaded는 페이지의 모든 HTML이 로드된 후 스크립트를 실행하도록 보장합니다.
+    document.addEventListener('DOMContentLoaded', () => {
+        // 필수 HTML 요소들을 찾습니다.
+        const compareBar = document.getElementById('compare-bar');
+        const compareCountSpan = document.getElementById('compare-count');
+        const compareActionBtn = document.getElementById('compare-action-btn');
+
+        // 만약 필수 요소가 페이지에 없다면, 콘솔에 에러를 기록하고 기능 실행을 중단합니다.
+        if (!compareBar || !compareCountSpan || !compareActionBtn) {
+            console.error("비교 기능에 필요한 HTML 요소(compare-bar 등)를 찾을 수 없습니다.");
+            return;
+        }
+
+        let selectedBrandIds = []; // 선택된 브랜드 ID를 저장할 배열
+
+        // 이벤트 위임: document.body에 이벤트 리스너를 한 번만 등록하여,
+        // 나중에 AJAX로 추가되는 브랜드 카드들의 체크박스 클릭도 감지할 수 있습니다.
+        document.body.addEventListener('change', (event) => {
+            if (event.target.matches('.compare-checkbox')) {
+                const checkbox = event.target;
+                const brandId = parseInt(checkbox.dataset.brandid, 10);
+
+                if (checkbox.checked) {
+                    if (!selectedBrandIds.includes(brandId)) selectedBrandIds.push(brandId);
+                } else {
+                    selectedBrandIds = selectedBrandIds.filter(id => id !== brandId);
+                }
+                
+                updateCompareBar(); // UI 업데이트
+            }
+        });
+
+        function updateCompareBar() {
+            const selectedCount = selectedBrandIds.length;
+            
+            if (selectedCount >= 2) {
+                compareCountSpan.textContent = `${selectedCount}개 브랜드 선택됨`;
+                const idsQueryString = selectedBrandIds.join(',');
+                compareActionBtn.href = `{% url 'store:compare_page' %}?ids=${idsQueryString}`;
+                compareBar.classList.add('visible');
+            } else if (selectedCount === 1) {
+                compareCountSpan.textContent = `1개 더 선택하여 비교해보세요.`;
+                compareBar.classList.add('visible');
+            } else {
+                compareBar.classList.remove('visible');
+            }
+        }
+
+        // 페이지가 처음 로드될 때 (혹은 '뒤로 가기' 시) 체크된 항목을 반영하기 위한 초기화 함수
+        function initializeCompareState() {
+            selectedBrandIds = [];
+            document.querySelectorAll('.compare-checkbox:checked').forEach(checkbox => {
+                const brandId = parseInt(checkbox.dataset.brandid, 10);
+                if (!selectedBrandIds.includes(brandId)) {
+                    selectedBrandIds.push(brandId);
+                }
+            });
+            updateCompareBar();
+        }
+
+        initializeCompareState(); // 페이지 로드 시 즉시 실행
+    });
+
+    // ✅ 2. 기타 모든 기능 관련 스크립트
+    // (기존 코드와 동일)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    function toggleFavorite(buttonElement, brandId) {
+        const url = `{% url 'store:toggle_favorite_api' 0 %}`.replace('0', brandId);
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                buttonElement.classList.toggle('favorited', data.favorited);
+            }
+        });
     }
 
-    .pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 4rem; }
-    .pagination a, .pagination span { color: rgba(255, 255, 255, 0.7); text-decoration: none; padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; transition: all 0.2s ease; }
-    .pagination a:hover { background-color: #4ecdc4; color: #0a0a0a; border-color: #4ecdc4; }
-    .pagination .current { font-weight: bold; background-color: #4ecdc4; color: #0a0a0a; border-color: #4ecdc4; }
-    .no-results { text-align: center; grid-column: 1 / -1; padding: 4rem 1rem; color: rgba(255, 255, 255, 0.6); }
-</style>
-<div class="store-container">
-    <header class="store-header"><h1>HealthWise Store</h1><p>엄선된 헬스 & 피트니스 브랜드를 만나보세요.</p></header>
-    {% if featured_brands %}<div class="featured-section"><h2 class="section-title"><i class="bi bi-stars icon"></i>추천 브랜드</h2><div class="product-grid">{% for brand in featured_brands %}{% include 'store/_brand_card.html' with brand=brand %}{% endfor %}</div></div>{% endif %}
-    <div class="filter-search-bar">
-        <div class="filter-group"><a href="{% url 'store:home' %}" class="filter-btn {% if not current_category %}active{% endif %}">전체 카테고리</a>{% for value, name in categories %}<a href="?category={{ value }}" class="filter-btn {% if current_category == value %}active{% endif %}">{{ name }}</a>{% endfor %}</div><hr style="border-color: rgba(255, 255, 255, 0.1);">
-        <div class="filter-group"><a href="{% url 'store:home' %}{% if current_category %}?category={{ current_category }}{% endif %}" class="filter-btn {% if not current_filter %}active{% endif %}">전체</a>{% for letter in alphabet %}<a href="?starts_with={{ letter }}{% if current_category %}&category={{ current_category }}{% endif %}" class="filter-btn {% if current_filter == letter %}active{% endif %}">{{ letter }}</a>{% endfor %}<a href="?starts_with=0-9{% if current_category %}&category={{ current_category }}{% endif %}" class="filter-btn {% if current_filter == '0-9' %}active{% endif %}">0-9</a></div>
-        <form class="search-form" method="GET" action="{% url 'store:home' %}"><input type="search" name="q" class="search-input" placeholder="브랜드 이름 검색..." value="{{ search_query|default:'' }}"><button type="submit" class="search-btn"><i class="bi bi-search"></i></button></form>
-    </div>
-    <h2 class="section-title"><i class="bi bi-grid-3x3-gap-fill icon"></i>전체 브랜드 목록</h2>
-    <div class="product-grid">
-        {% for brand in page_obj %}{% include 'store/_brand_card.html' with brand=brand %}{% empty %}<div class="no-results"><p>{% if search_query %}'{{ search_query }}'에 대한 검색 결과가 없습니다.{% else %}해당 조건에 맞는 브랜드가 없습니다.{% endif %}</p></div>{% endfor %}
-    </div>
-    <nav class="pagination" aria-label="Page navigation">
-        {% if page_obj.has_previous %}<a href="?page=1{{ current_filter_params }}">« 처음</a><a href="?page={{ page_obj.previous_page_number }}{{ current_filter_params }}">이전</a>{% endif %}
-        <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{{ current_filter_params }}">다음</a><a href="?page={{ page_obj.paginator.num_pages }}{{ current_filter_params }}">마지막 »</a>{% endif %}
-    </nav>
-</div>
+    function submitReview(event, brandId) {
+        event.preventDefault();
+        const form = event.target;
+        const rating = form.querySelector('input[name="rating"]:checked');
+        const content = form.querySelector('textarea[name="content"]');
+        if (!rating) { alert('평점을 선택해주세요.'); return; }
+        const url = `{% url 'store:add_review_api' 0 %}`.replace('0', brandId);
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify({ rating: rating.value, content: content.value })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                alert(data.message);
+                document.getElementById('modal-close-btn').click();
+            } else {
+                alert(data.message || '리뷰 등록에 실패했습니다.');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('search-input');
+        const brandListContainer = document.getElementById('brand-list-container');
+        const loader = document.getElementById('loader');
+        const categoryFilterGroup = document.getElementById('category-filter-group');
+        
+        let currentCategory = '{{ current_category|default:"" }}';
+        let currentQuery = '{{ search_query|default:"" }}';
+        let currentStartsWith = '';
+
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        async function updateBrandList(page = 1) {
+            loader.style.display = 'block';
+            brandListContainer.style.opacity = '0.5'; // 로딩 중 반투명 효과
+            const params = new URLSearchParams({ q: currentQuery, category: currentCategory, starts_with: currentStartsWith, page: page });
+            try {
+                const response = await fetch(`{% url 'store:filter_brands_api' %}?${params.toString()}`);
+                const data = await response.json();
+                brandListContainer.innerHTML = data.brands_html;
+            } catch (error) {
+                console.error('Error fetching brands:', error);
+                brandListContainer.innerHTML = '<p class="no-results">오류가 발생했습니다. 다시 시도해주세요.</p>';
+            } finally {
+                loader.style.display = 'none';
+                brandListContainer.style.opacity = '1';
+            }
+        }
+
+        searchInput.addEventListener('input', debounce((e) => {
+            currentQuery = e.target.value;
+            currentStartsWith = '';
+            updateBrandList();
+        }, 300));
+
+        categoryFilterGroup.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                e.preventDefault();
+                if (categoryFilterGroup.querySelector('.active')) {
+                    categoryFilterGroup.querySelector('.active').classList.remove('active');
+                }
+                e.target.classList.add('active');
+                currentCategory = e.target.dataset.category;
+                updateBrandList();
+            }
+        });
+        
+        const toggleButton = document.getElementById('alphabet-dropdown-toggle');
+        const dropdownMenu = document.getElementById('alphabet-dropdown-menu');
+        if (toggleButton && dropdownMenu) {
+            const dropdown = document.querySelector('.alphabet-dropdown');
+            toggleButton.addEventListener('click', (e) => { e.stopPropagation(); dropdownMenu.classList.toggle('show'); });
+            document.addEventListener('click', (e) => {
+                if (dropdownMenu.classList.contains('show') && !dropdown.contains(e.target)) dropdownMenu.classList.remove('show');
+            });
+            dropdownMenu.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A') {
+                    e.preventDefault();
+                    const url = new URL(e.target.href);
+                    currentStartsWith = url.searchParams.get('starts_with') || '';
+                    currentQuery = '';
+                    searchInput.value = '';
+                    dropdownMenu.classList.remove('show');
+                    updateBrandList();
+                }
+            });
+        }
+        
+        const modal = document.getElementById('quick-view-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalBrandName = document.getElementById('modal-brand-name');
+        const modalBrandDesc = document.getElementById('modal-brand-description');
+        const modalBrandLink = document.getElementById('modal-brand-link');
+        const reviewFormWrapper = document.getElementById('review-form-wrapper');
+        const reviewListWrapper = document.getElementById('review-list-wrapper');
+
+        const openModal = (brandId) => {
+            if (!modal) return;
+            modal.classList.add('active');
+            modalBrandName.textContent = '불러오는 중...';
+            modalBrandDesc.textContent = "정보를 불러오는 중...";
+            reviewFormWrapper.innerHTML = '';
+            reviewListWrapper.innerHTML = '<p>리뷰를 불러오는 중...</p>';
+            const url = `{% url 'store:brand_detail_api' 0 %}`.replace('0', brandId);
+            fetch(url).then(response => response.json()).then(data => {
+                modalBrandName.textContent = data.name;
+                modalBrandDesc.textContent = data.detailed_description;
+                modalBrandLink.href = data.link;
+                if (data.is_authenticated) {
+                    const userRating = data.user_review ? data.user_review.rating : 0;
+                    const userContent = data.user_review ? data.user_review.content : '';
+                    reviewFormWrapper.innerHTML = `
+                        <h4>리뷰 작성/수정</h4>
+                        <form id="review-form" onsubmit="submitReview(event, ${brandId})">
+                            <div class="star-rating">
+                                ${[5,4,3,2,1].map(i => `<input type="radio" id="star${i}" name="rating" value="${i}" ${userRating == i ? 'checked' : ''} required><label for="star${i}">★</label>`).join('')}
+                            </div>
+                            <textarea name="content" class="review-textarea" placeholder="리뷰를 남겨주세요...">${userContent}</textarea>
+                            <button type="submit" class="go-to-site-btn review-submit-btn">리뷰 등록</button>
+                        </form>`;
+                }
+                if (data.reviews && data.reviews.length > 0) {
+                    reviewListWrapper.innerHTML = `<div class="review-list">${data.reviews.map(review => `
+                        <div class="review-item">
+                            <strong>${review.user_username}</strong> - <span>${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</span>
+                            <p>${review.content}</p>
+                            <small>${review.created_at}</small>
+                        </div>`).join('')}</div>`;
+                } else {
+                    reviewListWrapper.innerHTML = '<p>아직 작성된 리뷰가 없습니다.</p>';
+                }
+            });
+        };
+        const closeModal = () => { if (modal) modal.classList.remove('active'); };
+
+        document.body.addEventListener('click', (e) => {
+            const paginationLink = e.target.closest('.store-pagination a');
+            const favoriteButton = e.target.closest('[data-action="toggle-favorite"]');
+            const quickViewButton = e.target.closest('.quick-view-btn');
+            const searchButton = e.target.closest('.search-btn-optimized');
+
+            if (paginationLink) {
+                e.preventDefault();
+                const url = new URL(paginationLink.href);
+                const page = url.searchParams.get('page');
+                updateBrandList(page);
+                return;
+            }
+            if (favoriteButton) {
+                e.preventDefault();
+                toggleFavorite(favoriteButton, favoriteButton.dataset.brandid);
+                return;
+            }
+            if (quickViewButton) {
+                e.preventDefault();
+                openModal(quickViewButton.dataset.brandid);
+                return;
+            }
+            if(searchButton){
+                e.preventDefault();
+                currentQuery = searchInput.value;
+                currentStartsWith = '';
+                updateBrandList();
+                return;
+            }
+        });
+        
+        if (modal) {
+            modalCloseBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+            document.addEventListener('keydown', (e) => { if (e.key === "Escape") closeModal(); });
+        }
+    });
+</script>
 {% endblock %}

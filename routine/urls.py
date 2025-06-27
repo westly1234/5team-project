@@ -19,8 +19,10 @@ urlpatterns = [
     path('edit/<int:routine_id>/', views.edit_routine_view, name='edit_routine'),
     # 예: /routine/delete/5/ -> 루틴 삭제
     path('delete/<int:routine_id>/', views.delete_routine_view, name='delete_routine'),
+    path('complete/<int:routine_id>/', views.workout_complete_view, name='complete_workout'),
     
     # API URLs
     path('api/exercises/', views.exercise_api, name='api_exercises'),
     path('api/youtube-search/', views.youtube_search_api, name='api_youtube_search'),
+    path('api/analyze/<int:routine_id>/', views.analyze_routine_api, name='api_analyze_routine'),
 ]

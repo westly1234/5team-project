@@ -1,4 +1,4 @@
-{% load static %}
+{% load static custom_translate i18n %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -188,11 +188,11 @@
         <div class="hero-main-content-wrapper">
             <div class="hero-container">
                 <div class="hero-text-content">
-                    <h1>4,000 개가 넘는 주요 조직이 HealthWise를 선택합니다</h1>
-                    <p>Support your team today with mindfulness, coaching, EAP, therapy, and psychiatry.</p>
+                    <h1> {% t '4,000 개가 넘는 주요 조직이 HealthWise를 선택합니다' %} </h1>
+                    <p> {% t 'Support your team today with mindfulness, coaching, EAP, therapy, and psychiatry.' %} </p>
                     <div class="hero-buttons">
-                        <a href="#" class="btn-demo">Request a demo</a>
-                        <a href="#" class="btn-learn-more">Learn more</a>
+                        <a href="#" class="btn-demo"> {% t 'Request a demo' %} </a>
+                        <a href="#" class="btn-learn-more"> {% t 'Learn more' %} </a>
                     </div>
                 </div>
                 <div class="hero-images-container">

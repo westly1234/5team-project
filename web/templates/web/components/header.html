@@ -1,4 +1,4 @@
-{% load static %}
+{% load static custom_translate i18n %}
 
 <style>
   /* 네비게이션 바 전체 스타일 */
@@ -221,10 +221,10 @@
         
         <ul class="navbar-nav nav-dropdown" data-app-modern-menu="true"> <!-- ms-auto 제거 또는 조정하여 메뉴 위치 변경 -->
           <li class="nav-item">
-            <a class="nav-link link text-black" href="#exercise-section">운동</a>
+            <a class="nav-link link text-black" href="#exercise-section"> {% t '운동' %} </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link link text-black" href="#meal-section">식단</a>
+            <a class="nav-link link text-black" href="#meal-section"> {% t '식단' %} </a>
           </li>
           <li class="nav-item">
             <a class="nav-link link text-black" href="#place-section">장소</a>

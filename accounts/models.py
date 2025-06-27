@@ -3,17 +3,25 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from achievements.models import UserAchievement
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='profile_pics/', default='default_avatar.png')
+    image = models.ImageField(upload_to='profile_pics/', default='profile_pics/avatar-default.jpeg')
     height = models.FloatField(null=True, blank=True)
     current_weight = models.FloatField(null=True, blank=True)
     target_weight = models.FloatField(null=True, blank=True)
     skeletal_muscle_mass = models.FloatField(null=True, blank=True)
     body_fat_mass = models.FloatField(null=True, blank=True)
-
+    active_title = models.ForeignKey(
+        UserAchievement,
+        on_delete=models.SET_NULL, # 칭호의 원본 업적이 삭제되어도 프로필은 유지
+        null=True,
+        blank=True,
+        related_name='activated_by_profile', # 역참조 이름 충돌 방지
+        help_text="사용자가 설정한 대표 칭호"
+    )
     # ✅ 체지방률 계산 프로퍼티 추가
     @property
     def body_fat_percentage(self):

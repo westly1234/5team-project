@@ -1,9 +1,11 @@
+{% load static custom_translate i18n %}
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>이메일 인증 완료</title>
+    <title> {% t '이메일 인증 완료' %} </title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -57,9 +59,9 @@
 </head>
 <body>
     <div class="activation-complete-container">
-        <h1>이메일 인증 완료!</h1>
-        <p>이메일 인증이 완료되었습니다. 이제 로그인할 수 있습니다.</p>
-        <a href="{% url 'accounts:login' %}" class="login-button">로그인 페이지로 이동</a>
+        <h1> {% t '이메일 인증 완료!' %} </h1>
+        <p> {% t '이메일 인증이 완료되었습니다. 이제 로그인할 수 있습니다.' %} </p>
+        <a href="{% url 'accounts:login' %}" class="login-button"> {% t '로그인 페이지로 이동' %} </a>
     </div>
 </body>
 </html>

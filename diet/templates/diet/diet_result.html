@@ -1,5 +1,5 @@
 {% extends 'web/dashboard_sliding_base.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}AI 식단 분석 디스플레이 - HealthWise{% endblock %}
 
@@ -42,7 +42,7 @@
     <!-- 1. 헤더 -->
     <header class="text-left mb-10 animate-slide-in-fade">
         <div class="border-l-4 border-[#4ecdc4] pl-4">
-            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">AI Biometric Display</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white"> {% t 'AI Biometric Display' %} </h1>
             <p class="text-md text-gray-400 mt-2">{{ meal.created_at|date:"Y.m.d" }} {{ meal.meal_time }} 식단 스캔 결과</p>
         </div>
     </header>
@@ -54,13 +54,13 @@
             <!-- 좌측: 입력 정보 (1칸 차지) -->
             <div class="lg:col-span-1 space-y-8">
                 <div class="data-pod animate-slide-in-fade delay-100">
-                    <h3 class="text-lg font-bold text-white mb-4">분석 대상</h3>
+                    <h3 class="text-lg font-bold text-white mb-4"> {% t '분석 대상' %} </h3>
                     {% if meal.image %}
                         <div class="mb-4 rounded-lg overflow-hidden border border-white/10">
                             <img src="{{ meal.image.url }}" alt="음식 사진" class="w-full h-auto object-cover">
                         </div>
                     {% endif %}
-                    <h4 class="text-md font-semibold text-white mb-2">인식된 항목</h4>
+                    <h4 class="text-md font-semibold text-white mb-2"> {% t '인식된 항목' %} </h4>
                     <ul class="text-gray-300 space-y-1 text-sm">
                         {% for food in meal.analysis_result.foods %}
                         <li class="flex justify-between items-center">
@@ -68,7 +68,7 @@
                             <span class="font-mono text-gray-400">{{ food.calories }}</span>
                         </li>
                         {% empty %}
-                        <li class="text-gray-500">인식된 음식이 없습니다.</li>
+                        <li class="text-gray-500"> {% t '인식된 음식이 없습니다.' %} </li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -78,23 +78,23 @@
             <div class="lg:col-span-2 space-y-8">
                 <!-- 핵심 지표 -->
                 <div class="data-pod animate-slide-in-fade delay-200 glow-accent">
-                    <h3 class="text-xl font-bold text-white mb-6">핵심 지표 (Key Metrics)</h3>
+                    <h3 class="text-xl font-bold text-white mb-6"> {% t '핵심 지표 (Key Metrics)' %} </h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {% with nutrition=meal.analysis_result.total_nutrition %}
                         <div class="text-center p-2">
-                            <p class="text-sm text-gray-400 mb-1">총 칼로리</p>
+                            <p class="text-sm text-gray-400 mb-1"> {% t '총 칼로리' %} </p>
                             <p class="text-3xl font-bold text-[#65e9dd] tracking-tighter"><span class="counter" data-target="{{ nutrition.calories|default:'0' }}">0</span><span class="text-xl ml-1">kcal</span></p>
                         </div>
                         <div class="text-center p-2">
-                            <p class="text-sm text-gray-400 mb-1">탄수화물</p>
+                            <p class="text-sm text-gray-400 mb-1"> {% t '탄수화물' %} </p>
                             <p class="text-3xl font-bold text-blue-400 tracking-tighter"><span class="counter" data-target="{{ nutrition.carbohydrate|default:'0' }}">0</span><span class="text-xl ml-1">g</span></p>
                         </div>
                         <div class="text-center p-2">
-                            <p class="text-sm text-gray-400 mb-1">단백질</p>
+                            <p class="text-sm text-gray-400 mb-1"> {% t '단백질' %} </p>
                             <p class="text-3xl font-bold text-red-400 tracking-tighter"><span class="counter" data-target="{{ nutrition.protein|default:'0' }}">0</span><span class="text-xl ml-1">g</span></p>
                         </div>
                         <div class="text-center p-2">
-                            <p class="text-sm text-gray-400 mb-1">지방</p>
+                            <p class="text-sm text-gray-400 mb-1"> {% t '지방' %} </p>
                             <p class="text-3xl font-bold text-yellow-400 tracking-tighter"><span class="counter" data-target="{{ nutrition.fat|default:'0' }}">0</span><span class="text-xl ml-1">g</span></p>
                         </div>
                         {% endwith %}
@@ -104,21 +104,19 @@
                 <!-- 영양소 비율 차트 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="data-pod animate-slide-in-fade delay-300">
-                        <h3 class="text-xl font-bold text-white mb-4">영양소 비율</h3>
+                        <h3 class="text-xl font-bold text-white mb-4"> {% t '영양소 비율' %} </h3>
                         <div class="w-full h-56">
                             <canvas id="macros-ratio-chart"></canvas>
                         </div>
                     </div>
                     <!-- AI 종합 소견 -->
                     <div class="data-pod animate-slide-in-fade delay-400 flex flex-col">
-                        <h3 class="text-xl font-bold text-white mb-3">AI 종합 소견</h3>
+                        <h3 class="text-xl font-bold text-white mb-3"> {% t 'AI 종합 소견' %} </h3>
                         <p class="text-gray-300 leading-relaxed flex-grow">
                             {{ meal.analysis_result.feedback|default:"피드백을 생성하는 데 실패했습니다." }}
                         </p>
                         <a href="{% url 'diet:diet_analysis' %}" class="mt-6 inline-flex items-center justify-center text-gray-300 hover:text-white bg-gray-700/50 hover:bg-gray-700/80 py-2.5 px-5 rounded-lg transition-colors w-full">
-                            <i class="bi bi-arrow-left mr-2"></i>
-                            다른 식단 분석하기
-                        </a>
+                            <i class="bi bi-arrow-left mr-2"></i> {% t '다른 식단 분석하기' %} </a>
                     </div>
                 </div>
             </div>
@@ -128,12 +126,10 @@
         <div class="flex-grow flex items-center justify-center">
              <div class="text-center data-pod animate-slide-in-fade max-w-lg glow-accent">
                 <i class="bi bi-exclamation-triangle-fill text-6xl text-red-500 mx-auto mb-6"></i>
-                <h3 class="text-2xl font-bold text-white">분석 시스템 오류</h3>
+                <h3 class="text-2xl font-bold text-white"> {% t '분석 시스템 오류' %} </h3>
                 <p class="text-gray-400 mt-2 mb-8">{{ meal.analysis_result.error|default:"AI 서버와 통신하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." }}</p>
                 <a href="{% url 'diet:diet_analysis' %}" class="inline-flex items-center text-gray-300 hover:text-white bg-gray-700/80 hover:bg-gray-600 py-2 px-5 rounded-lg transition-colors">
-                    <i class="bi bi-arrow-left mr-2"></i>
-                    다시 시도하기
-                </a>
+                    <i class="bi bi-arrow-left mr-2"></i> {% t '다시 시도하기' %} </a>
             </div>
         </div>
     {% endif %}

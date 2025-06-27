@@ -1,5 +1,5 @@
 {% extends 'web/dashboard_sliding_base.html' %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}AI 운동 루틴 생성{% endblock %}
 
@@ -19,7 +19,7 @@
     .muscle-button:hover { filter: grayscale(50%); opacity: 0.9; border-color: rgba(110, 231, 183, 0.5); }
     .muscle-button.active { filter: grayscale(0%); opacity: 1; background-color: #10B981; border-color: #10B981; }
     .muscle-button.active .button-text { color: white; }
-    .cart-input { background-color: #111827; border: 1px solid #4b5563; color: white; text-align: center; padding: 0.25rem; border-radius: 0.375rem; width: 100%; font-size: 0.875rem; -moz-appearance: textfield; }
+    .cart-input { background-color: #111827; border: 1px solid #4b5563; color: white; text-align: center; padding: 0.25rem; border-radius: 0.375rem; width: 100%; font-size: 0.875rem; -moz-appearance: textfield; appearance: textfield; }
     .cart-input::-webkit-outer-spin-button, .cart-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .cart-input:focus { 
         outline: none; 
@@ -60,43 +60,43 @@
         <!-- 왼쪽: 루틴 생성 패널 -->
         <div class="lg:col-span-2 bg-gray-800/50 backdrop-blur-sm border border-white/10 p-6 rounded-2xl shadow-lg flex flex-col gap-6 fade-in-up">
             <div>
-                <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-white"><i class="bi bi-robot text-blue-400"></i> AI 추천 루틴</h3>
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-white"><i class="bi bi-robot text-blue-400"></i> {% t 'AI 추천 루틴' %} </h3>
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div>
-                        <label for="part" class="block text-sm font-medium text-gray-400 mb-1">운동 부위</label>
+                        <label for="part" class="block text-sm font-medium text-gray-400 mb-1"> {% t '운동 부위' %} </label>
                         <select id="part" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-blue-500 focus:border-blue-500">
-                            <option>하체</option><option>등</option><option>가슴</option><option>어깨</option><option>팔</option><option>복근</option>
+                            <option> {% t '하체' %} </option><option> {% t '등' %} </option><option> {% t '가슴' %} </option><option> {% t '어깨' %} </option><option>팔</option><option> {% t '복근' %} </option>
                         </select>
                     </div>
                     <div>
-                        <label for="level" class="block text-sm font-medium text-gray-400 mb-1">운동 난이도</label>
+                        <label for="level" class="block text-sm font-medium text-gray-400 mb-1"> {% t '운동 난이도' %} </label>
                         <select id="level" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-blue-500 focus:border-blue-500">
-                            <option>초급</option><option>중급</option><option>고급</option>
+                            <option> {% t '초급' %} </option><option> {% t '중급' %} </option><option> {% t '고급' %} </option>
                         </select>
                     </div>
                 </div>
-                <button onclick="goToGptPlan()" class="mt-4 w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold py-2.5 rounded-lg transition-all duration-300 hover:scale-105">GPT로 추천 받기</button>
+                <button onclick="goToGptPlan()" class="mt-4 w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold py-2.5 rounded-lg transition-all duration-300 hover:scale-105"> {% t 'GPT로 추천 받기' %} </button>
             </div>
             <hr class="border-gray-700">
             <div>
-                <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-white"><i class="bi bi-cart-plus-fill text-green-400"></i> 내 루틴 (장바구니)</h3>
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-white"><i class="bi bi-cart-plus-fill text-green-400"></i> {% t '내 루틴 (장바구니)' %} </h3>
                 <div id="customCart" class="space-y-3 bg-black/20 p-3 rounded-lg min-h-[150px]"></div>
-                <button onclick="submitCustomPlan()" class="mt-4 w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-2.5 rounded-lg transition-all duration-300 hover:scale-105">이 조합으로 내 루틴 만들기</button>
+                <button onclick="submitCustomPlan()" class="mt-4 w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold py-2.5 rounded-lg transition-all duration-300 hover:scale-105"> {% t '이 조합으로 내 루틴 만들기' %} </button>
             </div>
         </div>
 
         <!-- 오른쪽: 운동 라이브러리 -->
         <div class="lg:col-span-3 bg-gray-800/30 backdrop-blur-sm border border-white/10 p-6 rounded-2xl shadow-lg flex flex-col fade-in-up" style="animation-delay: 0.15s;">
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-400 mb-2">운동 라이브러리</label>
+                <label class="block text-sm font-medium text-gray-400 mb-2"> {% t '운동 라이브러리' %} </label>
                 <div id="muscle-group-buttons" class="grid grid-cols-4 md:grid-cols-7 gap-2">
-                     <button onclick="loadExercises('하체', this)" class="group muscle-button">🦵<span class="button-text">하체</span></button>
-                     <button onclick="loadExercises('등', this)" class="group muscle-button">💪<span class="button-text">등</span></button>
-                     <button onclick="loadExercises('가슴', this)" class="group muscle-button">🔥<span class="button-text">가슴</span></button>
-                     <button onclick="loadExercises('어깨', this)" class="group muscle-button">🏋️<span class="button-text">어깨</span></button>
+                     <button onclick="loadExercises('하체', this)" class="group muscle-button">🦵<span class="button-text"> {% t '하체' %} </span></button>
+                     <button onclick="loadExercises('등', this)" class="group muscle-button">💪<span class="button-text"> {% t '등' %} </span></button>
+                     <button onclick="loadExercises('가슴', this)" class="group muscle-button">🔥<span class="button-text"> {% t '가슴' %} </span></button>
+                     <button onclick="loadExercises('어깨', this)" class="group muscle-button">🏋️<span class="button-text"> {% t '어깨' %} </span></button>
                      <button onclick="loadExercises('팔', this)" class="group muscle-button">🦾<span class="button-text">팔</span></button>
-                     <button onclick="loadExercises('복근', this)" class="group muscle-button">🍫<span class="button-text">복근</span></button>
-                     <button onclick="loadExercises('유산소', this)" class="group muscle-button">🏃<span class="button-text">유산소</span></button>
+                     <button onclick="loadExercises('복근', this)" class="group muscle-button">🍫<span class="button-text"> {% t '복근' %} </span></button>
+                     <button onclick="loadExercises('유산소', this)" class="group muscle-button">🏃<span class="button-text"> {% t '유산소' %} </span></button>
                 </div>
             </div>
             <div class="flex items-center gap-2 mb-3">
@@ -104,7 +104,7 @@
                 <button id="search-button" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"><i class="bi bi-search"></i></button>
             </div>
             <div id="exerciseList" class="flex-grow bg-black/20 p-3 rounded-lg custom-scrollbar overflow-y-auto min-h-0">
-                <div class="flex items-center justify-center h-full text-gray-500">운동 부위를 선택하세요.</div>
+                <div class="flex items-center justify-center h-full text-gray-500"> {% t '운동 부위를 선택하세요.' %} </div>
             </div>
             <div id="pagination-controls" class="flex justify-center items-center mt-4 space-x-2"></div>
         </div>
@@ -116,7 +116,7 @@
 <div id="exercise-modal" class="modal fixed inset-0 flex items-center justify-center p-4 hidden z-50">
     <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col animate-pop-in">
         <div class="flex items-center justify-between p-4 border-b border-gray-700">
-            <h3 id="modal-title" class="text-xl font-bold text-white">운동 상세 정보</h3>
+            <h3 id="modal-title" class="text-xl font-bold text-white"> {% t '운동 상세 정보' %} </h3>
             <button id="modal-close-button" class="text-gray-400 hover:text-white text-2xl">×</button>
         </div>
         <div class="p-6 flex-grow overflow-y-auto custom-scrollbar">
@@ -126,7 +126,7 @@
                     <img id="modal-gif" src="" alt="운동 GIF" class="w-full rounded-lg border border-gray-600">
                 </div>
                 <div>
-                    <h4 class="text-lg font-semibold text-blue-400 mb-2">참고 영상 (YouTube)</h4>
+                    <h4 class="text-lg font-semibold text-blue-400 mb-2"> {% t '참고 영상 (YouTube)' %} </h4>
                     <div id="modal-youtube-container" class="space-y-3"></div>
                 </div>
             </div>
@@ -198,9 +198,9 @@
         
         let inputFieldsHtml = '';
         if (exercise_type === 'cardio') {
-            inputFieldsHtml = `<div class="col-span-3"><label class="block text-xs text-gray-400 mb-1">운동 시간</label><select class="cart-select duration-select w-full"><option value="10">10분</option><option value="15">15분</option><option value="20">20분</option><option value="25">25분</option><option value="30" selected>30분</option><option value="40">40분</option><option value="50">50분</option><option value="60">60분</option></select></div>`;
+            inputFieldsHtml = `<div class="col-span-3"><label class="block text-xs text-gray-400 mb-1"> {% t '운동 시간' %} </label><select class="cart-select duration-select w-full"><option value="10">10분</option><option value="15">15분</option><option value="20">20분</option><option value="25">25분</option><option value="30" selected>30분</option><option value="40">40분</option><option value="50">50분</option><option value="60">60분</option></select></div>`;
         } else {
-            inputFieldsHtml = `<div><label class="block text-xs text-gray-400 mb-1">세트</label><input type="number" class="cart-input sets-input w-full" value="3" min="1"></div><div><label class="block text-xs text-gray-400 mb-1">반복</label><input type="number" class="cart-input reps-input w-full" value="12" min="1"></div><div><label class="block text-xs text-gray-400 mb-1">무게(kg)</label><input type="number" class="cart-input weight-input w-full" value="20" min="0"></div>`;
+            inputFieldsHtml = `<div><label class="block text-xs text-gray-400 mb-1"> {% t '세트' %} </label><input type="number" class="cart-input sets-input w-full" value="3" min="1"></div><div><label class="block text-xs text-gray-400 mb-1"> {% t '반복' %} </label><input type="number" class="cart-input reps-input w-full" value="12" min="1"></div><div><label class="block text-xs text-gray-400 mb-1"> {% t '무게(kg)' %} </label><input type="number" class="cart-input weight-input w-full" value="20" min="0"></div>`;
         }
 
         li.innerHTML = `<div class="flex justify-between items-start"><div class="flex items-center gap-3"><img src="${gif_url}" alt="${name}" class="w-12 h-12 rounded-md border border-gray-600 object-cover" /><div><div class="font-semibold text-white">${name}</div><div class="text-xs text-gray-400">${muscle_group}</div></div></div><button onclick="removeFromCart(this, '${name.replace(/'/g, "\\'")}')" class="text-gray-500 hover:text-red-400 text-lg leading-none">×</button></div><div class="grid grid-cols-3 gap-2 mt-3">${inputFieldsHtml}</div>`;
@@ -255,13 +255,14 @@
         renderExerciseList(filtered);
     }
     
-    function renderExerciseList(exercises) {
+   function renderExerciseList(exercises) {
         const listContainer = document.getElementById("exerciseList");
         const paginationContainer = document.getElementById("pagination-controls");
         listContainer.innerHTML = "";
         paginationContainer.innerHTML = "";
+        
         if (exercises.length === 0) {
-            listContainer.innerHTML = "<div class='flex items-center justify-center h-full text-gray-500'>일치하는 운동이 없습니다.</div>";
+            listContainer.innerHTML = "<div class='flex items-center justify-center h-full text-gray-500'> {% t '일치하는 운동이 없습니다.' %} </div>";
             return;
         }
         
@@ -274,7 +275,8 @@
         paginatedItems.forEach(ex => {
             const isAdded = cartNames.has(ex.name);
             const item = document.createElement("div");
-            item.className = `exercise-item flex items-center gap-3 p-2 rounded-md transition-colors hover:bg-gray-700/50 ${isAdded ? 'added' : 'clickable'}`;
+            // [수정됨] 전체 아이템의 클릭 액션은 isAdded가 아닐 때만 적용
+            item.className = `exercise-item flex items-center gap-4 p-3 rounded-lg transition-colors hover:bg-gray-700/50 ${isAdded ? 'added' : 'cursor-pointer'}`;
             item.dataset.name = ex.name;
             const escapedName = ex.name.replace(/'/g, "\\'");
             
@@ -282,15 +284,30 @@
                 item.setAttribute("onclick", `addToCart('${escapedName}', '${ex.muscle_group}', '${ex.gif_url}', '${ex.exercise_type}')`);
             }
             
-            item.innerHTML = `
-                <img src="${ex.gif_url}" alt="${ex.name}" class="w-12 h-12 object-cover rounded border border-gray-600 flex-shrink-0" />
-                <span class="exercise-name text-gray-300 flex-grow">${ex.name}</span>
-                <div class="flex items-center gap-3">
-                    <button onclick="showExerciseDetails(event, '${escapedName}')" class="text-gray-400 hover:text-blue-400 transition-colors" title="상세보기">
-                        <i class="bi bi-info-circle-fill text-xl"></i>
+            // [수정됨] 버튼과 상태 표시를 위한 HTML 구조 개선
+            const actionsHtml = `
+                <div class="flex items-center gap-2 ml-auto">
+                    <button onclick="showExerciseDetails(event, '${escapedName}')" 
+                            class="bg-gray-700 text-cyan-300 hover:bg-gray-600 hover:text-cyan-200 transition-colors px-3 py-1.5 rounded-md text-xs font-semibold" 
+                            title="자세히 보기">
+                        운동 자세 보기
                     </button>
-                    <i class="added-icon bi bi-check-circle-fill text-lime-400 text-xl ${isAdded ? '' : 'hidden'}" title="추가됨"></i>
+                    ${isAdded ? `
+                        <div class="flex items-center gap-1.5 text-emerald-400 text-xs font-bold px-3 py-1.5 bg-emerald-900/50 rounded-md">
+                            <i class="bi bi-check-circle"></i>
+                            <span> {% t '추가됨' %} </span>
+                        </div>
+                    ` : ''}
                 </div>
+            `;
+
+            item.innerHTML = `
+                <img src="${ex.gif_url}" alt="${ex.name}" class="w-14 h-14 object-cover rounded-md border-2 border-gray-600 flex-shrink-0" />
+                <div class="flex-grow">
+                    <span class="exercise-name text-gray-200 font-semibold">${ex.name}</span>
+                    <p class="text-xs text-gray-400">${ex.muscle_group}</p>
+                </div>
+                ${actionsHtml}
             `;
             listContainer.appendChild(item);
         });
@@ -337,7 +354,7 @@
         document.body.classList.add('modal-open');
         modal.classList.remove('hidden');
         modalBackdrop.classList.remove('hidden');
-        modalYoutubeContainer.innerHTML = `<div class="text-gray-400 text-center animate-pulse">YouTube 영상 검색 중...</div>`;
+        modalYoutubeContainer.innerHTML = `<div class="text-gray-400 text-center animate-pulse"> {% t 'YouTube 영상 검색 중...' %} </div>`;
 
         try {
             const searchQuery = encodeURIComponent(exercise.name + " 운동");
@@ -360,11 +377,11 @@
                     modalYoutubeContainer.appendChild(videoLink);
                 });
             } else {
-                modalYoutubeContainer.innerHTML = `<div class="text-gray-500 text-center">관련 영상을 찾을 수 없습니다.</div>`;
+                modalYoutubeContainer.innerHTML = `<div class="text-gray-500 text-center"> {% t '관련 영상을 찾을 수 없습니다.' %} </div>`;
             }
         } catch (error) {
             console.error("YouTube 영상 검색 실패:", error);
-            modalYoutubeContainer.innerHTML = `<div class="text-red-400 text-center">영상을 불러오는 중 오류가 발생했습니다.</div>`;
+            modalYoutubeContainer.innerHTML = `<div class="text-red-400 text-center"> {% t '영상을 불러오는 중 오류가 발생했습니다.' %} </div>`;
         }
     }
 

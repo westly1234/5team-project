@@ -16,4 +16,6 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
     path('activate/<uidb64>/<token>/', views.activate, name='activate'),
     path('profile/edit/', views.profile_edit, name='profile_edit'),
+    path('my-titles/', views.get_my_titles, name='my_titles'),
+    path('set-active-title/', views.set_my_active_title, name='set_active_title'),
 ]

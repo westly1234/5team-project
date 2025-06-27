@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.timezone import now # created_at 기본값 설정을 위해 추가
+from django.conf import settings
+
 
 class ChatConversation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -21,3 +23,10 @@ class ChatConversation(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.summary_title or '제목 없음'}"
+    
+class ChatbotInteractionLog(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} at {self.created_at}"

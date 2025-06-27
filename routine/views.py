@@ -12,6 +12,97 @@ import json
 import re
 import requests
 import random
+from datetime import date, timedelta
+from django.utils import timezone
+
+# ✅ 1. 업적 서비스 및 관련 모델 임포트
+from achievements.services import check_and_award_achievement
+from .models import WorkoutLog # WorkoutLog 모델도 사용하므로 명시적으로 임포트
+
+# ==============================================================================
+# ✨ 업적 트리거 함수 섹션 ✨
+# (두 번째 파일에서 가져온 핵심 로직)
+# ==============================================================================
+
+def trigger_routine_creation_achievements(request, routine, routine_exercises):
+    """루틴이 성공적으로 생성되었을 때 달성 가능한 업적을 확인합니다."""
+    user = request.user
+
+    # --- 루틴 생성 기본 업적 ---
+    check_and_award_achievement(request, user, 'first_routine')
+
+    routine_count = Routine.objects.filter(user=user).count()
+    if routine_count >= 3:
+        check_and_award_achievement(request, user, 'routine_collector_bronze')
+    if routine_count >= 10:
+        check_and_award_achievement(request, user, 'routine_collector_silver')
+
+    # --- 루틴 구성 관련 업적 ---
+    if len(routine_exercises) >= 5:
+        check_and_award_achievement(request, user, 'comprehensive_routine')
+
+    muscle_groups = {re.exercise.muscle_group for re in routine_exercises if re.exercise.muscle_group}
+    if {'가슴', '등', '어깨'}.intersection(muscle_groups):
+        check_and_award_achievement(request, user, 'upper_body_focus')
+    if '하체' in muscle_groups:
+        check_and_award_achievement(request, user, 'lower_body_focus')
+    if '코어' in muscle_groups or '복근' in muscle_groups:
+        check_and_award_achievement(request, user, 'core_focus')
+        
+    exercise_types = {re.exercise.exercise_type for re in routine_exercises}
+    if 'strength' in exercise_types and 'cardio' in exercise_types:
+        check_and_award_achievement(request, user, 'hybrid_routine')
+    
+    exercise_names = {re.exercise.name for re in routine_exercises}
+    if {'스쿼트', '벤치프레스', '데드리프트'}.issubset(exercise_names):
+        check_and_award_achievement(request, user, 'big_3_trainee')
+    
+    total_cardio_duration = sum(re.duration_minutes for re in routine_exercises if re.exercise.exercise_type == 'cardio' and re.duration_minutes)
+    if total_cardio_duration >= 60:
+        check_and_award_achievement(request, user, 'marathon_heart')
+
+
+def trigger_workout_completion_achievements(request, workout_log):
+    """운동을 '완료'했을 때 달성 가능한 업적을 확인합니다."""
+    user = request.user
+    today = timezone.now().date()
+    
+    check_and_award_achievement(request, user, 'first_workout_done')
+    
+    workout_count = WorkoutLog.objects.filter(user=user).count()
+    if workout_count >= 1: check_and_award_achievement(request, user, 'workout_log_1')
+    if workout_count >= 5: check_and_award_achievement(request, user, 'workout_log_5')
+    if workout_count >= 10: check_and_award_achievement(request, user, 'workout_log_10')
+    if workout_count >= 30: check_and_award_achievement(request, user, 'workout_log_30')
+    if workout_count >= 50: check_and_award_achievement(request, user, 'workout_log_50')
+    if workout_count >= 70: check_and_award_achievement(request, user, 'workout_log_70')
+    if workout_count >= 100: check_and_award_achievement(request, user, 'workout_log_100')
+    if workout_count >= 300: check_and_award_achievement(request, user, 'workout_log_10')
+    if workout_count >= 365: check_and_award_achievement(request, user, 'workout_log_365')
+
+    # 연속 운동 (3일, 7일 등)
+    if all(WorkoutLog.objects.filter(user=user, completed_at__date=today - timedelta(days=i)).exists() for i in range(1, 4)):
+        check_and_award_achievement(request, user, 'workout_streak_3')
+    if all(WorkoutLog.objects.filter(user=user, completed_at__date=today - timedelta(days=i)).exists() for i in range(1, 8)):
+        check_and_award_achievement(request, user, 'workout_streak_7')
+
+    # 히든 업적 (시간, 특정일)
+    hour = workout_log.completed_at.astimezone(timezone.get_current_timezone()).hour
+    if 2 <= hour < 5: check_and_award_achievement(request, user, 'night_owl_workout')
+    if 5 <= hour < 7: check_and_award_achievement(request, user, 'early_bird_workout')
+    
+    if today.month == 12 and today.day == 25: check_and_award_achievement(request, user, 'xmas_workout')
+    if today.month == 1 and today.day == 1: check_and_award_achievement(request, user, 'new_year_workout')
+    
+    if workout_log.routine:
+        exercise_types = {re.exercise.exercise_type for re in workout_log.routine.routineexercise_set.all()}
+        if 'cardio' in exercise_types: check_and_award_achievement(request, user, 'first_cardio')
+        if 'strength' in exercise_types: check_and_award_achievement(request, user, 'first_strength')
+
+
+# ==============================================================================
+# ✨ Django 뷰 함수 섹션 (기존 첫 번째 코드 기반) ✨
+# ==============================================================================
 
 # 1. 메인 루틴 선택 페이지
 @login_required
@@ -21,29 +112,26 @@ def routine_select_view(request):
 
 # 유틸리티 함수
 def parse_number(value):
-    # GPT 응답 등에서 숫자만 안정적으로 추출
     match = re.findall(r'\d+', str(value))
     if not match: return 0
     elif len(match) == 1: return int(match[0])
     else: return (int(match[0]) + int(match[1])) // 2
 
-# 2. GPT 기반 추천 루틴 생성
-import random
-
-# 2. GPT 기반 추천 루틴 생성 (무게 보정 기능 추가)
+# 2. GPT 기반 추천 루틴 생성 (업적 트리거 추가)
 @login_required
 def gpt_plan_view(request):
+    # (GPT 호출 및 파싱 로직은 기존 코드와 동일)
     level = request.GET.get('level', '초급')
     part = request.GET.get('part', '하체')
     
     available_exercises = list(Exercise.objects.filter(muscle_group=part))
     if not available_exercises:
-        context = {
-            'routine_title': "루틴 생성 불가", 'routine': [],
-            'error': f"'{part}' 부위에 해당하는 운동이 데이터베이스에 등록되어 있지 않습니다. 관리자에게 문의하세요.",
-            'active_menu': 'routine'
-        }
-        return render(request, 'routine/routine_plan_with_details.html', context)
+            context = {
+                'routine_title': "루틴 생성 불가", 'routine': [],
+                'error': f"'{part}' 부위에 해당하는 운동이 데이터베이스에 등록되어 있지 않습니다. 관리자에게 문의하세요.",
+                'active_menu': 'routine'
+            }
+            return render(request, 'routine/routine_plan_with_details.html', context)
 
     exercise_names_str = ", ".join([ex.name for ex in available_exercises])
     client = OpenAI(api_key=settings.OPENAI_API_KEY)
@@ -147,24 +235,32 @@ def gpt_plan_view(request):
             'active_menu': 'routine'
         }
         return render(request, 'routine/routine_plan_with_details.html', context)
-
-    # --- DB 저장 및 결과 페이지 렌더링 (기존과 동일) ---
     try:
         new_routine = Routine.objects.create(user=request.user, name=f"AI 추천 루틴: {part} ({level})")
         
         routine_details_for_template = []
+        new_routine_exercises = [] # ✅ 업적 확인을 위해 생성된 RoutineExercise 객체를 담을 리스트
+
         for item in final_valid_exercises:
-            RoutineExercise.objects.create(
+            # DB에 RoutineExercise 생성 후, 그 객체를 변수에 저장
+            re_obj = RoutineExercise.objects.create(
                 routine=new_routine, exercise=item['exercise'],
                 sets=item['sets'], reps=item['reps'], weight=item['weight'],
                 description=item['description'], precautions=item['precautions']
             )
+            new_routine_exercises.append(re_obj) # ✅ 리스트에 추가
+
             routine_details_for_template.append({
                 'name': item['exercise'].name, 'muscle_group': item['exercise'].muscle_group,
                 'gif_url': item['exercise'].gif_url, 'exercise_type': item['exercise'].exercise_type,
                 'sets': item['sets'], 'reps': item['reps'], 'weight': item['weight'],
                 'description': item['description'], 'precautions': item['precautions']
             })
+
+        # ✅ 루틴과 운동 목록이 모두 성공적으로 생성된 후 업적 트리거 호출
+        if new_routine and new_routine_exercises:
+            trigger_routine_creation_achievements(request, new_routine, new_routine_exercises)
+            check_and_award_achievement(request, request.user, 'ai_trainer') # AI 트레이너 업적
 
         messages.success(request, f"'{new_routine.name}' 루틴이 성공적으로 생성되었습니다!")
         context = {
@@ -181,7 +277,7 @@ def gpt_plan_view(request):
         }
         return render(request, 'routine/routine_plan_with_details.html', context)
 
-# 3. 사용자가 직접 구성한 루틴 생성
+# 3. 사용자가 직접 구성한 루틴 생성 (업적 트리거 추가)
 @login_required
 def custom_plan_view(request):
     exercises_json = request.GET.get('exercises', '[]')
@@ -193,20 +289,26 @@ def custom_plan_view(request):
     if not exercise_list: return redirect('routine:select')
     
     new_routine = Routine.objects.create(user=request.user, name=f"{request.user.username}님의 맞춤 루틴")
-    
+    new_routine_exercises = [] # ✅ 업적 확인용 리스트
+
     for item in exercise_list:
         exercise = get_object_or_404(Exercise, name=item['name'])
         if exercise.exercise_type == 'cardio':
-            RoutineExercise.objects.create(
+            re_obj = RoutineExercise.objects.create(
                 routine=new_routine, exercise=exercise, duration_minutes=int(item.get('duration', 0)),
                 description=exercise.description, precautions=exercise.precautions
             )
         else:
-            RoutineExercise.objects.create(
+            re_obj = RoutineExercise.objects.create(
                 routine=new_routine, exercise=exercise,
                 sets=int(item.get('sets', 0)), reps=int(item.get('reps', 0)), weight=int(item.get('weight', 0)),
                 description=exercise.description, precautions=exercise.precautions
             )
+        new_routine_exercises.append(re_obj) # ✅ 생성된 객체 추가
+
+    # ✅ 루틴과 운동 목록이 모두 성공적으로 생성된 후 업적 트리거 호출
+    if new_routine and new_routine_exercises:
+        trigger_routine_creation_achievements(request, new_routine, new_routine_exercises)
 
     messages.success(request, f"'{new_routine.name}' 루틴이 성공적으로 생성되었습니다!")
     return redirect('routine:routine_plan_detail', routine_id=new_routine.id)
@@ -263,7 +365,6 @@ def edit_routine_view(request, routine_id):
             messages.error(request, "루틴에는 최소 하나 이상의 운동이 포함되어야 합니다.")
             return redirect('routine:routine_plan_detail', routine_id=routine.id)
 
-        # 기존 운동 모두 삭제 후 새로 추가 (가장 안정적인 방식)
         routine.routineexercise_set.all().delete()
 
         for item in exercises_data:
@@ -301,7 +402,28 @@ def delete_routine_view(request, routine_id):
     messages.success(request, f"'{routine_name}' 루틴이 삭제되었습니다.")
     return redirect('routine:my_routines')
 
-# 8. 운동 목록 API
+
+# ✅ 8. '운동 완료'를 처리하는 새로운 뷰 추가
+@require_POST
+@login_required
+def workout_complete_view(request, routine_id): # 함수 이름을 URL 설정과 일치시킵니다.
+    """'이 루틴 완료하기' 버튼을 눌렀을 때 호출되어 운동 기록을 남기고 업적을 확인합니다."""
+    routine = get_object_or_404(Routine, id=routine_id, user=request.user)
+    
+    # 운동 완료 기록(WorkoutLog) 생성
+    # user와 routine을 명시적으로 전달합니다.
+    workout_log = WorkoutLog.objects.create(user=request.user, routine=routine, completed_at=timezone.now())
+    
+    # 운동 완료 관련 업적 트리거 함수가 있다면 호출합니다.
+    # 이 함수는 request와 workout_log 객체를 인자로 받습니다.
+    if callable(trigger_workout_completion_achievements):
+        trigger_workout_completion_achievements(request, workout_log)
+    
+    messages.success(request, f"'{routine.name}' 운동을 완료했습니다! 오늘도 수고하셨습니다.")
+    return redirect('routine:my_routines') # 완료 후 내 루틴 목록으로 이동
+
+
+# 9. 운동 목록 API
 def exercise_api(request):
     group = request.GET.get('muscle_group')
     if not group: return JsonResponse({"error": "muscle_group 파라미터가 필요합니다."}, status=400)
@@ -310,12 +432,12 @@ def exercise_api(request):
     data = {"exercises": list(exercises.values('name', 'muscle_group', 'gif_url', 'exercise_type'))}
     return JsonResponse(data)
 
-# 9. 유튜브 검색 API
+# 10. 유튜브 검색 API
 def youtube_search_api(request):
     query = request.GET.get('q')
     if not query: return JsonResponse({'error': '검색어(q)가 필요합니다.'}, status=400)
     api_key = getattr(settings, 'YOUTUBE_API_KEY', None)
-    if not api_key: return JsonResponse({'videos': []}) # 키 없으면 빈 값 반환
+    if not api_key: return JsonResponse({'videos': []})
 
     try:
         response = requests.get('https://www.googleapis.com/youtube/v3/search',
@@ -329,3 +451,60 @@ def youtube_search_api(request):
         return JsonResponse({'videos': videos})
     except requests.exceptions.RequestException as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@require_POST
+@login_required
+def analyze_routine_api(request, routine_id):
+    """
+    POST 요청으로 받은 루틴 데이터를 AI에게 보내 분석을 요청하고,
+    그 결과를 JSON으로 반환합니다.
+    """
+    # 현재 보고 있는 루틴이 사용자의 것인지 다시 한번 확인 (보안 강화)
+    get_object_or_404(Routine, id=routine_id, user=request.user)
+    
+    try:
+        # 프론트엔드에서 보낸 JSON 데이터 파싱
+        exercises_data = json.loads(request.body)
+        if not exercises_data:
+            return JsonResponse({'error': '분석할 운동 데이터가 없습니다.'}, status=400)
+
+        # AI에게 전달할 텍스트 형식으로 루틴 데이터 변환
+        routine_text = ""
+        for i, ex in enumerate(exercises_data):
+            if ex.get('duration_minutes'): # 유산소 운동
+                routine_text += f"{i+1}. {ex['name']}: {ex['duration_minutes']}분\n"
+            else: # 근력 운동
+                routine_text += f"{i+1}. {ex['name']}: {ex['sets']}세트 x {ex['reps']}회, {ex['weight']}kg\n"
+        
+        # OpenAI API에 보낼 프롬프트 구성
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        system_prompt = """
+        당신은 국내 최고의 피트니스 분석 전문가입니다. 
+        사용자가 제공한 운동 루틴을 분석하고, 예상되는 효과와 조언을 친절하고 이해하기 쉽게 설명해야 합니다.
+
+        **분석 가이드라인:**
+        1.  **전체 요약:** 루틴 전체의 목표(예: 근력 강화, 체지방 감소, 근비대)를 한두 문장으로 요약하세요.
+        2.  **주요 타겟 근육:** 이 루틴이 주로 어떤 근육 부위를 발달시키는지 구체적으로 설명해주세요.
+        3.  **예상 효과:** 각 운동이나 전체 루틴을 통해 얻을 수 있는 긍정적인 효과들을 항목별로 나누어 설명합니다. (예: 근력 증가, 자세 교정, 심폐지구력 향상 등)
+        4.  **팁 및 조언:** 이 루틴을 더 효과적으로 수행하기 위한 팁이나 주의사항을 1~2가지 추가해주세요. (예: 휴식 시간, 운동 순서, 영양 섭취 등)
+        5.  **출력 형식:** 전체 답변은 마크다운(Markdown) 형식을 사용하고, 이모티콘(💪, 🔥, 🥗)을 적절히 사용하여 동기를 부여하는 톤으로 작성해주세요.
+        """
+        user_prompt = f"아래 운동 루틴을 분석해주세요:\n\n{routine_text}"
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.7
+        )
+        
+        analysis_result = response.choices[0].message.content
+        
+        return JsonResponse({'analysis': analysis_result})
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': '잘못된 형식의 데이터입니다.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f'AI 분석 중 오류가 발생했습니다: {str(e)}'}, status=500)

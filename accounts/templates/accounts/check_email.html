@@ -1,9 +1,11 @@
+{% load static custom_translate i18n %}
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>이메일 인증 안내</title>
+    <title> {% t '이메일 인증 안내' %} </title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -72,16 +74,16 @@
 </head>
 <body>
 
-    <h1 class="page-main-title">[2단계] 이메일 인증 필요</h1>
+    <h1 class="page-main-title"> {% t '[2단계] 이메일 인증 필요' %} </h1>
 
     <div class="email-check-container">
         <!-- 현재 HTML에는 h2가 없으므로 .email-check-container h2 스타일은 적용되지 않습니다. -->
         <!-- 만약 여기에 소제목을 추가한다면: -->
         <!-- <h2>이메일 확인 안내</h2> -->
 
-        <p>입력하신 이메일로 인증 링크를 발송했습니다.</p>
-        <p>이메일을 열고 인증 링크를 클릭하면 가입이 완료됩니다.</p>
-        <p>이메일을 받지 못하셨다면 <span class="highlight-text">스팸 메일함</span>을 확인해보세요.</p>
+        <p> {% t '입력하신 이메일로 인증 링크를 발송했습니다.' %} </p>
+        <p> {% t '이메일을 열고 인증 링크를 클릭하면 가입이 완료됩니다.' %} </p>
+        <p> {% t '이메일을 받지 못하셨다면' %} <span class="highlight-text"> {% t '스팸 메일함' %} </span> {% t '을 확인해보세요.' %} </p>
     </div>
 
 </body>

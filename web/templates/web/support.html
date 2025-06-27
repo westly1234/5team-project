@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthWise 고객 지원</title>
+    <style>
+        /* 기존 CSS는 그대로입니다. */
+        :root {
+            --bg-primary: #0F0F1E; 
+            --bg-secondary: #1C1C33; 
+            --bg-header: #151528;
+            --text-primary: #ECEFF1; 
+            --text-secondary: #B0BEC5; 
+            --accent-pink: #EC407A; 
+            --accent-cyan: #26C6DA;
+            --accent-yellow: #FFCA28;
+            --border-color: #37474F; 
+            --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            --card-hover-shadow: 0 12px 35px rgba(38, 198, 218, 0.2); 
+            --button-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            --font-main: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+            --accent-pink-rgb: 236, 64, 122;
+            --accent-cyan-rgb: 38, 198, 218;
+            --accent-yellow-rgb: 255, 202, 40;
+            
+            --focus-outline-color: var(--accent-cyan);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth; 
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #202038 100%);
+            color: var(--text-primary);
+            line-height: 1.65; 
+            padding-top: 80px; 
+            overflow-x: hidden; 
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1050px; 
+            margin: 0 auto;
+            padding: 35px 0; 
+        }
+
+        /* Header */
+        .app-header {
+            background-color: rgba(21, 21, 40, 0.88); 
+            backdrop-filter: blur(12px); 
+            padding: 15px 5%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.25); 
+            border-bottom: 1px solid rgba(var(--border-color), 0.4); 
+        }
+
+        .app-header .logo {
+            font-size: 2em;
+            font-weight: 700; 
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+        .app-header .logo .accent-dot {
+            color: var(--accent-pink);
+        }
+
+        .app-header nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-left: 28px; 
+            font-size: 1em;
+            font-weight: 500;
+            transition: color 0.3s ease, transform 0.3s ease;
+            position: relative;
+            padding-bottom: 6px; 
+        }
+        .app-header nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2.5px; 
+            background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan));
+            transition: width 0.35s ease-out; 
+        }
+        .app-header nav a:hover,
+        .app-header nav a.active {
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+        .app-header nav a:hover::after,
+        .app-header nav a.active::after {
+            width: 100%;
+        }
+        .app-header nav a:focus-visible {
+            outline: 2px solid var(--focus-outline-color);
+            outline-offset: 4px;
+            border-radius: 4px;
+        }
+
+        /* ▼▼▼▼▼ [수정된 부분 1] ▼▼▼▼▼ */
+        .nav-item-no-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-left: 28px; 
+            font-size: 1em;
+            font-weight: 500;
+            position: relative;
+            padding-bottom: 6px; 
+            cursor: default; /* 마우스 커서가 손가락으로 바뀌지 않게 함 */
+        }
+        /* ▲▲▲▲▲ [수정된 부분 1] ▲▲▲▲▲ */
+
+        /* Hero Section ... (이하 모든 CSS는 기존과 동일) */
+        .hero-section {
+            padding: 65px 20px; 
+            text-align: center;
+            margin-bottom: 45px; 
+            border-radius: 12px;
+        }
+        .hero-section h1 {
+            font-size: 3.2em; 
+            font-weight: 700; 
+            margin-bottom: 30px; 
+            line-height: 1.25;
+            background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan), var(--accent-yellow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            animation: gradientShine 5s linear infinite;
+            background-size: 200% 200%;
+            text-shadow: 0 0 15px rgba(var(--accent-cyan-rgb), 0.2); 
+        }
+
+        @keyframes gradientShine {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .search-container {
+            display: flex; 
+            align-items: center;
+            max-width: 680px; 
+            margin: 0 auto;
+            background-color: var(--bg-secondary);
+            border-radius: 30px; 
+            padding: 6px; 
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+        }
+        .search-container input[type="search"] {
+            flex-grow: 1; 
+            padding: 16px 35px 16px 22px; /* right padding increased for 'x' button */
+            font-size: 1.05em;
+            font-weight: 400; 
+            border: none;
+            border-radius: 24px 0 0 24px; 
+            background-color: transparent;
+            color: var(--text-primary);
+            outline: none;
+        }
+        .search-container input[type="search"]::placeholder {
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+        .search-container input[type="search"]:focus-visible {
+             box-shadow: 0 0 0 2px var(--focus-outline-color) inset;
+        }
+        .search-container button {
+            padding: 16px 30px; 
+            font-size: 1.05em;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan));
+            color: white;
+            border: none;
+            border-radius: 24px; 
+            margin-left: -24px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(var(--accent-pink-rgb), 0.35); 
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
+        }
+         .search-container button .icon-svg { 
+             margin-right: 8px; 
+             width:20px; 
+             height:20px; 
+             fill:white; 
+             vertical-align: middle;
+        }
+        .search-container button:hover {
+            transform: scale(1.03) translateY(-1px); 
+            box-shadow: 0 6px 20px rgba(var(--accent-cyan-rgb), 0.45);
+        }
+        .search-container button:active {
+            transform: scale(0.98);
+        }
+         .search-container button:focus-visible {
+            outline: 2px solid var(--focus-outline-color);
+            outline-offset: 3px;
+        }
+
+
+        /* Categories Section */
+        .categories-section {
+            margin-bottom: 45px; 
+            padding: 35px 0px; 
+        }
+        /* .categories-section h2 (removed), .faq-section h2, .contact-section h2 */
+        .faq-section h2, .contact-section h2 {
+            text-align: center;
+            font-size: 2.3em; 
+            font-weight: 600; 
+            margin-bottom: 40px; 
+            color: var(--text-primary);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2); 
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 25px; 
+        }
+        .category-card {
+            background-color: var(--bg-secondary);
+            padding: 35px; 
+            border-radius: 16px; 
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.35s ease, border-image 0.35s ease; 
+            border: 2px solid var(--border-color); 
+            box-shadow: var(--card-shadow);
+            overflow: hidden; 
+            position: relative;
+        }
+        .category-card::before { 
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(var(--accent-cyan-rgb),0.12) 0%, transparent 35%);
+            transform: scale(0);
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.6s ease;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .category-card:hover::before {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .category-card:hover {
+            transform: translateY(-10px) scale(1.03); 
+            box-shadow: var(--card-hover-shadow);
+            border-image: linear-gradient(to right, var(--accent-pink), var(--accent-cyan)) 1; 
+        }
+        .category-card.active-filter {
+             border-image: linear-gradient(to right, var(--accent-pink), var(--accent-yellow)) 1;
+             box-shadow: 0 10px 30px rgba(var(--accent-pink-rgb), 0.3); 
+             transform: translateY(-5px) scale(1.01); 
+        }
+         .category-card.active-filter::before { 
+            background: radial-gradient(circle, rgba(var(--accent-pink-rgb),0.1) 0%, transparent 30%);
+            transform: scale(1);
+            opacity: 1;
+        }
+        .category-card .icon-svg { 
+            width: 52px; 
+            height: 52px;
+            margin-bottom: 18px; 
+            display: inline-block;
+            color: var(--accent-cyan); 
+            transition: color 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .category-card:hover .icon-svg {
+            color: var(--accent-pink);
+            transform: scale(1.1) rotate(5deg); 
+        }
+         .category-card.active-filter .icon-svg {
+            color: var(--accent-pink);
+            transform: scale(1.05);
+        }
+        .category-card h3 {
+            font-size: 1.5em; 
+            font-weight: 600;
+            margin-bottom: 12px; 
+            color: var(--text-primary);
+        }
+        .category-card p {
+            font-size: 0.98em; 
+            color: var(--text-secondary);
+            font-weight: 400; 
+        }
+         .category-card:focus-visible {
+            outline: none; 
+            box-shadow: 0 0 0 3px var(--bg-primary), 0 0 0 5px var(--focus-outline-color);
+        }
+
+
+        /* FAQ Section */
+        .faq-section {
+            margin-bottom: 45px; 
+            padding: 35px 0px;
+        }
+        .faq-item {
+            background-color: var(--bg-secondary);
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18); 
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .faq-item:hover {
+            border-color: rgba(var(--accent-cyan-rgb), 0.75);
+            box-shadow: 0 6px 18px rgba(var(--accent-cyan-rgb),0.12);
+        }
+        .faq-item.hidden {
+            display: none;
+        }
+        .faq-question {
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            padding: 22px 28px; 
+            text-align: left;
+            font-size: 1.2em; 
+            font-weight: 500; 
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.25s ease;
+        }
+        .faq-question:hover {
+            background-color: rgba(var(--accent-cyan-rgb), 0.07); 
+        }
+        .faq-question:focus-visible {
+            outline: none;
+            background-color: rgba(var(--focus-outline-color), 0.1);
+            box-shadow: 0 0 0 2px var(--focus-outline-color) inset;
+        }
+        .faq-question .icon-svg-chevron { 
+            width: 22px; 
+            height: 22px;
+            color: var(--accent-cyan);
+            transition: transform 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .faq-question[aria-expanded="true"] .icon-svg-chevron {
+            transform: rotate(180deg);
+            color: var(--accent-pink);
+        }
+        .faq-answer {
+            padding: 0 28px; 
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.55s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.55s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background-color: var(--bg-secondary); 
+            border-top: 1px solid rgba(var(--border-color), 0.6); 
+        }
+        .faq-answer p {
+            padding: 22px 0; 
+            color: var(--text-secondary);
+            font-size: 1.05em; 
+            font-weight: 400; 
+            line-height: 1.75; 
+        }
+        .no-results {
+            text-align: center;
+            padding: 35px; 
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 1.15em; 
+            background-color: var(--bg-secondary);
+            border-radius: 10px; 
+            border: 1px dashed var(--border-color); 
+        }
+
+        /* Contact Section */
+        .contact-section {
+            text-align: center;
+            padding: 55px 25px; 
+            background: linear-gradient(0deg, var(--bg-secondary) 0%, var(--bg-primary) 100%); 
+            border-radius: 16px; 
+            margin-bottom: 35px; 
+            box-shadow: var(--card-shadow);
+        }
+        
+        .contact-section p {
+            margin-bottom: 35px; 
+            color: var(--text-secondary);
+            max-width: 650px; 
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 1.1em; 
+            font-weight: 400; 
+        }
+        .contact-button {
+            display: inline-flex; 
+            align-items: center;
+            justify-content: center;
+            padding: 18px 40px; 
+            background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan));
+            color: white;
+            text-decoration: none;
+            border-radius: 30px; 
+            font-size: 1.2em; 
+            font-weight: 600;
+            transition: all 0.35s ease;
+            border: none;
+            box-shadow: 0 5px 22px rgba(var(--accent-pink-rgb), 0.45); 
+        }
+        .contact-button:hover {
+            transform: translateY(-4px) scale(1.04); 
+            box-shadow: 0 8px 28px rgba(var(--accent-cyan-rgb), 0.55);
+        }
+        .contact-button:active {
+            transform: translateY(0) scale(1);
+        }
+        .contact-button .icon-svg-contact { 
+            width: 24px; 
+            height: 24px;
+            margin-right: 14px; 
+        }
+        .contact-button:focus-visible {
+            outline: 2px solid var(--focus-outline-color);
+            outline-offset: 4px;
+        }
+
+
+        /* Footer */
+        .app-footer {
+            text-align: center;
+            padding: 35px 20px; 
+            font-size: 0.95em; 
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(var(--border-color), 0.6); 
+            background-color: var(--bg-header);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) { /* Tablet view */
+            .hero-section h1 {
+                font-size: 2.6em; 
+            }
+            .faq-section h2, .contact-section h2 {
+                font-size: 2em; 
+            }
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 25px; 
+            }
+        }
+
+        @media (max-width: 768px) { /* Mobile view */
+            body {
+                padding-top: 70px; 
+            }
+            .app-header {
+                padding: 12px 4%; 
+            }
+            .app-header .logo {
+                 font-size: 1.7em; 
+            }
+            .app-header nav {
+                margin-top: 5px;
+            }
+            .app-header nav a {
+                margin-left: 18px; 
+                font-size: 0.95em; 
+            }
+            .hero-section h1 {
+                font-size: 2.3em; 
+            }
+            .search-container {
+                flex-direction: row; 
+                padding: 5px; 
+                border-radius: 25px; 
+            }
+            .search-container input[type="search"] {
+                flex-grow: 1;
+                width: auto; 
+                padding: 14px 30px 14px 18px; 
+                margin-bottom: 0; 
+                border-radius: 20px 0 0 20px; 
+                background-color: transparent; 
+                border: none; 
+                text-align: left; 
+            }
+            .search-container button {
+                width: auto; 
+                padding: 14px 22px; 
+                margin-left: -20px; 
+                border-radius: 20px; 
+            }
+            .category-grid {
+                grid-template-columns: 1fr; 
+                gap: 20px; 
+            }
+            .faq-question {
+                padding: 18px 22px; 
+                font-size: 1.1em; 
+            }
+            .faq-answer p {
+                font-size: 1em; 
+            }
+             .contact-button {
+                padding: 16px 32px; 
+                font-size: 1.15em; 
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                width: 95%; 
+            }
+            .app-header {
+                flex-direction: column; 
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+             .app-header .logo {
+                margin-bottom: 12px; 
+                 font-size: 1.6em;
+            }
+             .app-header nav {
+                width: 100%;
+                display: flex;
+                justify-content: space-around; 
+                flex-wrap: wrap; 
+             }
+            .app-header nav a {
+                margin: 5px 8px; 
+                font-size: 0.9em; 
+            }
+            .hero-section h1 {
+                font-size: 2em; 
+            }
+            .faq-section h2, .contact-section h2 {
+                font-size: 1.7em; 
+            }
+             .search-container input[type="search"] {
+                padding: 12px 28px 12px 15px; 
+                font-size: 1em;
+            }
+            .search-container button {
+                padding: 12px 18px;
+                font-size: 1em;
+            }
+             .contact-button {
+                font-size: 1.1em;
+             }
+             .contact-button .icon-svg-contact {
+                margin-right: 10px; 
+            }
+        }
+    </style>
+</head>
+<body>
+{% if messages %}
+<div class="messages-container" style="position: fixed; top: 95px; left: 50%; transform: translateX(-50%); z-index: 1001; width: 90%; max-width: 500px;">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" 
+             style="background-color: #26C6DA; 
+                    color: white; 
+                    padding: 18px; 
+                    border-radius: 10px; 
+                    margin-bottom: 15px; 
+                    font-weight: 500;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    text-align: center;
+                    opacity: 0;
+                    animation: fadeInAndOut 5s forwards;">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+@keyframes fadeInAndOut {
+    0% { opacity: 0; transform: translateY(-20px); }
+    15% { opacity: 1; transform: translateY(0); }
+    85% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
+</style>
+    <!-- ======================================================= -->
+    <!-- ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ 이 헤더 부분을 수정합니다 ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼ -->
+    <!-- ======================================================= -->
+    <header class="app-header">
+        <div class="logo">HealthWise<span class="accent-dot">.</span></div>
+        <nav>
+            {# URL 이름이 'home'이라고 가정합니다. #}
+            <a href="{% url 'home' %}">홈</a>
+            {# 'store' 앱의 URL 이름이 'index'라고 가정합니다. #}
+            <a href="/store/">스토어</a>
+            {# 현재 페이지이므로 active 클래스를 유지합니다. #}
+            <a href="{% url 'web:support' %}" class="active">고객지원</a>
+
+            {# 사용자가 로그인했는지 확인합니다. #}
+            {% if user.is_authenticated %}
+                {# 'a' 태그를 'span' 태그로 바꿔서 링크와 효과를 모두 제거합니다. #}
+                <span class="nav-item-no-link">{{ user.username }}님</span>
+                {# 로그아웃 URL로 연결합니다. #}
+                <a href="{% url 'accounts:logout' %}">로그아웃</a>
+            {% else %}
+                {# 로그인하지 않은 사용자에게는 로그인 링크를 보여줍니다. #}
+                <a href="{% url 'accounts:login' %}">로그인</a>
+            {% endif %}
+        </nav>
+    </header>
+    <!-- ======================================================= -->
+    <!-- ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ 여기까지 수정되었습니다 ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲ -->
+    <!-- ======================================================= -->
+
+    <div class="container">
+        <section class="hero-section">
+            <h1>무엇을 도와드릴까요?</h1>
+            <div class="search-container">
+                <input type="search" id="faq-search-input" placeholder="궁금한 점을 검색해보세요 (예: 비밀번호, 운동 기록)" aria-label="FAQ 검색">
+                <button id="faq-search-button" aria-label="검색">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+                    검색
+                </button>
+            </div>
+        </section>
+
+        <section class="categories-section">
+            <div class="category-grid">
+                <div class="category-card" data-category-filter="all" tabindex="0" role="button" aria-pressed="true">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7zm0 4h10v2H7zm0 4h7v2H7z"></path></svg>
+                    <h3>전체 FAQ</h3>
+                    <p>모든 질문 보기</p>
+                </div>
+                <div class="category-card" data-category-filter="account" tabindex="0" role="button" aria-pressed="false">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                    <h3>계정 관리</h3>
+                    <p>로그인, 프로필</p>
+                </div>
+                <div class="category-card" data-category-filter="service" tabindex="0" role="button" aria-pressed="false">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61-.25-1.17-.59-1.69-.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61.22l2 3.46c.13.22-.07.49.12.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"></path></svg>
+                    <h3>서비스 이용</h3>
+                    <p>기능 사용법</p>
+                </div>
+                <div class="category-card" data-category-filter="technical" tabindex="0" role="button" aria-pressed="false">
+                     <svg class="icon-svg" viewBox="0 0 24 24"><path fill="currentColor" d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4zM7.8 13.5c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"></path></svg>
+                    <h3>기술 지원</h3>
+                    <p>오류, 문제 해결</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="faq-section">
+            <h2>자주 묻는 질문</h2>
+            <div id="faq-list">
+                <div class="faq-item" data-category="account">
+                    <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-1">
+                        <span class="faq-question-text">비밀번호를 잊어버렸어요.</span>
+                        <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                    </button>
+                    <div class="faq-answer" id="faq-answer-1" role="region">
+                        <p>로그인 페이지에서 '비밀번호 찾기' 링크를 클릭하여 안내에 따라 비밀번호를 재설정할 수 있습니다. 가입 시 사용한 이메일 주소가 필요합니다.</p>
+                    </div>
+                </div>
+                <div class="faq-item" data-category="account">
+                    <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-2">
+                        <span class="faq-question-text">이메일 주소를 변경하고 싶어요.</span>
+                        <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                    </button>
+                    <div class="faq-answer" id="faq-answer-2" role="region">
+                        <p>계정 설정 페이지에서 현재 비밀번호를 입력한 후 새 이메일 주소로 변경할 수 있습니다. 변경 후 새 이메일로 인증 메일이 발송됩니다.</p>
+                    </div>
+                </div>
+                 <div class="faq-item" data-category="service">
+                    <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-3">
+                        <span class="faq-question-text">운동 루틴 추천은 어떻게 받나요?</span>
+                        <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                    </button>
+                    <div class="faq-answer" id="faq-answer-3" role="region">
+                        <p>AI 건강 상담 후, 사용자의 목표와 현재 상태에 맞춰 맞춤형 운동 루틴이 '오늘의 추천 루틴'에 표시됩니다. 또는 '운동 목록'에서 원하는 운동을 직접 선택할 수도 있습니다.</p>
+                    </div>
+                </div>
+                <div class="faq-item" data-category="service">
+                    <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-4">
+                        <span class="faq-question-text">식단 대시보드는 어떻게 활용하나요?</span>
+                        <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                    </button>
+                    <div class="faq-answer" id="faq-answer-4" role="region">
+                        <p>식단 대시보드에서는 AI가 분석한 영양 정보를 바탕으로 칼로리, 영양소 섭취량을 확인할 수 있습니다. 음식 사진을 업로드하거나 직접 입력하여 식단을 기록하고 관리하세요.</p>
+                    </div>
+                </div>
+                 <div class="faq-item" data-category="service">
+                    <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-5">
+                        <span class="faq-question-text">내 위치 맞춤 장소 서비스는 무엇인가요?</span>
+                        <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                    </button>
+                    <div class="faq-answer" id="faq-answer-5" role="region">
+                        <p>사용자의 현재 위치를 기반으로 주변의 운동 시설(헬스장, 공원 등)이나 건강 관련 상점 정보를 실시간으로 제공하는 서비스입니다. 원하는 운동 종류별로 필터링도 가능합니다.</p>
+                    </div>
+                </div>
+                <div class="faq-item" data-category="technical">
+                    <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-6">
+                        <span class="faq-question-text">앱이 자주 멈추거나 오류가 발생해요.</span>
+                        <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                    </button>
+                    <div class="faq-answer" id="faq-answer-6" role="region">
+                        <p>앱을 최신 버전으로 업데이트하고, 기기의 운영체제도 최신 상태인지 확인해주세요. 문제가 지속되면 앱을 삭제 후 재설치해보거나, '1:1 이메일 문의하기'를 통해 상세 증상을 알려주시면 도움을 드리겠습니다.</p>
+                    </div>
+                </div>
+                <div class="faq-item" data-category="technical">
+                    <button class="faq-question" aria-expanded="false" aria-controls="faq-answer-7">
+                        <span class="faq-question-text">데이터 동기화가 안돼요.</span>
+                        <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
+                    </button>
+                    <div class="faq-answer" id="faq-answer-7" role="region">
+                        <p>인터넷 연결 상태를 확인하고, 앱 설정에서 '데이터 동기화' 옵션이 켜져 있는지 확인해주세요. 기기를 재부팅하거나 앱의 캐시를 삭제하는 것도 도움이 될 수 있습니다.</p>
+                    </div>
+                </div>
+            </div>
+            <div id="no-results-message" class="no-results" style="display: none;">
+                검색 결과가 없습니다. 다른 키워드로 검색해보세요.
+            </div>
+        </section>
+
+        <section class="contact-section">
+    <h2>도움이 더 필요하신가요?</h2>
+    <p>자주 묻는 질문에서 원하는 답변을 찾지 못하셨거나, HealthWise 사용 중 추가적인 도움이 필요하시면 언제든지 문의해주세요. 전문가가 신속하고 친절하게 답변드리겠습니다.</p>
+    
+    <!-- href 속성을 Django URL 템플릿 태그로 수정 -->
+    <a href="{% url 'web:inquiry' %}" class="contact-button">
+         <svg class="icon-svg-contact" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"></path></svg>
+        1:1 이메일 문의하기
+    </a>
+</section>
+    </div>
+
+    <footer class="app-footer">
+        ©2025 HealthWise. 모든 권리 보유. 당신의 건강한 삶을 응원합니다.
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const faqSearchInput = document.getElementById('faq-search-input');
+            const faqSearchButton = document.getElementById('faq-search-button');
+            const categoryCards = document.querySelectorAll('.category-card');
+            const faqItems = document.querySelectorAll('#faq-list .faq-item');
+            const noResultsMessage = document.getElementById('no-results-message');
+            const faqSectionForScroll = document.querySelector('.faq-section');
+
+            // Function to filter FAQs and optionally scroll
+            function filterFAQs(shouldScroll = false) {
+                const searchTerm = faqSearchInput.value.toLowerCase().trim();
+                let activeCategory = 'all';
+                const activeCard = document.querySelector('.category-card.active-filter');
+                if (activeCard) {
+                    activeCategory = activeCard.dataset.categoryFilter;
+                }
+
+                let visibleCount = 0;
+
+                faqItems.forEach(item => {
+                    const questionTextElement = item.querySelector('.faq-question-text');
+                    const answerTextElement = item.querySelector('.faq-answer p');
+
+                    if (!questionTextElement || !answerTextElement) return; // Skip if elements are missing
+
+                    const question = questionTextElement.textContent.toLowerCase();
+                    const answer = answerTextElement.textContent.toLowerCase();
+                    const itemCategory = item.dataset.category;
+
+                    const matchesSearch = (searchTerm === '' || question.includes(searchTerm) || answer.includes(searchTerm));
+                    const matchesCategory = (activeCategory === 'all' || itemCategory === activeCategory);
+
+                    if (matchesSearch && matchesCategory) {
+                        item.classList.remove('hidden');
+                        item.style.display = ''; 
+                        visibleCount++;
+                    } else {
+                        item.classList.add('hidden');
+                        item.style.display = 'none'; 
+                    }
+                });
+
+                noResultsMessage.style.display = visibleCount === 0 ? 'block' : 'none';
+
+                if (shouldScroll && faqSectionForScroll) {
+                    faqSectionForScroll.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+            
+            // Set initial active category card
+            const initialActiveCard = document.querySelector('.category-card[data-category-filter="all"]');
+            if(initialActiveCard) {
+                initialActiveCard.classList.add('active-filter');
+                initialActiveCard.setAttribute('aria-pressed', 'true');
+            }
+
+
+            // Event Listeners for Category Cards
+            categoryCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    categoryCards.forEach(c => {
+                        c.classList.remove('active-filter');
+                        c.setAttribute('aria-pressed', 'false');
+                    });
+                    this.classList.add('active-filter');
+                    this.setAttribute('aria-pressed', 'true');
+                    filterFAQs(false); // DO NOT scroll for category clicks
+                });
+                card.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        this.click(); // Triggers the click event listener which calls filterFAQs(false)
+                    }
+                });
+            });
+
+            // Event Listener for Search Button
+            faqSearchButton.addEventListener('click', () => {
+                filterFAQs(true); // Scroll for search button click
+            });
+
+            // Event Listener for Search Input (Enter key)
+            faqSearchInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    filterFAQs(true); // Scroll for Enter key in search input
+                }
+            });
+            
+            // Event Listener for Search Input (real-time filtering, optional)
+            // faqSearchInput.addEventListener('input', () => {
+            //    filterFAQs(false); // Do not scroll on real-time input
+            // });
+
+
+            // FAQ Accordion
+            faqItems.forEach(item => {
+                const questionButton = item.querySelector('.faq-question');
+                const answer = item.querySelector('.faq-answer');
+                const answerId = answer.getAttribute('id');
+                
+                if (questionButton) {
+                    questionButton.setAttribute('aria-controls', answerId);
+                    questionButton.addEventListener('click', () => {
+                        const isExpanded = questionButton.getAttribute('aria-expanded') === 'true';
+                        questionButton.setAttribute('aria-expanded', !isExpanded);
+                        answer.style.maxHeight = isExpanded ? null : answer.scrollHeight + "px";
+                        answer.style.paddingTop = isExpanded ? '0' : '22px'; // Ensure padding is applied when expanding
+                        answer.style.paddingBottom = isExpanded ? '0' : '22px';
+                         if(!isExpanded) { // If expanding, remove hidden class if present
+                            answer.classList.remove('hidden');
+                        }
+                    });
+                }
+            });
+            
+            // Initial filter on load to show all FAQs under the "all" category
+            filterFAQs(false); 
+        });
+    </script>
+</body>
+</html>

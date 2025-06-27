@@ -1,4 +1,4 @@
-{% load static %}
+{% load static custom_translate i18n %}
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>이메일 인증</title>
+    <title> {% t '이메일 인증' %} </title>
     <style type="text/css">
         body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
         table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-collapse: collapse !important; }
@@ -90,10 +90,10 @@
                     <tr>
                         <td align="center" valign="top" class="content-padding">
                             <p class="slogan" style="font-size: 1.1em; color: #505050; margin: 0 0 35px 0; text-align: center; line-height: 1.5;">"오늘의 하루가 내일의 나를 만듭니다."</p>
-                            <p class="greeting" style="font-size: 1.55em; color: #282828; margin: 0 0 20px 0; font-weight: bold; text-align: center; line-height: 1.45;"><span class="username" style="text-decoration: none !important; color: #282828 !important;">{{ user.username }}</span>님, HEALTHWISE에 오신 것을<br>진심으로 환영합니다!</p>
+                            <p class="greeting" style="font-size: 1.55em; color: #282828; margin: 0 0 20px 0; font-weight: bold; text-align: center; line-height: 1.45;"><span class="username" style="text-decoration: none !important; color: #282828 !important;">{{ user.username }}</span> {% t '님, HEALTHWISE에 오신 것을<br>진심으로 환영합니다!' %} </p>
 
-                            <p class="message-paragraph" style="font-size: 1.05em; line-height: 1.9; color: #454545; margin: 0 0 22px 0; text-align: center;">고객님의 건강한 삶을 위한 첫걸음, 시작해보세요.</p>
-                            <p class="message-paragraph" style="font-size: 1.05em; line-height: 1.9; color: #454545; margin: 0 0 40px 0; text-align: center;">아래 버튼을 클릭하여 인증을 완료하시면<br>HEALTHWISE의 모든 서비스를 이용하실 수 있습니다.</p>
+                            <p class="message-paragraph" style="font-size: 1.05em; line-height: 1.9; color: #454545; margin: 0 0 22px 0; text-align: center;"> {% t '고객님의 건강한 삶을 위한 첫걸음, 시작해보세요.' %} </p>
+                            <p class="message-paragraph" style="font-size: 1.05em; line-height: 1.9; color: #454545; margin: 0 0 40px 0; text-align: center;"> {% t '아래 버튼을 클릭하여 인증을 완료하시면<br>HEALTHWISE의 모든 서비스를 이용하실 수 있습니다.' %} </p>
 
                             <!-- Activation Button - 이제 버튼을 감싸는 셀에 하단 패딩을 줌 -->
                             <table border="0" cellpadding="0" cellspacing="0" class="button-table" role="presentation" width="100%">
@@ -102,9 +102,7 @@
                                         <table border="0" cellpadding="0" cellspacing="0" role="presentation">
                                             <tr>
                                                 <td align="center" class="button-td" style="background-color: #87CEFA; border-radius: 30px; padding: 12px 35px; text-align: center;">
-                                                    <a href="{{ activation_link }}" target="_blank" class="button-link" style="font-size: 1.15em; font-weight: bold; color: #ffffff !important; text-decoration: none !important; display: inline-block;">
-                                                        인증하고 시작하기
-                                                    </a>
+                                                    <a href="{{ activation_link }}" target="_blank" class="button-link" style="font-size: 1.15em; font-weight: bold; color: #ffffff !important; text-decoration: none !important; display: inline-block;"> {% t '인증하고 시작하기' %} </a>
                                                 </td>
                                             </tr>
                                         </table>
@@ -112,8 +110,8 @@
                                 </tr>
                             </table>
 
-                            <p class="closing" style="font-size: 1em; color: #555555; line-height: 1.75; margin:0; text-align: center;">오늘도 건강하고 행복한 날이 되시길 바랍니다.<br>감사합니다.</p>
-                            <p class="signature" style="font-size: 1.05em; color: #454545; font-weight: normal; margin: 35px 0 0 0; text-align: center;">HEALTHWISE 드림</p>
+                            <p class="closing" style="font-size: 1em; color: #555555; line-height: 1.75; margin:0; text-align: center;"> {% t '오늘도 건강하고 행복한 날이 되시길 바랍니다.<br>감사합니다.' %} </p>
+                            <p class="signature" style="font-size: 1.05em; color: #454545; font-weight: normal; margin: 35px 0 0 0; text-align: center;"> {% t 'HEALTHWISE 드림' %} </p>
                         </td>
                     </tr>
                 </table>

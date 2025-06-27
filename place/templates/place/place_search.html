@@ -1,19 +1,26 @@
 {% extends "web/dashboard_sliding_base.html" %}
-{% load static %}
+{% load static custom_translate i18n %}
 
 {% block title %}운동 장소 찾기 - HealthWise{% endblock %}
 
 {% block page_content %}
 <style>
-    /* 지도 앱 전용 스타일 */
+    /* ... (다른 스타일들은 이전과 동일) ... */
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* 지도와 컨트롤 패널을 담는 컨테이너 */
     .map-container {
-        position: relative;
-        width: 100%;
-        height: 100%;
+        /* ✨ [수정] position을 absolute로 변경하여 부모의 여백(padding) 제약에서 벗어납니다. */
+        position: absolute; 
+        
+        /* ✨ [수정] 상단은 헤더 높이(65px)만큼 아래에 위치시킵니다. */
+        top: 65px; 
+        
+        /* ✨ [수정] 화면의 왼쪽, 오른쪽, 아래쪽 끝에 딱 붙도록 설정하여 공간을 꽉 채웁니다. */
+        left: 0;
+        right: 0;
+        bottom: 0;
     }
     #map {
         width: 100%; 
@@ -27,7 +34,11 @@
         display: flex; flex-direction: column; gap: 16px; 
         border: 1px solid rgba(255, 255, 255, 0.1);
         animation: fadeInUp 0.5s ease-out forwards; animation-delay: 0.2s; opacity: 0;
+        /* 컨트롤 패널의 높이는 지도 컨테이너의 높이에 맞춰지도록 수정합니다. */
+        height: calc(100% - 40px); 
+        max-height: calc(100vh - 105px); /* 헤더(65px)와 상하 여백(40px)을 고려한 최대 높이 */
     }
+    /* ... (이하 모든 CSS 및 HTML, JavaScript는 이전과 동일합니다) ... */
     #control-panel h1 {
         font-size: 24px; font-weight: 700; color: #fff; display: flex;
         align-items: center; gap: 10px; padding-bottom: 8px;
@@ -68,7 +79,6 @@
     #reSearchBtn:hover { background: #aeaeb2; }
     #reSearchBtn.show { display: flex !important; animation: fadeInUp 0.3s ease-out; }
 
-    /* ✨ 컨트롤 패널 내 카테고리 그리드 스타일 */
     #category-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -77,43 +87,27 @@
         border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
     .category-grid-btn {
-        padding: 9px 10px;
-        font-size: 13px;
-        font-weight: 500;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 8px;
-        background-color: rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.8);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
+        padding: 9px 10px; font-size: 13px; font-weight: 500; border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px; background-color: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.8);
+        cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;
     }
     .category-grid-btn:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-color: #4ecdc4;
-        color: #fff;
+        background-color: rgba(255, 255, 255, 0.1); border-color: #4ecdc4; color: #fff;
     }
     .category-grid-btn.active {
-        background-color: #4ecdc4;
-        color: #000;
-        font-weight: 700;
-        border-color: #4ecdc4;
+        background-color: #4ecdc4; color: #000; font-weight: 700; border-color: #4ecdc4;
     }
-
     .results-container {
-        display: flex; flex-direction: column;
-        background-color: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px; overflow: hidden;
+        display: flex; flex-direction: column; background-color: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; overflow: hidden;
+        flex: 1; min-height: 0;
     }
     #results-header {
         padding: 8px 16px; font-size: 13px; color: rgba(255, 255, 255, 0.7);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: none; flex-shrink: 0;
     }
     #results {
-        max-height: calc(100vh - 620px); min-height: 100px; overflow-y: auto;
+        overflow-y: auto; flex: 1;
     }
     .results::-webkit-scrollbar { width: 6px; }
     .results::-webkit-scrollbar-track { background: transparent; }
@@ -130,9 +124,8 @@
     .result-item .address { color: rgba(255, 255, 255, 0.6); font-size: 12px; line-height: 1.3; }
     .result-item .phone { color: #4ecdc4; margin-top: 4px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
     .empty-results {
-        text-align: center; padding: 40px 20px; color: rgba(255, 255, 255, 0.6);
-        font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        gap: 12px; height: 100%;
+        text-align: center; padding: 40px 20px; color: rgba(255, 255, 255, 0.6); font-size: 14px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; height: 100%;
     }
     .empty-results i { font-size: 32px; color: #4ecdc4; }
     .spinner {
@@ -156,13 +149,7 @@
     .custom-infowindow-content .link-actions a:hover { opacity: 0.9; transform: translateY(-1px); }
     .custom-infowindow-content .link-actions a.details-link { background-color: #8e8e93; }
     .custom-infowindow-content .link-actions a.directions-link { background-color: #4ecdc4; }
-    .page-main-content {
-        box-sizing: border-box !important;
-        padding: 0 !important;
-        height: calc(100vh - 65px) !important;
-        position: relative;
-    }
-    /* 스켈레톤 UI 스타일 */
+    
     .skeleton-item { background: rgba(255, 255, 255, 0.05); padding: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); animation: pulse-bg 1.5s infinite ease-in-out; }
     @keyframes pulse-bg { 0% { background: rgba(255,255,255,0.05); } 50% { background: rgba(255,255,255,0.08); } 100% { background: rgba(255,255,255,0.05); } }
     .skeleton-item .line { background: rgba(255, 255, 255, 0.1); height: 12px; border-radius: 4px; margin-bottom: 10px; }
@@ -172,27 +159,24 @@
 <div class="map-container">
     <div id="map"></div>
     <div id="control-panel">
-        <h1><i class="bi bi-geo-alt-fill"></i> 내 주변 운동 장소 찾기</h1>
+        <h1><i class="bi bi-geo-alt-fill"></i> {% t '내 주변 운동 장소 찾기' %} </h1>
         <div class="status" id="status">위치 정보를 가져오는 중...</div>
         <button class="action-button my-location-btn" onclick="moveToCurrentLocation()">
-            <i class="bi bi-cursor-fill"></i> 내 현재 위치로 이동
-        </button>
+            <i class="bi bi-cursor-fill"></i> {% t '내 현재 위치로 이동' %} </button>
         <button class="action-button" id="reSearchBtn" onclick="reSearch()" style="display: none;">
-            <i class="bi bi-arrow-repeat"></i> 이 지역에서 다시 검색
-        </button>
+            <i class="bi bi-arrow-repeat"></i> {% t '이 지역에서 다시 검색' %} </button>
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="운동 시설 직접 검색">
             <button onclick="searchCustom()"><i class="bi bi-search"></i></button>
         </div>
         
-        <!-- ✨ 컨트롤 패널 내부에 추가된 카테고리 그리드 -->
         <div id="category-grid">
-            <button class="category-grid-btn active" onclick="searchCategory('헬스장')"><i class="bi bi-person-arms-up"></i> 헬스장</button>
-            <button class="category-grid-btn" onclick="searchCategory('요가')"><i class="bi bi-peace-fill"></i> 요가</button>
-            <button class="category-grid-btn" onclick="searchCategory('수영장')"><i class="bi bi-water"></i> 수영장</button>
-            <button class="category-grid-btn" onclick="searchCategory('테니스장')"><i class="bi bi-dribbble"></i> 테니스</button>
-            <button class="category-grid-btn" onclick="searchCategory('축구장')"><i class="bi bi-record-circle-fill"></i> 축구장</button>
-            <button class="category-grid-btn" onclick="searchCategory('탁구장')"><i class="bi bi-disc-fill"></i> 탁구장</button>
+            <button class="category-grid-btn active" onclick="searchCategory('헬스장')"><i class="bi bi-person-arms-up"></i> {% t '헬스장' %} </button>
+            <button class="category-grid-btn" onclick="searchCategory('요가')"><i class="bi bi-peace-fill"></i> {% t '요가' %} </button>
+            <button class="category-grid-btn" onclick="searchCategory('수영장')"><i class="bi bi-water"></i> {% t '수영장' %} </button>
+            <button class="category-grid-btn" onclick="searchCategory('테니스장')"><i class="bi bi-dribbble"></i> {% t '테니스' %} </button>
+            <button class="category-grid-btn" onclick="searchCategory('축구장')"><i class="bi bi-record-circle-fill"></i> {% t '축구장' %} </button>
+            <button class="category-grid-btn" onclick="searchCategory('탁구장')"><i class="bi bi-disc-fill"></i> {% t '탁구장' %} </button>
         </div>
 
         <div class="results-container">
@@ -200,15 +184,15 @@
             <div id="results">
                 <div class="empty-results" id="initial-message">
                     <i class="bi bi-compass"></i>
-                    <span>위치 정보를 기반으로 주변 시설을 찾습니다.<br>위 카테고리를 선택하거나 직접 검색해보세요.</span>
+                    <span> {% t '위치 정보를 기반으로 주변 시설을 찾습니다.' %} <br> {% t '위 카테고리를 선택하거나 직접 검색해보세요.' %} </span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_map_api_key }}&libraries=services,clusterer"></script>
 <script>
+    // ... (이전과 동일한 JavaScript 코드)
     let map, ps, infowindow, currentPosition, myLocationMarker, clusterer;
     let markers = [], currentCategory = '';
     const statusEl = document.getElementById('status');
@@ -222,8 +206,11 @@
         infowindow = new kakao.maps.InfoWindow({ zIndex: 1, disableAutoPan: true });
         clusterer = new kakao.maps.MarkerClusterer({ map: map, averageCenter: true, minLevel: 6, styles: [{ width : '36px', height : '36px', background: 'rgba(78, 205, 196, 0.9)', borderRadius: '18px', color: '#000', textAlign: 'center', fontWeight: 'bold', lineHeight: '36px', fontSize: '13px', border: '1px solid rgba(0,0,0,0.1)' }] });
         const zoomControl = new kakao.maps.ZoomControl();
-        map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+        map.addControl(zoomControl, kakao.maps.ControlPosition.BOTTOMRIGHT);
         kakao.maps.event.addListener(map, 'dragend', () => { reSearchBtnEl.style.display = 'flex'; reSearchBtnEl.classList.add('show'); });
+        
+        document.getElementById('searchInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') searchCustom(); });
+        
         getCurrentLocation(true);
     }
     
@@ -300,13 +287,13 @@
             showEmptyResultsMessage();
         } else {
             updateStatus(`❌ 검색 중 오류가 발생했습니다: ${status}`, 'error');
-            resultsEl.innerHTML = `<div class="empty-results"><i class="bi bi-exclamation-triangle-fill"></i><span>오류가 발생했습니다.<br>잠시 후 다시 시도해주세요.</span></div>`;
+            resultsEl.innerHTML = `<div class="empty-results"><i class="bi bi-exclamation-triangle-fill"></i><span> {% t '오류가 발생했습니다.<br>잠시 후 다시 시도해주세요.' %} </span></div>`;
         }
     }
     
     function showEmptyResultsMessage() {
         updateStatus(`ℹ️ 주변에 관련 시설이 없습니다.`, 'info');
-        resultsEl.innerHTML = `<div class="empty-results"><i class="bi bi-emoji-frown"></i><span>검색 결과가 없습니다.<br>지도 위치를 옮기거나 다른 키워드로 검색해보세요.</span></div>`;
+        resultsEl.innerHTML = `<div class="empty-results"><i class="bi bi-emoji-frown"></i><span> {% t '검색 결과가 없습니다.<br>지도 위치를 옮기거나 다른 키워드로 검색해보세요.' %} </span></div>`;
         resultsHeaderEl.style.display = 'none';
     }
 
@@ -348,7 +335,7 @@
 
     function displayInfowindow(marker, place) {
         document.querySelectorAll('.result-item.active').forEach(item => item.classList.remove('active'));
-        const content = `<div class="custom-infowindow-content"><strong>${place.place_name}</strong><div class="info-item"><span class="label">주소:</span> ${place.road_address_name || place.address_name}</div>${place.phone ? `<div class="info-item"><span class="label">전화:</span> ${place.phone}</div>` : ''}<div class="link-actions"><a href="${place.place_url}" target="_blank" class="details-link">상세정보</a><a href="https://map.kakao.com/link/to/${encodeURIComponent(place.place_name)},${place.y},${place.x}" target="_blank" class="directions-link">길찾기</a></div></div>`;
+        const content = `<div class="custom-infowindow-content"><strong>${place.place_name}</strong><div class="info-item"><span class="label"> {% t '주소:' %} </span> ${place.road_address_name || place.address_name}</div>${place.phone ? `<div class="info-item"><span class="label"> {% t '전화:' %} </span> ${place.phone}</div>` : ''}<div class="link-actions"><a href="${place.place_url}" target="_blank" class="details-link"> {% t '상세정보' %} </a><a href="https://map.kakao.com/link/to/${encodeURIComponent(place.place_name)},${place.y},${place.x}" target="_blank" class="directions-link"> {% t '길찾기' %} </a></div></div>`;
         infowindow.setContent(content); infowindow.open(map, marker);
     }
 
@@ -382,11 +369,16 @@
         statusEl.style.backgroundColor = bgColor; statusEl.style.color = textColor;
     }
 
-    document.addEventListener('DOMContentLoaded', () => { 
-        setTimeout(() => { 
-            document.getElementById('searchInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') searchCustom(); }); 
-            initMap(); 
-        }, 100); 
+    document.addEventListener('DOMContentLoaded', () => {
+        const script = document.createElement('script');
+        script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey={{ kakao_map_api_key }}&libraries=services,clusterer&autoload=false`;
+        script.async = true;
+        
+        script.onload = () => {
+            kakao.maps.load(initMap);
+        };
+
+        document.head.appendChild(script);
     });
 </script>
 {% endblock %}

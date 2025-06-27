@@ -1,10 +1,10 @@
-{% load static %}
+{% load static custom_translate i18n %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Latest News - 클릭으로 보기</title>
+    <title> {% t 'Latest News - 클릭으로 보기' %} </title>
 <style>
   #news-1-uLCYYlLqoy .mbr-section-title.display-2 {
     font-size: 2rem; 
@@ -173,7 +173,7 @@
       <div class="col-12 content-head">
         <div class="mbr-section-head">
           <h4 class="mbr-section-title mbr-fonts-style align-center mb-0 display-2">
-            <strong>최근 뉴스 빠르게 보기</strong>
+            <strong> {% t '최근 뉴스 빠르게 보기' %} </strong>
           </h4>
         </div>
       </div>

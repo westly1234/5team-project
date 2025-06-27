@@ -1,23 +1,84 @@
+{% load static i18n custom_translate %}
 <nav>
     <div class="nav-container">
         <a href="/" class="logo" style="text-decoration: none;">💊 HealthWise</a>
         <ul class="nav-menu">
-            <li><a href="/" class="nav-item">홈</a></li>
-            <li><a href="{% url 'store:home' %}" class="nav-item">스토어</a></li>
-            <li><a href="#" class="nav-item">고객지원</a></li>
+            <div class="language-dropdown-container" style="margin-left: 20px;">
+                {# 자바스크립트가 클릭을 감지할 버튼 #}
+                <button type="button" id="language-toggle-btn" class="nav-item">
+                    <i class="fas fa-globe"></i>  
+                    <span class="language-text">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% if LANGUAGE_CODE == 'ko' %}한국어
+                        {% elif LANGUAGE_CODE == 'en' %}English
+                        {% elif LANGUAGE_CODE == 'es' %}Español
+                        {% else %}Language {# 👈 만약 언어 코드가 없다면 기본값 #}
+                        {% endif %}
+                    </span>
+                    <i class="fas fa-chevron-down" style="font-size: 0.7em;"></i>
+                </button>
+                
+                {# 클릭하면 나타나고 사라질 드롭다운 메뉴 #}
+                <div id="language-dropdown-menu" class="language-dropdown-menu">
+                    {% get_available_languages as LANGUAGES %}
+                    {% for lang_code, lang_name in LANGUAGES %}
+                        <form action="{% url 'set_language' %}" method="post" class="language-option-form">
+                            {% csrf_token %}
+                            <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                            <input name="language" type="hidden" value="{{ lang_code }}">
+                            <button type="submit" class="language-option-btn {% if lang_code == LANGUAGE_CODE %}active{% endif %}">
+                                {% if lang_code == 'ko' %}한국어{% elif lang_code == 'en' %}English{% elif lang_code == 'es' %}Español{% endif %}
+                            </button>
+                        </form>
+                    {% endfor %}
+                </div>
+            </div>
+            <li><a href="/" class="nav-item">{% t "홈" %}</a></li>
+            <li><a href="{% url 'store:home' %}" class="nav-item">{% t "스토어" %}</a></li>
+            {% if user.is_authenticated and active_menu == 'store' %}
+                <li><a href="{% url 'store:my_favorites' %}" class="nav-item">{% t "찜한 목록" %}</a></li>
+            {% endif %}
+
+            <li><a href="{% url 'web:support' %}" class="nav-item {% if active_menu == 'support' %}active{% endif %}">{% t "고객지원" %}</a></li>
+            
             <!-- Django 로그인/로그아웃 분기 처리 -->
             {% if user.is_authenticated %}
-                <li style="padding: 5px 0; color: rgba(255, 255, 255, 0.85); font-weight: 500;"> {{ user.username }}님</li>
+                <li style="padding: 5px 0; color: rgba(255, 255, 255, 0.85); font-weight: 500;">{% t "환영합니다, {name}님!" name=user.username|default:_("사용자") %}</li>
                 <li>
                     <form id="logout-form" method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
                         {% csrf_token %}
-                        <button type="submit" class="nav-item" style="background: none; border: none; color: rgba(255, 255, 255, 0.85); cursor: pointer; padding: 5px 0; font-size: 1rem; font-weight: 500; font-family: inherit;">로그아웃</button>
+                        <button type="submit" class="nav-item" style="background: none; border: none; color: rgba(255, 255, 255, 0.85); cursor: pointer; padding: 5px 0; font-size: 1rem; font-weight: 500; font-family: inherit;">{% t "로그아웃" %}</button>
                     </form>
                 </li>
             {% else %}
-                <li><a href="{% url 'accounts:login' %}" class="nav-item">로그인</a></li>
-                <li><a href="{% url 'accounts:signup' %}" class="nav-item">회원가입</a></li>
+                <li><a href="{% url 'accounts:login' %}" class="nav-item">{% t "로그인" %}</a></li>
+                <li><a href="{% url 'accounts:signup' %}" class="nav-item">{% t "회원가입" %}</a></li>
             {% endif %}
         </ul>
     </div>
 </nav>
+
+<script>
+    const toggleBtn = document.getElementById('language-toggle-btn');
+    const dropdownMenu = document.getElementById('language-dropdown-menu');
+
+    // 토글 버튼이 존재할 때만 스크립트를 실행합니다.
+    if (toggleBtn && dropdownMenu) {
+        // 1. 언어 선택 버튼을 클릭했을 때의 동작
+        toggleBtn.addEventListener('click', (event) => {
+            // 이벤트가 다른 곳으로 전파되는 것을 막습니다 (선택사항이지만 권장).
+            event.stopPropagation(); 
+            // 'show' 클래스를 추가하거나 제거하여 메뉴를 보이거나 숨깁니다.
+            dropdownMenu.classList.toggle('show');
+        });
+
+        // 2. 드롭다운 메뉴가 아닌 다른 곳을 클릭했을 때 메뉴를 닫는 동작
+        document.addEventListener('click', (event) => {
+            // 클릭된 곳이 토글 버튼이나 드롭다운 메뉴 자신이 아닐 경우에만,
+            if (!toggleBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                // 'show' 클래스를 제거하여 메뉴를 닫습니다.
+                dropdownMenu.classList.remove('show');
+            }
+        });
+    }
+</script>
