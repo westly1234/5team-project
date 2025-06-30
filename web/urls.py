@@ -6,6 +6,7 @@ from . import views
 app_name = 'web'  # 이 앱의 그룹 이름을 'web'으로 지정
 
 urlpatterns = [
+    path('', views.home, name='home'),
     # /web/services/
     path('services/', views.services_page, name='services'), 
     

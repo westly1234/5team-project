@@ -1,165 +1,164 @@
-{% load static custom_translate i18n %}
+{% comment %}
+▼▼▼▼▼ 파일: web/templates/web/base_simple.html (수정된 최종본) ▼▼▼▼▼
+- 이 파일은 모든 페이지의 공통 뼈대가 됩니다.
+- 페이지별 고유 스크립트를 위해 {% block extra_scripts %}가 추가되었습니다.
+{% endcomment %}
+
+{% load static i18n custom_translate %}
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="{{ request.LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}HealthWise{% endblock %}</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <style>
         /* 기본 body 스타일 */
         body {
             background-color: #0a0a0a;
             color: #fff;
-            font-family: 'Pretendard', sans-serif; /* 폰트는 base.html과 통일 */
+            font-family: 'Pretendard', 'Poppins', sans-serif;
             margin: 0;
-            padding-top: 85px; /* ✅ 헤더가 fixed이므로, 헤더 높이만큼 상단에 여백을 주어 내용이 가려지지 않게 함 */
+            padding-top: 85px; /* 헤더 높이만큼 패딩 */
         }
 
-        /* ✅ [추가] 제공해주신 네비게이션 스타일을 여기에 모두 붙여넣습니다. */
-        nav {
+        /* Header 컨테이너 */
+        .app-header {
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 15px 50px;
             position: fixed;
             top: 0;
-            left: 0; /* ✅ left: 0 추가하여 왼쪽 정렬 보장 */
+            left: 0;
             width: 100%;
-            padding: 20px 50px;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
             z-index: 10000;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            box-sizing: border-box; /* ✅ padding이 너비에 영향을 주지 않도록 설정 */
+            box-sizing: border-box;
         }
 
-        .nav-container {
+        .app-header .nav-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 1400px; /* ✅ 다른 페이지와 일관성을 위해 추가 */
-            margin: 0 auto;    /* ✅ 다른 페이지와 일관성을 위해 추가 */
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        .logo {
+        .app-header .logo {
             font-size: 24px;
             font-weight: 800;
             background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-decoration: none; /* ✅ a 태그의 밑줄 제거 */
+            text-decoration: none;
         }
 
-        .nav-menu {
+        .app-header .nav-menu {
             list-style: none;
             display: flex;
             align-items: center;
             gap: 35px;
-            margin: 0; /* ✅ 기본 마진 제거 */
-            padding: 0; /* ✅ 기본 패딩 제거 */
+            margin: 0;
+            padding: 0;
         }
 
-        .nav-menu a.nav-item,
-        .nav-menu button.nav-item {
+        .app-header .nav-item {
             color: rgba(255, 255, 255, 0.85);
             text-decoration: none;
             font-size: 1rem;
             font-weight: 500;
-            padding: 5px 0;
+            transition: color 0.3s ease, transform 0.3s ease;
             position: relative;
-            transition: color 0.3s ease;
-        }
-
-        .nav-menu a.nav-item::after,
-        .nav-menu button.nav-item::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #4ecdc4;
-            transition: width 0.3s ease;
-        }
-
-        .nav-menu a.nav-item:hover,
-        .nav-menu button.nav-item:hover {
-            color: #fff;
-        }
-
-        .nav-menu a.nav-item:hover::after,
-        .nav-menu button.nav-item:hover::after {
-            width: 100%;
-        }
-        .language-dropdown-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        /* 토글 버튼 스타일 */
-        #language-toggle-btn {
+            padding: 6px 4px;
             background: none;
             border: none;
-            color: rgba(255, 255, 255, 0.85);
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
             font-family: inherit;
+        }
+        
+        .app-header .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2.5px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            transition: width 0.35s ease-out;
+        }
+
+        .app-header .nav-item:hover,
+        .app-header .nav-item.active {
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .app-header .nav-item:hover::after,
+        .app-header .nav-item.active::after {
+            width: 100%;
+        }
+
+        .app-header .nav-item .fas {
+            font-family: 'Font Awesome 6 Free', 'FontAwesome' !important;
+            font-weight: 900 !important;
+            color: inherit;
+        }
+
+        .language-dropdown-container {
+            position: relative;
+        }
+
+        #language-toggle-btn {
             display: flex;
             align-items: center;
-            padding: 5px 0;
-            gap: 8px; /* 다른 nav-item과 높이를 맞춤 */
+            gap: 8px;
         }
 
-        #language-toggle-btn:hover {
-            color: #fff;
-        }
-
-        /* 드롭다운 메뉴 기본 스타일 (숨김 상태) */
         .language-dropdown-menu {
+            display: none;
             position: absolute;
-            top: 150%; /* 버튼 아래에 약간의 간격을 두고 표시 */
+            top: 150%;
             right: 0;
-            background: rgba(30, 30, 30, 0.9); /* 살짝 투명한 어두운 배경 */
-            backdrop-filter: blur(10px);
+            background: rgba(30, 30, 30, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            padding: 8px;
-            min-width: 120px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            min-width: 120px;
             z-index: 100;
-            
-            /* 기본적으로 숨김 처리 */
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
-            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+            transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
-        /* JS에 의해 .show 클래스가 추가되면 보이는 상태로 변경 */
         .language-dropdown-menu.show {
+            display: block;
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
-            transition-delay: 0s;
         }
+
         .language-option-form {
             margin: 0;
-            padding: 0;
             display: block;
         }
 
         .language-option-btn {
             width: 100%;
+            padding: 10px 16px;
             background: none;
             border: none;
             color: rgba(255, 255, 255, 0.8);
-            padding: 8px 12px;
             text-align: left;
-            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.2s ease, color 0.2s ease;
-            font-size: 0.95rem;
-            font-family: inherit;
+            font-size: 0.95em;
+            transition: background-color 0.2s, color 0.2s;
+            border-radius: 4px;
         }
 
         .language-option-btn:hover {
@@ -169,17 +168,31 @@
 
         .language-option-btn.active {
             font-weight: bold;
-            color: #4ecdc4; /* 활성화된 언어 표시 색상 */
+            color: #4ecdc4;
         }
     </style>
+    
+    <!-- 각 페이지의 고유한 스타일을 위한 블록 -->
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
-    {# 헤더 포함 부분은 그대로 둡니다. #}
-    {% include 'web/_header.html' %}
+
+    <header class="app-header">
+        {% include 'web/_header.html' %}
+    </header>
 
     <main>
+        <!-- 각 페이지의 고유한 콘텐츠가 이 블록에 들어갑니다. -->
         {% block content %}
         {% endblock %}
     </main>
+    
+    <!-- 모든 페이지에 공통으로 들어갈 푸터를 추가할 수 있습니다. -->
+    {% block footer %}
+    {% endblock %}
+
+    <!-- 각 페이지의 고유한 스크립트를 위한 블록 -->
+    {% block extra_scripts %}{% endblock %}
+
 </body>
 </html>
