@@ -1,6 +1,6 @@
 {% extends 'web/base_simple.html' %}
 {% load static custom_translate i18n %}
-{% block title %}AI 체형 분석 v2.1{% endblock %}
+{% block title %}{%t 'AI 체형 분석' %}{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -195,32 +195,32 @@
 
 <div class="analyzer-wrapper">
     <div class="page-header">
-        <h1>AI 체형 분석 및 스타일 제안</h1>
-        <p>사진 한 장으로 당신의 체형 실루엣을 정밀 분석하고, AI가 최적의 스타일을 찾아드립니다.</p>
+        <h1>{% t 'AI 체형 분석 및 스타일 제안' %}</h1>
+        <p>{% t '사진 한 장으로 당신의 체형 실루엣을 정밀 분석하고, AI가 최적의 스타일을 찾아드립니다.' %}</p>
     </div>
 
     <!-- === 촬영 가이드 섹션 === -->
     <div class="pre-analysis-guide">
-        <h2><i class="bi bi-camera-fill"></i>성공적인 분석을 위한 촬영 가이드</h2>
+        <h2><i class="bi bi-camera-fill"></i>{% t '성공적인 분석을 위한 촬영 가이드' %}</h2>
         <div class="guide-grid">
             <div class="guide-box good-examples">
-                <h3><i class="bi bi-check-circle"></i>이렇게 찍어주세요</h3>
+                <h3><i class="bi bi-check-circle"></i>{% t '이렇게 찍어주세요' %}</h3>
                 <ul>
-                    <li><i class="bi bi-check-circle-fill"></i>몸의 실루엣이 드러나는 옷</li>
-                    <li><i class="bi bi-check-circle-fill"></i>머리부터 발끝까지 나오는 전신사진</li>
-                    <li><i class="bi bi-check-circle-fill"></i>정면을 바라보고 똑바로 선 자세</li>
-                    <li><i class="bi bi-check-circle-fill"></i>밝고 그림자가 없는 균일한 조명</li>
-                    <li><i class="bi bi-check-circle-fill"></i>몸과 색이 다른 단색 배경</li>
+                    <li><i class="bi bi-check-circle-fill"></i>{% t '몸의 실루엣이 드러나는 옷' %}</li>
+                    <li><i class="bi bi-check-circle-fill"></i>{% t '머리부터 발끝까지 나오는 전신사진' %}</li>
+                    <li><i class="bi bi-check-circle-fill"></i>{% t '정면을 바라보고 똑바로 선 자세' %}</li>
+                    <li><i class="bi bi-check-circle-fill"></i>{% t '밝고 그림자가 없는 균일한 조명' %}</li>
+                    <li><i class="bi bi-check-circle-fill"></i>{% t '몸과 색이 다른 단색 배경' %}</li>
                 </ul>
             </div>
             <div class="guide-box bad-examples">
-                <h3><i class="bi bi-x-circle"></i>이런 사진은 피해주세요</h3>
+                <h3><i class="bi bi-x-circle"></i>{% t '이런 사진은 피해주세요' %}</h3>
                 <ul>
-                    <li><i class="bi bi-x-circle-fill"></i>부피가 큰 옷 (패딩, 오버핏 등)</li>
-                    <li><i class="bi bi-x-circle-fill"></i>셀카, 상반신만 나온 사진</li>
-                    <li><i class="bi bi-x-circle-fill"></i>앉거나 옆모습, 비스듬한 자세</li>
-                    <li><i class="bi bi-x-circle-fill"></i>어둡거나 얼굴/몸에 그림자가 진 사진</li>
-                    <li><i class="bi bi-x-circle-fill"></i>팔짱을 끼거나 몸을 가리는 자세</li>
+                    <li><i class="bi bi-x-circle-fill"></i>{% t '부피가 큰 옷 (패딩, 오버핏 등)' %}</li>
+                    <li><i class="bi bi-x-circle-fill"></i>{% t '셀카, 상반신만 나온 사진' %}</li>
+                    <li><i class="bi bi-x-circle-fill"></i>{% t '앉거나 옆모습, 비스듬한 자세' %}</li>
+                    <li><i class="bi bi-x-circle-fill"></i>{% t '어둡거나 얼굴/몸에 그림자가 진 사진' %}</li>
+                    <li><i class="bi bi-x-circle-fill"></i>{% t '팔짱을 끼거나 몸을 가리는 자세' %}</li>
                 </ul>
             </div>
         </div>
@@ -231,12 +231,12 @@
     <div class="main-grid-container">
         <!-- 왼쪽: 입력 패널 -->
         <div class="panel analyzer-panel">
-            <h2 class="panel-title"><i class="bi bi-pencil-square"></i>분석 정보 입력</h2>
+            <h2 class="panel-title"><i class="bi bi-pencil-square"></i>{% t '분석 정보 입력' %}</h2>
             <form id="upload-form" enctype="multipart/form-data">
                 {% csrf_token %}
                 
                 <div class="form-section">
-                    <strong class="form-section-title">1. 성별</strong>
+                    <strong class="form-section-title">1. {% t '성별' %}</strong>
                     <div class="gender-selector">
                         <input type="radio" id="gender_male" name="gender" value="male" required>
                         <label for="gender_male"><i class="bi bi-gender-male"></i> {% t '남성' %} </label>
@@ -246,15 +246,15 @@
                 </div>
                 
                 <div class="form-section">
-                    <strong class="form-section-title">2. 신체적 고민 (선택사항)</strong>
-                    <textarea id="user-concerns" name="concerns" placeholder="예: 어깨가 좁아요, 하체가 발달했어요, 날씬해 보이고 싶어요..."></textarea>
+                    <strong class="form-section-title">2. {% t '신체적 고민 (선택사항)' %}</strong>
+                    <textarea id="user-concerns" name="concerns" placeholder="{% t '예: 어깨가 좁아요, 하체가 발달했어요, 날씬해 보이고 싶어요...' %}"></textarea>
                 </div>
         
                 <div class="form-section">
-                    <strong class="form-section-title">3. 가이드에 맞는 전신 사진 업로드</strong>
+                    <strong class="form-section-title">3. {% t '가이드에 맞는 전신 사진 업로드' %}</strong>
                     <div id="file-upload-area" class="file-upload-wrapper">
                         <i class="bi bi-cloud-arrow-up-fill"></i>
-                        <p id="file-upload-text">파일을 드래그하거나 클릭하여 업로드</p>
+                        <p id="file-upload-text">{% t '파일을 드래그하거나 클릭하여 업로드' %}</p>
                         <span id="file-name-display"></span>
                     </div>
                     <input type="file" name="image" id="image-upload" accept="image/jpeg, image/jpg, image/png, image/heic, image/heif" required>
@@ -273,19 +273,19 @@
                 <div id="loader" style="display: none;"></div>
                 <div id="placeholder-content">
                     <i class="bi bi-image-alt"></i>
-                    <p>분석 결과가 여기에 표시됩니다.</p>
+                    <p>{% t '분석 결과가 여기에 표시됩니다.' %}</p>
                 </div>
             </div>
 
             <div id="results-content" style="display: none;">
                 <div class="result-images-grid">
                     <div class="result-image-box">
-                        <img id="result-skeleton-image" src="#" alt="스켈레톤 이미지">
-                        <h4>기본 골격 구조</h4>
+                        <img id="result-skeleton-image" src="#" alt="{% t '스켈레톤 이미지' %}">
+                        <h4>{% t '기본 골격 구조' %}</h4>
                     </div>
                     <div class="result-image-box">
-                        <img id="result-analysis-image" src="#" alt="실루엣 분석 이미지">
-                        <h4>실루엣 형태 분석</h4>
+                        <img id="result-analysis-image" src="#" alt="{% t '실루엣 분석 이미지' %}">
+                        <h4>{% t '실루엣 형태 분석' %}</h4>
                     </div>
                 </div>
                 <div class="result-section">
@@ -297,7 +297,7 @@
                     <div id="result-fits-tags"></div>
                 </div>
                 <div class="result-section">
-                    <h3><i class="bi bi-lightbulb-fill"></i>AI 스타일링 팁</h3>
+                    <h3><i class="bi bi-lightbulb-fill"></i>{% t 'AI 스타일링 팁' %}</h3>
                     <p id="result-tips"></p>
                 </div>
             </div>

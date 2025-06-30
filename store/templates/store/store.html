@@ -1,6 +1,6 @@
 {% extends 'web/base_simple.html' %}
 {% load static custom_translate i18n %}
-{% block title %}스토어 - 추천 브랜드{% endblock %}
+{% block title %}{% t '스토어 - 추천 브랜드' %}{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -142,7 +142,7 @@
                     <a href="?starts_with=0-9{% if current_category %}&category={{ current_category }}{% endif %}">0-9</a>
                 </div>
             </div>
-            <input type="search" name="q" id="search-input" class="search-input-optimized" placeholder="브랜드 이름 검색..." value="{{ search_query|default:'' }}">
+            <input type="search" name="q" id="search-input" class="search-input-optimized" placeholder="{% t '브랜드 이름 검색...' %}" value="{{ search_query|default:'' }}">
             <button type="button" class="search-btn-optimized"><i class="bi bi-search"></i></button>
         </div>
     </div>
