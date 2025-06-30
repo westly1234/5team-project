@@ -714,7 +714,7 @@
   "예: 고혈압약 (아침 식후 1정), 당뇨약 (저녁 식후 1정) 또는 없음": "Example: Hypertension medication (1 tablet after breakfast), diabetes medication (1 tablet after dinner), or none",
   "예: 소주 1병 또는 맥주 2캔": "Example: 1 bottle of soju or 2 cans of beer",
   "예: 종합비타민, 오메가3, 유산균, 진통제 (필요시) 또는 없음": "Example: Multivitamins, Omega-3, probiotics, pain relievers (if needed), or none",
-  "예시) 밥 한 공기, 김치찌개, 계란후라이 2개\\n소스나 음료 등 사진에 없는 정보도 알려주시면 더 정확해요!": "Example) 1 bowl of rice, kimchi stew, 2 fried eggs\\nIf you let us know about information not in the photo, like sauces or drinks, it will be more accurate!",
+  "예시) 밥 한 공기, 김치찌개, 계란후라이 2개\n소스나 음료 등 사진에 없는 정보도 알려주시면 더 정확해요!": "Example) 1 bowl of rice, kimchi stew, 2 fried eggs\nIf you let us know about information not in the photo, like sauces or drinks, it will be more accurate!",
   "오늘 운동 어땠나요?": "How was your workout today?",
   "오늘도 건강하고 행복한 날이 되시길 바랍니다.<br>감사합니다.": "I hope today is a healthy and happy day for you.<br>Thank you.",
   "오늘의 식단 요약": "Today's meal summary",
@@ -845,7 +845,7 @@
   "정신 건강 문제": "Mental health issues",
   "정확한 식사 시간:": "Exact meal time:",
   "식사 중량을 정확히 입력하면, 보다 정확한 영양성분을 파악하는 데 큰 도움이 됩니다.": "Entering the meal weight accurately will greatly help in understanding the overall nutritional balance of the day.",
-  "정확한 중량": "Exact weight",
+  "정확한 중량:": "Exact weight:",
   "제목 없음": "No title",
   "제목 필요": "Title required",
   "제출": "Submit",
@@ -1086,5 +1086,8 @@
   "도움이 더 필요하신가요?": "Need more help?",
   "자주 묻는 질문에서 원하는 답변을 찾지 못하셨거나, HealthWise 사용 중 추가적인 도움이 필요하시면 언제든지 문의해주세요. 전문가가 신속하고 친절하게 답변드리겠습니다.": "If you couldn't find the answer you were looking for in the FAQ or need further assistance while using HealthWise, please don't hesitate to contact us. Our experts will respond promptly and kindly.",
   "1:1 이메일 문의하기": "1:1 Email Inquiry",
-  "©2025 HealthWise. 모든 권리 보유. 당신의 건강한 삶을 응원합니다.": "©2025 HealthWise. All rights reserved. We support your healthy life."
+  "©2025 HealthWise. 모든 권리 보유. 당신의 건강한 삶을 응원합니다.": "©2025 HealthWise. All rights reserved. We support your healthy life.",
+  "님의 모든 운동 기록 보관소입니다.": "{{ user.username }}'s workout records are all stored here.",
+  "AI의 도움을 받거나 직접 운동을 조합하여 나만의 루틴을 만드세요.": "Create your own workout routine with the help of AI or by combining exercises yourself.",
+  "{date} 섭취량": "Intake on {date}"
 }

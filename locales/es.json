@@ -685,7 +685,7 @@
   "예: 고혈압약 (아침 식후 1정), 당뇨약 (저녁 식후 1정) 또는 없음": "Ej: medicamento para la hipertensión (1 tableta después del desayuno), medicamento para la diabetes (1 tableta después de la cena) o ninguno",
   "예: 소주 1병 또는 맥주 2캔": "Ej: 1 botella de soju o 2 latas de cerveza",
   "예: 종합비타민, 오메가3, 유산균, 진통제 (필요시) 또는 없음": "Ej: multivitamínico, omega 3, probióticos, analgésicos (si es necesario) o ninguno",
-  "예시) 밥 한 공기, 김치찌개, 계란후라이 2개\\n소스나 음료 등 사진에 없는 정보도 알려주시면 더 정확해요!": "Ejemplo) 1 taza de arroz, estofado de kimchi, 2 huevos fritos\\n¡Si me dices información que no está en la foto, como salsas o bebidas, será más preciso!",
+  "예시) 밥 한 공기, 김치찌개, 계란후라이 2개\\n소스나 음료 등 사진에 없는 정보도 알려주시면 더 정확해요!": "Ejemplo) 1 taza de arroz, estofado de kimchi, 2 huevos fritos\n¡Si me dices información que no está en la foto, como salsas o bebidas, será más preciso!",
   "오늘 운동 어땠나요?": "¿Cómo fue tu entrenamiento hoy?",
   "오늘도 건강하고 행복한 날이 되시길 바랍니다.<br>감사합니다.": "Espero que hoy sea un día saludable y feliz.<br>Gracias.",
   "오늘의 식단 요약": "Resumen de la dieta de hoy",
@@ -816,7 +816,7 @@
   "정신 건강 문제": "Problemas de salud mental",
   "정확한 식사 시간:": "Hora de comida exacta:",
   "식사 중량을 정확히 입력하면, 보다 정확한 영양성분을 파악하는 데 큰 도움이 됩니다.": "Si ingresa el peso de la comida con precisión, será de gran ayuda para comprender la composición nutricional de manera más precisa.",
-  "정확한 중량": "Peso exacto",
+  "정확한 중량:": "Peso exacto:",
   "제목 없음": "Sin título",
   "제목 필요": "Título necesario",
   "제출": "Enviar",
@@ -1084,5 +1084,8 @@
   "도움이 더 필요하신가요?": "¿Necesita más ayuda?",
   "자주 묻는 질문에서 원하는 답변을 찾지 못하셨거나, HealthWise 사용 중 추가적인 도움이 필요하시면 언제든지 문의해주세요. 전문가가 신속하고 친절하게 답변드리겠습니다.": "Si no pudo encontrar la respuesta que buscaba en las Preguntas Frecuentes o necesita más ayuda mientras usa HealthWise, no dude en contactarnos. Nuestros expertos le responderán de manera rápida y amable.",
   "1:1 이메일 문의하기": "Consulta por correo 1:1",
-  "©2025 HealthWise. 모든 권리 보유. 당신의 건강한 삶을 응원합니다.": "©2025 HealthWise. Todos los derechos reservados. Apoyamos su vida saludable."
+  "©2025 HealthWise. 모든 권리 보유. 당신의 건강한 삶을 응원합니다.": "©2025 HealthWise. Todos los derechos reservados. Apoyamos su vida saludable.",
+  "님의 모든 운동 기록 보관소입니다.": "Aquí se guardan todos los registros de entrenamiento de {{ user.username }}.",
+  "AI의 도움을 받거나 직접 운동을 조합하여 나만의 루틴을 만드세요.": "Crea tu propia rutina de entrenamiento con la ayuda de la IA o combinando ejercicios por tu cuenta.",
+  "{date} 섭취량": "Ingesta del {date}"
 }

@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout, login
 from django.http import HttpRequest, JsonResponse
 from django.core.mail import EmailMultiAlternatives
 from django.views.decorators.http import require_POST
@@ -20,6 +20,7 @@ from .forms import UserUpdateForm, ProfileUpdateForm
 from .models import Profile, BodyCompositionRecord
 from achievements.services import check_and_award_achievement
 from web.models import FitnessProfile
+from web.utils import t
 from django.http import JsonResponse
 from achievements.models import UserAchievement
 
@@ -68,13 +69,17 @@ def signup(request: HttpRequest):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             activation_link = request.build_absolute_uri(f"/accounts/activate/{uid}/{token}/")
 
-            subject = "이메일 인증을 완료해주세요"
+            subject = t("이메일 인증을 완료해주세요")
             from_email = settings.DEFAULT_FROM_EMAIL
             to_email = [user.email]
-            text_content = f"다음 링크를 클릭해서 인증을 완료해주세요: {activation_link}"
+            text_content = t("다음 링크를 클릭해서 인증을 완료해주세요: {link}", link=activation_link)
             html_content = render_to_string('accounts/activation_email.html', {
-                'user': user,
-                'activation_link': activation_link,
+                'user': user, 'activation_link': activation_link,
+                'title': t("이메일 인증을 완료해주세요"),
+                'greeting': t("안녕하세요, {username}님!", username=user.username),
+                'instruction': t("아래 버튼을 클릭하여 회원가입을 완료해주세요."),
+                'button_text': t("이메일 인증하기"),
+                'salutation': t("HealthWise 팀 드림"),
             })
             msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
             msg.attach_alternative(html_content, "text/html")
@@ -101,11 +106,29 @@ def signup(request: HttpRequest):
     else:
         # --- GET 요청 (페이지 최초 로드) 시 ---
         form = CustomUserCreationForm()
+        js_translations = {
+            'survey_complete_text': t('✅ 설문 작성 완료'),
+            'edit_survey_button': t('내용 수정하기'),
+            'survey_notice': t('*필수* 더 나은 서비스 제공을 위해 간단한 질문지 작성이 필요합니다.<br>양해 부탁드립니다.'),
+            'start_survey_button': t('질문지 작성하기'),
+            'submit_button_submitting': t("제출 중..."),
+            'submit_button_submit': t("제출"),
+            'next_button_next': t("다음"),
+            'alert_validation_fail': t("현재 단계의 모든 필수 항목을 입력하거나 선택해주세요."),
+            'alert_server_error': t("서버 오류 ({status})"),
+            'alert_html_response_error': t("서버에서 HTML 응답을 받았습니다. (상태: {status}). 로그인 페이지 또는 서버 오류일 수 있습니다."),
+            'alert_json_parse_error': t("서버 응답 처리 오류 (상태: {status}). 응답: {response}..."),
+            'alert_empty_response': t("설문이 전송되었으나, 서버에서 내용 없는 응답을 반환했습니다."),
+            'alert_save_error': t("저장 중 오류 발생: {error}"),
+            'alert_unknown_error': t("알 수 없는 오류"),
+            'alert_submit_error': t("설문 저장 중 에러가 발생했습니다: {error}")
+        }
         context = {
             'form': form,
             # 최초 접속 시에는 실패 상태가 아니므로 명확하게 False를 전달합니다.
             # 이 부분이 signup.html의 JavaScript 오류를 방지합니다.
             'submitted_as_normal_on_fail': False,
+            'js_translations': json.dumps(js_translations, ensure_ascii=False)
         }
         return render(request, 'accounts/signup.html', context)
 
@@ -122,10 +145,11 @@ def activate(request, uidb64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        return render(request, 'accounts/activation.html')
+        login(request, user)
+        messages.success(request, t('이메일 인증이 성공적으로 완료되었습니다. HealthWise에 오신 것을 환영합니다!'))
+        return redirect('web:services')
     else:
         return render(request, 'accounts/activation_failed.html')
-
 
 @require_POST
 @csrf_exempt  # ❗개발 중 테스트용 — 실서비스에서는 반드시 제거하고 JS에서 CSRF 헤더 추가
@@ -133,14 +157,11 @@ def save_survey_view(request):
     try:
         survey_data = json.loads(request.body.decode('utf-8'))
         request.session['survey_data_temp'] = survey_data
-        print(f"Temporary survey data stored in session: {survey_data}")
-        return JsonResponse({'success': True, 'message': '설문 데이터가 임시로 저장되었습니다.'})
+        return JsonResponse({'success': True, 'message': t('설문 데이터가 임시로 저장되었습니다.')})
     except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': '잘못된 JSON 데이터 형식입니다.'}, status=400)
+        return JsonResponse({'success': False, 'error': t('잘못된 JSON 데이터 형식입니다.')}, status=400)
     except Exception as e:
-        print(f"Error processing survey: {e}")
-        return JsonResponse({'success': False, 'error': f'서버 처리 중 오류가 발생했습니다: {str(e)}'}, status=500)
-
+        return JsonResponse({'success': False, 'error': t('서버 처리 중 오류가 발생했습니다: {error}', error=str(e))}, status=500)
 
 @require_POST
 @csrf_protect
@@ -166,7 +187,7 @@ def profile_edit(request):
             
             saved_profile.save() # ✅ 여기서 최종 저장
             profile_form.save_m2m() # ManyToMany 필드가 있다면 필요
-            messages.success(request, '프로필 정보가 성공적으로 업데이트되었습니다!')
+            messages.success(request, t('프로필 정보가 성공적으로 업데이트되었습니다!'))
 
             # ✅ 1. 프로필 관련 업적 확인
             # 프로필 이미지를 처음으로 업로드하거나 변경했을 때
@@ -195,7 +216,7 @@ def profile_edit(request):
                     check_and_award_achievement(request, request.user, 'body_record_10')
                 if record_count >= 30:
                     check_and_award_achievement(request, request.user, 'body_record_30')
-                messages.info(request, '신체 변화 기록이 추가되었습니다.')
+                messages.info(request, t('신체 변화 기록이 추가되었습니다.'))
 
             # ✅ 3. 목표 달성 관련 업적 확인
             # 목표 체중 달성 확인
@@ -247,7 +268,7 @@ def profile_edit(request):
                 print(f"프로필 완성도 업적 확인 중 오류 발생: {e}")
             return redirect('web:services')
         else:
-            messages.error(request, '입력된 정보를 다시 확인해주세요.')
+            messages.error(request, t('입력된 정보를 다시 확인해주세요.'))
     else:
         # ... (GET 요청 부분은 그대로)
         user_form = UserUpdateForm(instance=request.user)

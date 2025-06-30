@@ -44,6 +44,7 @@
 
 <!-- 차트 및 CSRF 토큰 데이터를 위한 컨테이너 -->
 <div id="page-data-container"
+     data-translations='{{ js_translations|safe }}'
      data-doughnut-data="[{{ daily_totals.carbohydrate|default:0 }}, {{ daily_totals.protein|default:0 }}, {{ daily_totals.fat|default:0 }}]"
      data-line-labels='{{ graph_labels|safe }}'
      data-line-data='{{ calorie_data|safe }}'
@@ -54,7 +55,7 @@
     <!-- 헤더 -->
     <header class="text-left mb-8">
         <div class="border-l-4 border-purple-400 pl-4">
-            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">Diet Dashboard</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">{% t 'Diet Dashboard' %}</h1>
             <p class="text-md text-gray-400 mt-2"> {% t '일일 식단 요약과 주간 섭취 트렌드를 확인하세요.' %} </p>
         </div>
     </header>
@@ -104,9 +105,9 @@
                                         <p class="font-semibold text-white truncate">
                                             {% if meal.analysis_result.foods %}
                                                 {{ meal.analysis_result.foods.0.name }}{% if meal.analysis_result.foods|length > 1 %} 외 {{ meal.analysis_result.foods|length|add:"-1" }}건{% endif %}
-                                            {% else %}분석 정보 없음{% endif %}
+                                            {% else %}{% t '분석 정보 없음' %}{% endif %}
                                         </p>
-                                        <p class="text-sm text-gray-400">{{ meal.created_at|date:"H:i" }} 기록</p>
+                                        <p class="text-sm text-gray-400">{{ meal.created_at|date:"H:i" }} {% t '기록' %}</p>
                                     </div>
                                     <div class="text-right flex-shrink-0">
                                         <p class="font-bold text-lg text-cyan-400">{{ meal.analysis_result.total_nutrition.calories }}</p>
@@ -159,6 +160,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const dataContainer = document.getElementById('page-data-container');
+    const i18n = JSON.parse(document.getElementById('page-data-container').dataset.translations);
     const doughnutData = JSON.parse(dataContainer.dataset.doughnutData);
     const lineLabels = JSON.parse(dataContainer.dataset.lineLabels);
     const lineData = JSON.parse(dataContainer.dataset.lineData);
@@ -171,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
         new Chart(doughnutCtx.getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: ['탄수화물 (g)', '단백질 (g)', '지방 (g)'],
+                labels: [i18n.label_carbs_g, i18n.label_protein_g, i18n.label_fat_g],
                 datasets: [{
                     data: doughnutData,
                     backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b'],
@@ -202,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
             data: {
                 labels: lineLabels,
                 datasets: [{
-                    label: '섭취 칼로리 (kcal)', data: lineData, backgroundColor: gradient,
+                    label: i18n.label_intake_cal_kcal, data: lineData, backgroundColor: gradient,
                     borderColor: 'rgba(167, 139, 250, 1)', borderWidth: 3, pointBackgroundColor: 'rgba(167, 139, 250, 1)',
                     pointBorderColor: '#fff', pointHoverRadius: 7, pointHoverBorderWidth: 2,
                     pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgba(167, 139, 250, 1)',
@@ -220,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     tooltip: {
                         enabled: true, backgroundColor: '#1f2937', titleColor: '#d1d5db',
                         bodyColor: '#fff', padding: 12, cornerRadius: 8, displayColors: false,
-                        callbacks: { label: (c) => `섭취: ${c.raw} kcal` }
+                        callbacks: { label: (c) => `${i18n.tooltip_intake}: ${c.raw} kcal` }
                     }
                 },
                 interaction: { intersect: false, mode: 'index' }
@@ -238,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const mealCard = deleteButton.closest('.meal-card');
             const mealId = mealCard.dataset.mealId;
 
-            if (confirm('이 식사 기록을 정말 삭제하시겠습니까?')) {
+            if (confirm(i18n.confirm_delete)) {
                 // 이 기능을 사용하려면 백엔드에 /diet/delete/<meal_id>/ URL과 뷰가 필요합니다.
                 fetch(`/diet/delete/${mealId}/`, {
                     method: 'DELETE',
@@ -249,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .then(response => {
                     if (response.ok) return response.json();
-                    throw new Error('삭제 요청에 실패했습니다.');
+                    throw new Error(i18n.error_delete_failed);
                 })
                 .then(data => {
                     if (data.success) {
@@ -267,12 +269,12 @@ document.addEventListener('DOMContentLoaded', function () {
                             window.location.reload(); 
                         }, 300);
                     } else {
-                        alert(data.error || '삭제 중 오류가 발생했습니다.');
+                        alert(data.error || i18n.error_generic);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('서버와 통신 중 오류가 발생했습니다.');
+                    alert(i18n.error_server_communication);
                 });
             }
         });

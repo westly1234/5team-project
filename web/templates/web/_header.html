@@ -1,18 +1,12 @@
-{% comment %}
-▼▼▼▼▼ 파일: _header.html ▼▼▼▼▼
-아이콘을 위한 <i> 태그가 이미 올바르게 포함되어 있으므로, 이 파일은 수정할 필요가 없습니다.
-확인용으로 코드를 다시 첨부합니다.
-{% endcomment %}
-
 {% load static i18n custom_translate %}
 <nav class="nav-container">
     <a href="/" class="logo" style="text-decoration: none;">💊 HealthWise</a>
     <ul class="nav-menu">
         <li>
             <div class="language-dropdown-container">
-                <!-- ▼▼▼ 이 버튼 안에 아이콘들이 포함되어 있습니다 ▼▼▼ -->
+                <!-- 1. 현재 선택된 언어를 표시하는 버튼 -->
                 <button type="button" id="language-toggle-btn" class="nav-item">
-                    <i class="fas fa-globe"></i>  <!-- 지구본 아이콘 -->
+                    <i class="fas fa-globe"></i>
                     <span class="language-text">
                         {% get_current_language as LANGUAGE_CODE %}
                         {% if LANGUAGE_CODE == 'ko' %}한국어
@@ -21,21 +15,26 @@
                         {% else %}Language
                         {% endif %}
                     </span>
-                    <i class="fas fa-chevron-down" style="font-size: 0.7em;"></i> <!-- 화살표 아이콘 -->
+                    <i class="fas fa-chevron-down" style="font-size: 0.7em;"></i>
                 </button>
                 
+                <!-- 2. 애니메이션과 함께 나타날 드롭다운 메뉴 -->
                 <div id="language-dropdown-menu" class="language-dropdown-menu">
                     {% get_available_languages as LANGUAGES %}
+                    {% get_current_language as LANGUAGE_CODE %}
+                    
+                    <!-- ▼▼▼ 이 부분이 핵심입니다! lang_name 변수를 사용합니다. ▼▼▼ -->
                     {% for lang_code, lang_name in LANGUAGES %}
                         <form action="{% url 'set_language' %}" method="post" class="language-option-form">
                             {% csrf_token %}
                             <input name="next" type="hidden" value="{{ request.get_full_path }}">
                             <input name="language" type="hidden" value="{{ lang_code }}">
                             <button type="submit" class="language-option-btn {% if lang_code == LANGUAGE_CODE %}active{% endif %}">
-                                {% if lang_code == 'ko' %}한국어{% elif lang_code == 'en' %}English{% elif lang_code == 'es' %}Español{% endif %}
+                                {{ lang_name }} ({{ lang_code }})
                             </button>
                         </form>
                     {% endfor %}
+                    <!-- ▲▲▲ 여기까지가 핵심 ▲▲▲ -->
                 </div>
             </div>
         </li>
@@ -63,18 +62,21 @@
 </nav>
 
 <script>
-    // 스크립트는 변경 없이 그대로 사용합니다
+document.addEventListener('DOMContentLoaded', () => {
     const toggleBtn = document.getElementById('language-toggle-btn');
     const dropdownMenu = document.getElementById('language-dropdown-menu');
+
     if (toggleBtn && dropdownMenu) {
         toggleBtn.addEventListener('click', (event) => {
             event.stopPropagation(); 
             dropdownMenu.classList.toggle('show');
         });
+
         document.addEventListener('click', (event) => {
             if (!toggleBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
                 dropdownMenu.classList.remove('show');
             }
         });
     }
+});
 </script>

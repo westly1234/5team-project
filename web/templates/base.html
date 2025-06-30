@@ -423,12 +423,12 @@
         .btn-close-toast:hover {
             color: #fff;
         }
+        /* 언어 선택기 드롭다운 스타일 */
         .language-dropdown-container {
             position: relative;
             display: inline-block;
         }
 
-        /* 토글 버튼 스타일 */
         #language-toggle-btn {
             background: none;
             border: none;
@@ -439,54 +439,48 @@
             font-family: inherit;
             display: flex;
             align-items: center;
+            gap: 8px;
             padding: 5px 0;
-            gap: 8px; /* 다른 nav-item과 높이를 맞춤 */
+            transition: color 0.3s ease;
         }
 
         #language-toggle-btn:hover {
             color: #fff;
         }
 
-        /* 드롭다운 메뉴 기본 스타일 (숨김 상태) */
         .language-dropdown-menu {
             position: absolute;
-            top: 150%; /* 버튼 아래에 약간의 간격을 두고 표시 */
+            top: 150%;
             right: 0;
-            background: rgba(30, 30, 30, 0.9); /* 살짝 투명한 어두운 배경 */
+            min-width: 150px;
+            z-index: 100;
+            background: rgba(30, 30, 30, 0.9);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             padding: 8px;
-            min-width: 120px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-            z-index: 100;
-            
-            /* 기본적으로 숨김 처리 */
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
-            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
         }
 
-        /* JS에 의해 .show 클래스가 추가되면 보이는 상태로 변경 */
         .language-dropdown-menu.show {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
             transition-delay: 0s;
         }
-        .language-option-form {
-            margin: 0;
-            padding: 0;
-            display: block;
-        }
+
+        .language-option-form { margin: 0; padding: 0; display: block; }
 
         .language-option-btn {
             width: 100%;
             background: none;
             border: none;
             color: rgba(255, 255, 255, 0.8);
-            padding: 8px 12px;
+            padding: 10px 12px;
             text-align: left;
             border-radius: 4px;
             cursor: pointer;
@@ -502,7 +496,7 @@
 
         .language-option-btn.active {
             font-weight: bold;
-            color: #4ecdc4; /* 활성화된 언어 표시 색상 */
+            color: #4ecdc4; /* 사이트 메인 컬러 */
         }
         
     </style>
@@ -516,7 +510,7 @@
         <div class="toast show" role="alert">
             <div class="toast-icon">✨</div>
             <div class="toast-body">
-                <strong>업적 달성!</strong>
+                <strong>{%t '업적 달성!' %}</strong>
                 {{ message }}
             </div>
             <button type="button" class="btn-close-toast" onclick="this.parentElement.remove()">×</button>
