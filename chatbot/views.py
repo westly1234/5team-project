@@ -74,7 +74,7 @@ except Exception as e:
 def get_prompt(prompt_name: str, lang_code: str) -> str:
     if not lang_code or lang_code not in ['ko', 'en', 'es']:
         lang_code = 'ko'  # 유효하지 않으면 한국어로 기본 설정
-    
+
     file_path = os.path.join(settings.BASE_DIR, 'chatbot', 'prompts', f'{prompt_name}_{lang_code}.txt')
     
     try:
@@ -112,7 +112,7 @@ def generate_title_with_llm(bot_answer: str, client: OpenAI | None, request: Htt
         print(f"LLM 제목 생성 중 오류: {e}")
         return _json_t("새 대화", lang_code)
 
-def _save_conversation_and_get_title(dialog, user, user_msg_db, bot_msg_md, response_type, request: HttpRequest):
+def _save_conversation_and_get_title(dialog, user, user_msg_db, bot_msg_md, response_type, request: HttpRequest, lang_code):
     lang_code = translation.get_language() or 'ko'
     if response_type == "error":
         print("[DB] 오류가 발생하여 대화를 저장하지 않습니다.")
@@ -308,17 +308,17 @@ def _retrieve_rag_context(question: str, history: str, client: OpenAI | None, la
         optimization_check_prompt = get_prompt('optimization_check', lang_code).format(history=history[-1000:], question=question)
         try:
             print("[RAG v6] LLM에게 검색어 최적화 필요성 판단을 요청합니다...")
-            check_response = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": "You are a query analysis expert."}, {"role": "user", "content": optimization_check_prompt}], temperature=0.0, max_tokens=50)
+            check_response = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "system", "content": "You are a query analysis expert."}, {"role": "user", "content": optimization_check_prompt}], temperature=0.0, max_tokens=100)
             optimized_query_candidate = check_response.choices[0].message.content.strip()
-            with translation.override(lang_code):
-                # "최적화 불필요"도 현재 언어로 번역해서 비교해야 함
-                if _json_t("최적화 불필요") not in optimized_query_candidate:
-                    print(f"[RAG v6] LLM이 검색어 최적화를 제안했습니다: '{question}' -> '{optimized_query_candidate}'")
-                    final_query = optimized_query_candidate
-                else:
-                    print("[RAG v6] LLM이 원본 질문이 충분하다고 판단했습니다.")
+       
+            if optimized_query_candidate == "[NO_CHANGE]":
+                print(f"[RAG v6] LLM이 최적화가 불필요하다고 판단했습니다. 원본 질문을 사용합니다.")
+            else:
+                print(f"[RAG v6] LLM이 검색어 최적화를 제안했습니다: '{question}' -> '{optimized_query_candidate}'")
+                final_query = optimized_query_candidate
         except Exception as e:
             print(f"[RAG v6] 검색어 최적화 판단 중 오류 발생: {e}. 원본 질문을 사용합니다.")
+            traceback.print_exc()
     try:
         print(f"[RAG v6] 1단계: 최종 검색어 '{final_query}'로 후보 문서를 가져옵니다.")
         retriever = vectorstore.as_retriever(search_kwargs={"k": 7})
@@ -530,7 +530,7 @@ def chatbot_api(request: HttpRequest):
             response_data = {"response": response_html}
 
         # DB 저장 및 최종 응답 반환
-        final_id, final_title = _save_conversation_and_get_title(current_dialog, user, user_input_text.strip(), bot_response_md, "text_response", request)
+        final_id, final_title = _save_conversation_and_get_title(current_dialog, user, user_input_text.strip(), bot_response_md, "text_response", request, lang_code)
         response_data.update({"id": final_id, "title": final_title})
 
         end_time = time.time()
@@ -614,9 +614,6 @@ def load_dialog_api(request: HttpRequest, dialog_id: int):
     if not user.is_authenticated:
         return JsonResponse({"error": _json_t("사용자 없음")}, status=401)
     lang_code = translation.get_language() or 'ko'
-    if not dialog.full_text or not dialog.full_text.strip():
-        initial_message = {"sender": "bot", "text_key": "new_dialog_greeting"}
-        return JsonResponse({"messages": [initial_message], "id": dialog.id, "title": dialog.summary_title})
 
     turns = re.split(r"(?=\nuser: |\nbot: )", dialog.full_text.strip())
     messages = []
@@ -651,11 +648,13 @@ def load_dialog_api(request: HttpRequest, dialog_id: int):
 def new_dialog_api(request: HttpRequest):
     user = request.user
     if not user.is_authenticated:
-        return JsonResponse({"error": _json_t("사용자 없음")}, status=401)
+        return JsonResponse({"error": _json_t("사용자 없음", lang_code)}, status=401)
     lang_code = translation.get_language() or 'ko'
     translated_title = _json_t("새 대화", lang_code)
-    dialog = ChatConversation.objects.create(user=request.user, summary_title=translated_title, is_custom_title=False, full_text="")
-    return JsonResponse({"id": dialog.id, "title": None})
+    translated_greeting = _json_t('new_dialog_greeting', lang_code)
+    initial_full_text = f"bot: {translated_greeting}\n"
+    dialog = ChatConversation.objects.create(user=request.user, summary_title=translated_title, is_custom_title=False, full_text=initial_full_text)
+    return JsonResponse({"id": dialog.id, "title": dialog.summary_title})
 
 @login_required
 @csrf_exempt
