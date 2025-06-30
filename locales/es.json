@@ -1087,5 +1087,21 @@
   "©2025 HealthWise. 모든 권리 보유. 당신의 건강한 삶을 응원합니다.": "©2025 HealthWise. Todos los derechos reservados. Apoyamos su vida saludable.",
   "님의 모든 운동 기록 보관소입니다.": "Aquí se guardan todos los registros de entrenamiento de {{ user.username }}.",
   "AI의 도움을 받거나 직접 운동을 조합하여 나만의 루틴을 만드세요.": "Crea tu propia rutina de entrenamiento con la ayuda de la IA o combinando ejercicios por tu cuenta.",
-  "{date} 섭취량": "Ingesta del {date}"
+  "{date} 섭취량": "Ingesta del {date}",
+  "✅ 설문 작성 완료": "✅ Encuesta completada",
+  "현재 단계의 모든 필수 항목을 입력하거나 선택해주세요.": "Por favor complete todos los campos obligatorios en este paso.",
+  "서버 오류 ({status})": "Error del servidor ({status})",
+  "서버에서 HTML 응답을 받았습니다. (상태: {status}). 로그인 페이지 또는 서버 오류일 수 있습니다.": "El servidor devolvió una respuesta HTML (Estado: {status}). Puede ser una página de inicio de sesión o un error del servidor.",
+  "서버 응답 처리 오류 (상태: {status}). 응답: {response}...": "Error al procesar la respuesta del servidor (Estado: {status}). Respuesta: {response}...",
+  "설문이 전송되었으나, 서버에서 내용 없는 응답을 반환했습니다.": "La encuesta fue enviada, pero el servidor devolvió una respuesta vacía.",
+  "저장 중 오류 발생: {error}": "Se produjo un error al guardar: {error}",
+  "설문 저장 중 에러가 발생했습니다: {error}": "Se produjo un error al guardar la encuesta: {error}",
+  "안녕하세요, {username}님!": "¡Hola, {username}!",
+  "아래 버튼을 클릭하여 회원가입을 완료해주세요.": "Haga clic en el botón de abajo para completar su registro.",
+  "이메일 인증하기": "Verificar correo electrónico",
+  "HealthWise 팀 드림": "Equipo de HealthWise",
+  "더 나은 서비스 제공을 위해 간단한 질문지 작성이 필요합니다.": "Por favor complete un breve cuestionario para ayudarnos a brindar un mejor servicio.",
+  "양해 부탁드립니다.": "Gracias por su comprensión.",
+  "암": "Cáncer",
+  "설문 데이터가 임시로 저장되었습니다.": "Los datos de su encuesta se han guardado temporalmente."
 }

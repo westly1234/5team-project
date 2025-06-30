@@ -1089,5 +1089,20 @@
   "©2025 HealthWise. 모든 권리 보유. 당신의 건강한 삶을 응원합니다.": "©2025 HealthWise. All rights reserved. We support your healthy life.",
   "님의 모든 운동 기록 보관소입니다.": "{{ user.username }}'s workout records are all stored here.",
   "AI의 도움을 받거나 직접 운동을 조합하여 나만의 루틴을 만드세요.": "Create your own workout routine with the help of AI or by combining exercises yourself.",
-  "{date} 섭취량": "Intake on {date}"
+  "{date} 섭취량": "Intake on {date}",
+  "✅ 설문 작성 완료": "✅ Survey Completed",
+  "서버 오류 ({status})": "Server Error ({status})",
+  "서버에서 HTML 응답을 받았습니다. (상태: {status}). 로그인 페이지 또는 서버 오류일 수 있습니다.": "Received an HTML response from the server (Status: {status}). This may be a login page or a server error.",
+  "서버 응답 처리 오류 (상태: {status}). 응답: {response}...": "Error processing server response (Status: {status}). Response: {response}...",
+  "설문이 전송되었으나, 서버에서 내용 없는 응답을 반환했습니다.": "The survey was submitted, but the server returned an empty response.",
+  "저장 중 오류 발생: {error}": "An error occurred while saving: {error}",
+  "설문 저장 중 에러가 발생했습니다: {error}": "An error occurred while saving the survey: {error}",
+  "안녕하세요, {username}님!": "Hello, {username}!",
+  "아래 버튼을 클릭하여 회원가입을 완료해주세요.": "Click the button below to complete your registration.",
+  "이메일 인증하기": "Verify Email",
+  "HealthWise 팀 드림": "HealthWise Team",
+  "더 나은 서비스 제공을 위해 간단한 질문지 작성이 필요합니다.": "Please complete a short questionnaire to help us provide better service.",
+  "양해 부탁드립니다.": "Thank you for your understanding.",
+  "암": "Cancer",
+  "설문 데이터가 임시로 저장되었습니다.": "Your survey data has been temporarily saved."
 }

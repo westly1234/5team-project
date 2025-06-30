@@ -30,7 +30,7 @@
                             <input name="next" type="hidden" value="{{ request.get_full_path }}">
                             <input name="language" type="hidden" value="{{ lang_code }}">
                             <button type="submit" class="language-option-btn {% if lang_code == LANGUAGE_CODE %}active{% endif %}">
-                                {{ lang_name }} ({{ lang_code }})
+                                {{ lang_name }}
                             </button>
                         </form>
                     {% endfor %}

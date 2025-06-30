@@ -53,12 +53,20 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 550px;
+            position: relative;
+        }
+        .form-header {
+            position: relative;
+            display: flex;
+            justify-content: center; /* 제목을 중앙에 정렬 */
+            align-items: center;
+            margin-bottom: 25px;     /* ✅ 사라졌던 공간(여백)을 여기에 다시 부여합니다. */
         }
 
         .form-title {
             text-align: center;
             color: #333;
-            margin-bottom: 25px;
+            margin-bottom: 0;
             font-size: 28px;
             font-weight: 600;
         }
@@ -252,13 +260,125 @@
             10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
             20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
+
+        .language-dropdown-container {
+            position: absolute; /* ✅ 카드 기준 절대 위치 */
+            right: 0; 
+        }
+
+        /* 언어 토글 버튼 스타일 (카드에 맞게 심플하게 변경) */
+        #language-toggle-btn {
+            background-color: #fff;       /* ✅ 흰색 배경을 다시 추가합니다. */
+            border: 1px solid #ddd;     /* ✅ 또렷한 구분을 위해 연한 회색 테두리를 추가합니다. */
+            color: #555;                 /* ✅ 글자색을 약간 더 진하게 하여 가독성을 높입니다. */
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;           /* ✅ 내부 여백을 살짝 조정하여 균형을 맞춥니다. */
+            border-radius: 6px;
+            transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s; /* ✅ 전환 효과 추가 */
+        }
+
+        #language-toggle-btn:hover {
+            color: #333;
+            border-color: #bbb;       /* ✅ 호버 시 테두리 색도 살짝 진하게 변경 */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* ✅ 살짝 떠오르는 효과 추가 */
+        }
+
+        #language-toggle-btn .fa-chevron-down {
+            transition: transform 0.3s ease;
+        }
+
+        #language-toggle-btn.open .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        /* 드롭다운 메뉴 스타일 (기존과 거의 동일, 위치만 버튼에 따라감) */
+        .language-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 5px);
+            right: 0;
+            min-width: 160px;
+            z-index: 100;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 5px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+        }
+
+        .language-dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            transition-delay: 0s;
+        }
+
+        .language-option-form { margin: 0; }
+
+        .language-option-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            color: #333;
+            padding: 8px 12px;
+            text-align: left;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .language-option-btn:hover {
+            background-color: #f0f2f5;
+        }
+
+        .language-option-btn.active {
+            font-weight: 600;
+            color: #007bff;
+        }
     </style>
 </head>
 <body>
     <div class="signup-container-wrapper">
         <div class="signup-container">
-            <h2 class="form-title"> {% t '회원가입' %} </h2>
-
+            <div class="form-header">
+                <h2 class="form-title"> {% t '회원가입' %} </h2>
+                <div class="language-dropdown-container">
+                    <button type="button" id="language-toggle-btn">
+                        <span class="language-text">
+                            {% get_current_language as LANGUAGE_CODE %}
+                            {% if LANGUAGE_CODE == 'ko' %}한국어
+                            {% elif LANGUAGE_CODE == 'en' %}English
+                            {% elif LANGUAGE_CODE == 'es' %}Español
+                            {% else %}Language
+                            {% endif %}
+                        </span>
+                    </button>
+                    <div id="language-dropdown-menu" class="language-dropdown-menu">
+                        {% get_available_languages as LANGUAGES %}
+                        {% for lang_code, lang_name in LANGUAGES %}
+                            <form action="{% url 'set_language' %}" method="post" class="language-option-form">
+                                {% csrf_token %}
+                                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                                <input name="language" type="hidden" value="{{ lang_code }}">
+                                <button type="submit" class="language-option-btn {% if lang_code == LANGUAGE_CODE %}active{% endif %}">
+                                    {{ lang_name }}
+                                </button>
+                            </form>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
             <form method="post" id="signupForm">
                 {% csrf_token %}
 
@@ -279,7 +399,6 @@
             </form>
         </div>
     </div>
-
     <div id="newHealthSurveyWrapper" class="hidden">
         <form id="survey-form">
              {#{% csrf_token %}#} <!-- 이 form은 AJAX로 전송되므로, CSRF 토큰은 JS에서 signupForm의 것을 사용 -->
@@ -322,7 +441,7 @@
                                     <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="animal_fur" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '동물 털' %} </span></label>
                                     <label class="block mb-2 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="allergy" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span> {% t '기타' %} </span></label>
                                 </div>
-                                <textarea id="allergy-details" name="allergy_details" rows="3" class="border border-gray-300 mt-2 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="알레르기 종류 및 반응을 상세히 적어주세요. (예: 복숭아 - 두드러기, 페니실린 - 호흡곤란)"></textarea>
+                                <textarea id="allergy-details" name="allergy_details" rows="3" class="border border-gray-300 mt-2 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="{% t '알레르기 종류 및 반응을 상세히 적어주세요. (예: 복숭아 - 두드러기, 페니실린 - 호흡곤란)' %}"></textarea>
                             </div>
                         </div>
                     </div>
@@ -345,15 +464,15 @@
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="digestive" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '소화기 질환' %} </span></label>
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="kidney" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '신장 질환' %} </span></label>
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="arthritis" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '관절염' %} </span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="cancer" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>암</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="cancer" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>{% t '암' %}</span></label>
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="mental_health" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '정신 건강 문제' %} </span></label>
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="chronic_disease" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span> {% t '기타' %} </span></label>
                                 </div>
-                                <textarea id="chronic-disease-details" name="chronic_disease_details" rows="3" class="border border-gray-300 mt-3 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="기타 만성 질환명 또는 상세 정보를 입력해주세요."></textarea>
+                                <textarea id="chronic-disease-details" name="chronic_disease_details" rows="3" class="border border-gray-300 mt-3 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="{% t '기타 만성 질환명 또는 상세 정보를 입력해주세요.' %}"></textarea>
                             </div>
                             <div class="label-group">
-                                <label for="surgery-history" class="block text-lg font-medium text-gray-700 mb-2">수술 이력이 있다면 상세히 적어주세요 (수술명, 시기 등). 없다면 '없음'으로 기재.</label>
-                                <textarea id="surgery-history" name="surgery_history" rows="3" required class="border border-gray-300 p-3 w-full text-base rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 2015년 맹장 수술, 2020년 무릎 연골 수술 또는 없음"></textarea>
+                                <label for="surgery-history" class="block text-lg font-medium text-gray-700 mb-2">{% t "수술 이력이 있다면 상세히 적어주세요 (수술명, 시기 등). 없다면 '없음'으로 기재." %}</label>
+                                <textarea id="surgery-history" name="surgery_history" rows="3" required class="border border-gray-300 p-3 w-full text-base rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="{% t '예: 2015년 맹장 수술, 2020년 무릎 연골 수술 또는 없음' %}"></textarea>
                             </div>
                         </div>
                     </div>
@@ -363,12 +482,12 @@
                         <div class="form-card">
                             <h2 class="text-3xl font-bold mb-10 text-center text-gray-800"> {% t '현재 복용 약물 및 영양제' %} </h2>
                             <div class="label-group">
-                                <label for="current-medication" class="block text-lg font-medium text-gray-700 mb-2">현재 처방받아 복용 중인 약물이 있다면 모두 적어주세요. 없다면 '없음'으로 기재.</label>
-                                <textarea id="current-medication" name="current_medication" rows="3" required class="border border-gray-300 p-3 w-full text-base rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 고혈압약 (아침 식후 1정), 당뇨약 (저녁 식후 1정) 또는 없음"></textarea>
+                                <label for="current-medication" class="block text-lg font-medium text-gray-700 mb-2">{% t "현재 처방받아 복용 중인 약물이 있다면 모두 적어주세요. 없다면 '없음'으로 기재." %}</label>
+                                <textarea id="current-medication" name="current_medication" rows="3" required class="border border-gray-300 p-3 w-full text-base rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="{% t '예: 고혈압약 (아침 식후 1정), 당뇨약 (저녁 식후 1정) 또는 없음' %}"></textarea>
                             </div>
                             <div class="label-group">
-                                <label for="supplements" class="block text-lg font-medium text-gray-700 mb-2">현재 복용 중인 일반의약품 또는 건강보조식품(영양제)이 있다면 모두 적어주세요. 없다면 '없음'으로 기재.</label>
-                                <textarea id="supplements" name="supplements" rows="3" required class="border border-gray-300 p-3 w-full text-base rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 종합비타민, 오메가3, 유산균, 진통제 (필요시) 또는 없음"></textarea>
+                                <label for="supplements" class="block text-lg font-medium text-gray-700 mb-2">{% t "현재 복용 중인 일반의약품 또는 건강보조식품(영양제)이 있다면 모두 적어주세요. 없다면 '없음'으로 기재." %}</label>
+                                <textarea id="supplements" name="supplements" rows="3" required class="border border-gray-300 p-3 w-full text-base rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="{% t '예: 종합비타민, 오메가3, 유산균, 진통제 (필요시) 또는 없음' %}"></textarea>
                             </div>
                         </div>
                     </div>
@@ -388,11 +507,11 @@
                                 <div id="smoking-details-container" class="mt-4 hidden space-y-3">
                                     <div>
                                         <label for="smoking-period" class="block text-sm font-medium text-gray-600 mb-1"> {% t '흡연 기간 (년)' %} </label>
-                                        <input type="number" id="smoking-period" name="smoking_period" min="0" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 5">
+                                        <input type="number" id="smoking-period" name="smoking_period" min="0" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="{% t '예: 5' %}">
                                     </div>
                                     <div>
                                         <label for="smoking-amount" class="block text-sm font-medium text-gray-600 mb-1"> {% t '하루 평균 흡연량 (개비)' %} </label>
-                                        <input type="number" id="smoking-amount" name="smoking_amount" min="0" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 10">
+                                        <input type="number" id="smoking-amount" name="smoking_amount" min="0" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="{% t '예: 10' %}">
                                     </div>
                                 </div>
                             </div>
@@ -409,7 +528,7 @@
                                 </select>
                                 <div id="drinking-details-container" class="mt-4 hidden">
                                     <label for="drinking-amount" class="block text-sm font-medium text-gray-600 mb-1"> {% t '1회 평균 음주량' %} </label>
-                                    <input type="text" id="drinking-amount" name="drinking_amount" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="예: 소주 1병 또는 맥주 2캔">
+                                    <input type="text" id="drinking-amount" name="drinking_amount" class="border border-gray-300 p-3 w-full text-lg rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="{% t '예: 소주 1병 또는 맥주 2캔' %}">
                                 </div>
                             </div>
                         </div>
@@ -427,11 +546,11 @@
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="diabetes" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '당뇨병' %} </span></label>
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="heart_disease" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '심장 질환' %} </span></label>
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="stroke" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '뇌졸중' %} </span></label>
-                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="cancer" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>암</span></label>
+                                    <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="cancer" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span>{% t '암' %}</span></label>
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="dementia" class="mr-3 rounded text-blue-600 focus:ring-blue-500"><span> {% t '치매' %} </span></label>
                                     <label class="block p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer"><input type="checkbox" name="family_history" value="other" class="mr-3 rounded text-blue-600 focus:ring-blue-500 other-checkbox"><span> {% t '기타' %} </span></label>
                                 </div>
-                                <textarea id="family-history-details" name="family_history_details" rows="3" class="border border-gray-300 mt-3 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="기타 가족력 또는 상세 정보를 입력해주세요."></textarea>
+                                <textarea id="family-history-details" name="family_history_details" rows="3" class="border border-gray-300 mt-3 p-3 w-full text-base rounded-md hidden focus:ring-blue-500 focus:border-blue-500" placeholder="{% t '기타 가족력 또는 상세 정보를 입력해주세요.' %}"></textarea>
                             </div>
                         </div>
                     </div>
@@ -450,9 +569,49 @@
                 </div>
             </div>
         </form>
-        
+        <script id="i18n-data" type="application/json">
+        {
+            "submitting": "{% t '제출 중...' %}",
+            "submit": "{% t '제출' %}",
+            "next": "{% t '다음' %}",
+            "survey_save_success": "{% t '설문 데이터가 임시로 저장되었습니다.' %}",
+            "survey_save_error": "{% t '설문 저장 중 에러가 발생했습니다: ' %}",
+            "survey_save_error_server": "{% t '저장 중 오류 발생: ' %}",
+            "unknown_error": "{% t '알 수 없는 오류' %}",
+            "survey_sent_no_response": "{% t '설문이 전송되었으나, 서버에서 내용 없는 응답을 반환했습니다.' %}",
+            "server_error_prefix": "{% t '서버 오류' %}",
+            "html_response_error": "{% t '서버에서 HTML 응답을 받았습니다. (상태: ' %}",
+            "html_response_error_suffix": "{% t '). 로그인 페이지 또는 서버 오류일 수 있습니다.' %}",
+            "response_processing_error": "{% t '서버 응답 처리 오류 (상태: ' %}",
+            "response_processing_error_suffix": "{% t '). 응답: ' %}",
+            "survey_completed_text": "{% t '✅ 설문 작성 완료' %}",
+            "edit_survey_button": "{% t '내용 수정하기' %}",
+            "start_survey_button": "{% t '질문지 작성하기' %}",
+            "required_notice_prefix": "{% t '*필수*' %}",
+            "required_notice_main": "{% t '더 나은 서비스 제공을 위해 간단한 질문지 작성이 필요합니다.' %}",
+            "required_notice_suffix": "{% t '양해 부탁드립니다.' %}"
+        }
+        </script>
         <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('language-toggle-btn');
+            const dropdownMenu = document.getElementById('language-dropdown-menu');
+
+            if (toggleBtn && dropdownMenu) {
+                toggleBtn.addEventListener('click', (event) => {
+                    event.stopPropagation(); 
+                    dropdownMenu.classList.toggle('show');
+                    toggleBtn.classList.toggle('open');
+                });
+
+                document.addEventListener('click', (event) => {
+                    if (!toggleBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                        dropdownMenu.classList.remove('show');
+                        toggleBtn.classList.remove('open');
+                    }
+                });
+            }
+            const i18nData = JSON.parse(document.getElementById('i18n-data').textContent);
             const surveyForm = document.getElementById("survey-form");
             const slider = document.getElementById("slider");
             const surveySteps = document.querySelectorAll("#slider > .step-container");
@@ -670,7 +829,7 @@
                 nextButton.disabled = !isValid;
                 nextButton.classList.toggle("opacity-50", !isValid);
                 nextButton.classList.toggle("cursor-not-allowed", !isValid);
-                nextButton.textContent = (currentStep === totalSteps - 1) ? "제출" : "다음";
+                nextButton.textContent = (currentStep === totalSteps - 1) ? i18nData.submit : i18nData.next;
             }
 
             function gatherFormData() {
@@ -754,7 +913,7 @@
                         console.log("Survey Data to Submit:", collectedFormData);
                         
                         nextButton.disabled = true;
-                        nextButton.textContent = "제출 중...";
+                        nextButton.textContent = i18nData.submitting
 
                         fetch("/save-survey/", { // 실제 Django URL로 변경 필요 (이 주석은 그대로 두거나, 확실하면 지워도 돼요)
                             method: "POST",
@@ -767,37 +926,37 @@
                         .then(async res => {
                             const responseText = await res.text();
                             if (!res.ok) {
-                                let errorMsg = `서버 오류 (${res.status})`;
+                                let errorMsg = `${i18nData.server_error_prefix} (${res.status})`;
                                 try {
                                     const errData = JSON.parse(responseText);
                                     errorMsg = errData.error || errData.message || errorMsg;
                                 } catch (e) {
                                     if (responseText.toLowerCase().includes("<!doctype html")) {
-                                        errorMsg = `서버에서 HTML 응답을 받았습니다. (상태: ${res.status}). 로그인 페이지 또는 서버 오류일 수 있습니다.`;
+                                        errorMsg = `${i18nData.html_response_error}${res.status}${i18nData.html_response_error_suffix}`;
                                     } else {
-                                        errorMsg = `서버 응답 처리 오류 (상태: ${res.status}). 응답: ${responseText.substring(0,100)}...`;
+                                         errorMsg = `${i18nData.response_processing_error}${res.status}${i18nData.response_processing_error_suffix}${responseText.substring(0,100)}...`
                                     }
                                 }
                                 throw new Error(errorMsg);
                             }
-                            return responseText ? JSON.parse(responseText) : { success: true, message: "설문이 전송되었으나, 서버에서 내용 없는 응답을 반환했습니다."};
+                            return responseText ? JSON.parse(responseText) : { success: true, message: i18nData.survey_sent_no_response };
                         })
                         .then(data => {
                             if (data.success) {
-                                alert(data.message || "설문이 성공적으로 저장되었습니다!");
+                                alert(data.message || i18nData.survey_save_success);
                                 // 전역 함수 호출로 설문 완료 처리
                                 if (typeof window.handleSurveyCompletion === 'function') {
                                     window.handleSurveyCompletion(collectedFormData);
                                 }
                             } else {
-                                alert("저장 중 오류 발생: " + (data.error || data.message || "알 수 없는 오류"));
+                                alert(`${i18nData.survey_save_error_server}` + (data.error || data.message || i18nData.unknown_error));
                                 nextButton.disabled = false; // 오류 시 버튼 복원
                                 updateButtonStates();      // 버튼 텍스트 및 상태 업데이트
                             }
                         })
                         .catch(err => {
                             console.error("설문 전송 에러:", err);
-                            alert("설문 저장 중 에러가 발생했습니다: " + err.message);
+                            alert(i18nData.survey_save_error + err.message);
                             nextButton.disabled = false; // 오류 시 버튼 복원
                             updateButtonStates();      // 버튼 텍스트 및 상태 업데이트
                         });
@@ -814,20 +973,8 @@
             // 초기화
             updateSliderAndProgressDisplay();
             updateButtonStates();
-        });
-        </script>
-    </div>
 
-    <!-- signup.html 파일의 <body> 맨 아래, <script> 태그 바로 위에 추가 -->
-    <script>
-        // Django 템플릿 변수를 JavaScript 변수로 변환합니다.
-        // 'submitted_as_normal_on_fail'이 True이면 true가, 아니면 false가 됩니다.
         const submittedAsNormalOnFail = {{ submitted_as_normal_on_fail|yesno:'true,false' }};
-    </script>
-
-    <!-- 기존의 마지막 <script> 태그를 다음과 같이 수정 -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
         const userTypeRadios = document.querySelectorAll('input[name="user_type"]');
         const signupContainerWrapper = document.querySelector('.signup-container-wrapper');
         const newHealthSurveyWrapper = document.getElementById('newHealthSurveyWrapper');
@@ -876,8 +1023,8 @@
                     submitSignupButton.classList.remove('hidden');     
                     surveyActionArea.classList.remove('hidden');
                     surveyActionArea.innerHTML = `
-                        <p class="survey-complete-text">✅ 설문 작성 완료</p>
-                        <button type="button" id="editSurveyDataBtn" class="survey-button" style="background-color: #ffc107; color: #212529;"> {% t '내용 수정하기' %} </button>
+                        <p class="survey-complete-text">${i18nData.survey_completed_text}</p>
+                        <button type="button" id="editSurveyDataBtn" class="survey-button" style="background-color: #ffc107; color: #212529;">${i18nData.edit_survey_button}</button>
                     `;
                     const editBtn = document.getElementById('editSurveyDataBtn');
                     if(editBtn) editBtn.addEventListener('click', openSurveyForEdit);
@@ -888,9 +1035,9 @@
                     surveyActionArea.classList.remove('hidden');
                     surveyActionArea.innerHTML = `
                         <p class="notice-text">
-                            <span style="color: red;">*필수</span> 더 나은 서비스 제공을 위해 간단한 질문지 작성이 필요합니다.<br>양해 부탁드립니다.
+                            <span style="color: red;">${i18nData.required_notice_prefix}</span> ${i18nData.required_notice_main}<br>${i18nData.required_notice_suffix}
                         </p>
-                        <button type="button" id="startSurveyBtn" class="survey-button"> {% t '질문지 작성하기' %} </button>
+                        <button type="button" id="startSurveyBtn" class="survey-button">${i18nData.start_survey_button}</button>
                     `;
                     const startBtn = document.getElementById('startSurveyBtn');
                     if(startBtn) startBtn.addEventListener('click', function() {
