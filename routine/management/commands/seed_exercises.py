@@ -1,8 +1,120 @@
 # routine/management/commands/seed_exercises.py
 
 import time
+import os
+import json
 from django.core.management.base import BaseCommand
 from routine.models import Exercise
+from django.conf import settings
+import openai
+
+def get_exercise_info_with_gpt(exercise_name_ko):
+    """하나의 운동에 대한 설명과 주의사항을 생성하고, 모든 언어로 번역합니다."""
+    try:
+        client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+        
+        # 1. 한국어로 설명/주의사항 생성
+        prompt_generate = f"""
+        헬스 운동 '{exercise_name_ko}'에 대한 '상세 설명 및 팁'과 '핵심 주의사항'을 생성해줘.
+        
+        # 지침:
+        - 각 항목은 2~3개의 짧은 문장으로 간결하게 요약해줘.
+        - 결과는 반드시 아래와 같은 JSON 형식으로만 응답해줘. 다른 말은 절대 추가하지 마.
+        
+        # 출력 형식:
+        {{
+          "description_ko": "운동에 대한 간결한 설명과 팁.",
+          "precautions_ko": "운동 시 핵심 주의사항 요약."
+        }}
+        """
+        response_ko = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt_generate}],
+            response_format={"type": "json_object"}
+        )
+        info_ko = json.loads(response_ko.choices[0].message.content)
+
+        # 2. 영어와 스페인어로 번역
+        text_to_translate = f"description: {info_ko['description_ko']}\nprecautions: {info_ko['precautions_ko']}"
+        prompt_translate = f"""
+        Translate the following exercise information into English and Spanish.
+        
+        # Instructions:
+        - Keep the descriptions and precautions concise (2-3 short sentences each).
+        - Return the result ONLY in the following JSON format. Do not add any other text.
+        
+        # Input text:
+        {text_to_translate}
+
+        # Output JSON format:
+        {{
+          "description_en": "...",
+          "precautions_en": "...",
+          "description_es": "...",
+          "precautions_es": "..."
+        }}
+        """
+        response_translated = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt_translate}],
+            response_format={"type": "json_object"}
+        )
+        info_translated = json.loads(response_translated.choices[0].message.content)
+
+        # 모든 정보를 합쳐서 반환
+        return {**info_ko, **info_translated}
+
+    except Exception as e:
+        print(f"  - 🚨 GPT 정보 생성/번역 오류 ('{exercise_name_ko}'): {e}")
+        return None
+
+
+# ⭐️ FIX: translate_text_with_gpt 함수를 아래 코드로 교체합니다.
+def translate_text_with_gpt(text, target_lang):
+    """운동 이름 또는 운동 부위를 지정된 규칙에 따라 번역합니다."""
+    try:
+        client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+        language_map = {'en': 'English', 'es': 'Spanish'}
+        
+        # ⭐️ FIX: 운동 부위인 경우, 번역 규칙을 강화하는 프롬프트를 추가합니다.
+        muscle_group_map_ko = ['하체', '가슴', '등', '어깨', '팔', '복근', '유산소', '역도', '기타']
+        
+        if text in muscle_group_map_ko:
+            # 운동 부위 번역을 위한 특별 프롬프트
+            prompt = f"""
+            You are a translator for a fitness app. Your task is to translate a Korean muscle group term into a single, specific {language_map[target_lang]} term.
+
+            # Rules:
+            1.  You MUST translate the given Korean term to its corresponding term from this EXACT list:
+                - Korean '하체' -> English 'Legs', Spanish 'Piernas'
+                - Korean '가슴' -> English 'Chest', Spanish 'Pecho'
+                - Korean '등' -> English 'Back', Spanish 'Espalda'
+                - Korean '어깨' -> English 'Shoulders', Spanish 'Hombros'
+                - Korean '팔' -> English 'Arms', Spanish 'Brazos'
+                - Korean '복근' -> English 'Abs', Spanish 'Abdominales'
+                - Korean '유산소' -> English 'Cardio', Spanish 'Cardio'
+                - Korean '역도' -> English 'Weightlifting', Spanish 'Halterofilia'
+                - Korean '기타' -> English 'Etc', Spanish 'Etc'
+            2.  Do NOT be creative. Do NOT use synonyms. Stick to the list above.
+            3.  Your output must be ONLY the single translated term. No extra text, no quotation marks.
+
+            # Korean term to translate:
+            "{text}"
+            """
+        else:
+            # 기존의 운동 이름 번역 프롬프트
+            prompt = f"Translate the following Korean exercise-related term into {language_map[target_lang]}. Provide only the single translated term as the output, without any extra text or quotation marks.\n\nKorean term: \"{text}\""
+        
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0, # 규칙을 엄격하게 따르도록 온도를 0으로 설정
+            max_tokens=50
+        )
+        return response.choices[0].message.content.strip().replace('"', '')
+    except Exception as e:
+        print(f"  - 🚨 GPT 번역 오류 ({text} -> {target_lang}): {e}")
+        return text # 번역 실패 시 원본 반환
 
 # 사용자님이 제공해주신 방대한 데이터를 오타 없이 100% 반영한 최종 리스트입니다.
 EXERCISE_DATA = [
@@ -339,42 +451,58 @@ EXERCISE_DATA = [
 
 
 class Command(BaseCommand):
-    help = 'Seeds the database with a large set of initial exercise data.'
+    help = 'Seeds or updates the database with exercise data, including descriptions, precautions, and translations.'
 
     def handle(self, *args, **options):
         start_time = time.time()
-        self.stdout.write(self.style.SUCCESS('🚀 Starting to seed the exercise database...'))
+        self.stdout.write(self.style.SUCCESS('🚀 Starting to seed/update the exercise database...'))
 
-        existing_names = set(Exercise.objects.values_list('name', flat=True))
-        
-        exercises_to_create = []
-        skipped_count = 0
-        
-        for data in EXERCISE_DATA:
-            if data.get('gif_url') == 'Not Found' or not data.get('gif_url') or data['name'] in existing_names:
-                skipped_count += 1
+        total_exercises = len(EXERCISE_DATA)
+        for index, data in enumerate(EXERCISE_DATA):
+            progress = f"({index + 1}/{total_exercises})"
+            if data.get('gif_url') == 'Not Found' or not data.get('gif_url'):
+                self.stdout.write(self.style.WARNING(f"{progress} Skipping '{data['name']}' (no GIF)."))
                 continue
 
-            ex_type = 'cardio' if data['muscle_group'] == '유산소' else 'strength'
-            
-            exercises_to_create.append(
-                Exercise(
-                    name=data['name'],
-                    muscle_group=data['muscle_group'],
-                    exercise_type=ex_type,
-                    gif_url=data['gif_url']
-                )
+            self.stdout.write(f"\nProcessing {progress}: '{data['name']}'")
+
+            # ⭐️ FIX: create 대신 update_or_create 사용하여 기존 데이터를 덮어쓰거나 새로 생성
+            exercise, created = Exercise.objects.update_or_create(
+                name=data['name'],
+                defaults={
+                    'muscle_group': data['muscle_group'],
+                    'exercise_type': 'cardio' if data['muscle_group'] == '유산소' else 'strength',
+                    'gif_url': data['gif_url'],
+                }
             )
-            existing_names.add(data['name'])
 
-        if exercises_to_create:
-            Exercise.objects.bulk_create(exercises_to_create)
-            self.stdout.write(self.style.SUCCESS(f'✅ Successfully added {len(exercises_to_create)} new exercises.'))
-        else:
-            self.stdout.write(self.style.WARNING('No new exercises to add.'))
+            # 설명/주의사항 데이터가 비어있을 경우에만 GPT로 정보 생성
+            if not exercise.description or not exercise.precautions:
+                self.stdout.write("  - 🧠 Generating description/precautions with GPT...")
+                info = get_exercise_info_with_gpt(exercise.name)
+                if info:
+                    exercise.description = info.get('description_ko')
+                    exercise.precautions = info.get('precautions_ko')
+                    exercise.description_en = info.get('description_en')
+                    exercise.precautions_en = info.get('precautions_en')
+                    exercise.description_es = info.get('description_es')
+                    exercise.precautions_es = info.get('precautions_es')
+                time.sleep(1.5) # API 과호출 방지
+            else:
+                self.stdout.write("  - ✅ Description/precautions already exist. Skipping generation.")
 
-        if skipped_count > 0:
-            self.stdout.write(self.style.WARNING(f'- Skipped {skipped_count} exercises (already exist or no GIF).'))
+            # 번역된 이름/부위가 없을 경우에만 번역 수행
+            if not exercise.name_en or not exercise.muscle_group_en:
+                self.stdout.write("  - 🌐 Translating name/muscle group...")
+                exercise.name_en = translate_text_with_gpt(exercise.name, 'en')
+                exercise.name_es = translate_text_with_gpt(exercise.name, 'es')
+                exercise.muscle_group_en = translate_text_with_gpt(exercise.muscle_group, 'en')
+                exercise.muscle_group_es = translate_text_with_gpt(exercise.muscle_group, 'es')
+                time.sleep(1.5) # API 과호출 방지
+            else:
+                self.stdout.write("  - ✅ Translations already exist. Skipping translation.")
+
+            exercise.save() # 모든 변경사항 저장
 
         end_time = time.time()
-        self.stdout.write(self.style.SUCCESS(f'✨ Seeding complete! Total time: {end_time - start_time:.2f} seconds.'))
+        self.stdout.write(self.style.SUCCESS(f'\n✨ Seeding complete! Total time: {end_time - start_time:.2f} seconds.'))

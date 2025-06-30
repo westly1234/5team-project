@@ -1,8 +1,7 @@
 <!-- achievements/templates/achievements/list.html (모든 복잡성 제거, 최종 완전판) -->
 
 {% extends 'web/dashboard_sliding_base.html' %}
-{% load static custom_translate i18n %}
-{% load achievement_extras %}
+{% load static custom_translate i18n achievement_extras %}
 
 {% block title %}나의 업적{% endblock %}
 
@@ -79,115 +78,93 @@
     <div class="achievement-header">
         <div class="header-title">
             <i class="bi bi-award-fill"></i>
-            <span>나의 업적</span>
+            <span>{% t "나의 업적" %}</span>
         </div>
-        {% with achieved_count=achieved_ids|length total_count=all_achievements|length %}
-            {% if total_count > 0 %}
-                
-                {% widthratio achieved_count total_count 100 as progress_percent %}
-                
-                <div class="progress-container">
+        
+        <!-- ⭐️ FIX: with 태그를 제거하고 context 변수를 직접 사용합니다. -->
+        {% if all_achievements|length > 0 %}
+            {% widthratio achieved_ids|length all_achievements|length 100 as progress_percent %}
+            <div class="progress-container">
                 <div class="progress-bar-overall">
-                    <div class="progress-bar-completed" style="width: {{ progress_percent|default_if_none:'0' }}%;"></div>
+                    <div class="progress-bar-completed" style="width: {{ progress_percent }}%;"></div>
                 </div>
-                <span class="progress-percentage">{{ progress_percent }}%</span>
-                </div>
-
-            {% endif %}
-        {% endwith %}
+                <span class="progress-percentage">{{ achieved_ids|length }} / {{ all_achievements|length }} ({{ progress_percent }}%)</span>
+            </div>
+        {% endif %}
+        
         <div class="achievement-filter">
             <select id="achievement-filter">
-                <option value="all">전체 보기</option>
-                <option value="achieved">달성한 업적</option>
-                <option value="locked">미달성 업적</option>
+                <option value="all">{% t "전체 보기" %}</option>
+                <option value="achieved">{% t "달성한 업적" %}</option>
+                <option value="locked">{% t "미달성 업적" %}</option>
             </select>
         </div>
     </div>
     
     <div class="achievement-grid-wrapper">
         <div class="achievement-grid">
+            <!-- ⭐️⭐️⭐️ FIX: 템플릿 로직을 극도로 단순화했습니다. ⭐️⭐️⭐️ -->
             {% for ach in all_achievements %}
-                
-                {# ✨✨✨ 가장 단순하고 명확한 if/else 구조 ✨✨✨ #}
-                {% if ach.id in achieved_ids %}
-                    
-                    <!-- =================== ACHIEVED CARD =================== -->
-                    {% with user_achievement=user_achievements_dict|get_item:ach.id %}
-                    <div class="achievement-card achieved">
-                        <div class="card-illustration-wrapper">
-                            {% with bg_image_path='achievements/backgrounds/'|add:ach.codename|add:'.jpg' %}
-                                <img src="{% static bg_image_path %}" alt="">
-                            {% endwith %}
-                        </div>
-                        <div class="card-badge">
-                            {% with badge_image_path='achievements/badges/'|add:ach.codename|add:'.png' %}
-                                <img src="{% static badge_image_path %}" alt="{{ ach.name }}">
-                            {% endwith %}
-                        </div>
-                        <div class="card-content">
-                            <h4>{{ ach.name }}</h4>
-                            <p>{{ ach.description }}</p>
-                            {% if ach.title_reward %}
-                                <p class="title-reward">칭호: {{ ach.title_reward }}</p>
-                                <form action="{% url 'achievements:set_active_title' user_achievement.id %}" method="post">
+                <div class="achievement-card {% if ach.id in achieved_ids %}achieved{% else %}locked{% endif %}" 
+                     data-status="{% if ach.id in achieved_ids %}achieved{% else %}locked{% endif %}">
+
+                    <div class="card-illustration-wrapper">
+                        {% with bg_image_path='achievements/backgrounds/'|add:ach.codename|add:'.jpg' %}
+                            <img src="{% static bg_image_path %}" 
+                                 onerror="this.onerror=null; this.src='{% static 'achievements/backgrounds/default.jpg' %}';"
+                                 alt="{{ ach.display_name }}">
+                        {% endwith %}
+                    </div>
+
+                    <div class="card-badge">
+                        <!-- ⭐️ FIX: ach.icon_url을 직접 사용합니다. -->
+                        {% with badge_image_path='achievements/badges/'|add:ach.codename|add:'.png' %}
+                           <img src="{% static badge_image_path %}" alt="{{ ach.display_name }}">
+                        {% endwith %}
+                    </div>
+
+                    <div class="card-content">
+                        <h4>{% t ach.display_name %}</h4>
+                        <p>{% t ach.display_description %}</p>
+                        {% if ach.display_title_reward %}<p class="title-reward">{% t "칭호:" %} {% t ach.display_title_reward %}</p>{% endif %}
+                            
+                        {% with user_achievement=user_achievements_dict|get_item:ach.id %}
+                            {% if user_achievement %}
+                                <form action="{% url 'achievements:set_active_title' user_achievement.id %}" method="post" style="margin-top: auto;">
                                     {% csrf_token %}
-                                    {% if active_title and active_title.id == user_achievement.id %}
-                                        <button type="button" class="btn-active" disabled>현재 칭호</button>
+                                    {% if active_title_id and active_title_id == user_achievement.id %}
+                                        <button type="button" class="btn-active" disabled>{% t "현재 칭호" %}</button>
                                     {% else %}
-                                        <button type="submit" class="btn-set-title">대표 칭호로 설정</button>
+                                        <button type="submit" class="btn-set-title">{% t "대표 칭호로 설정" %}</button>
                                     {% endif %}
                                 </form>
-                            {% endif %}
-                        </div>
+                            {% endif %}                                 
+                        {% endwith %}
                     </div>
-                    {% endwith %}
-                    
-                {% else %}
-
-                    <!-- ===================== LOCKED CARD ===================== -->
-                    <div class="achievement-card locked">
-                        <div class="card-illustration-wrapper">
-                            {% with bg_image_path='achievements/backgrounds/'|add:ach.codename|add:'.jpg' %}
-                                <img src="{% static bg_image_path %}" alt="">
-                            {% endwith %}
-                        </div>
-                        <div class="card-badge">
-                            {% with badge_image_path='achievements/badges/'|add:ach.codename|add:'.png' %}
-                                <img src="{% static badge_image_path %}" alt="{{ ach.name }}">
-                            {% endwith %}
-                        </div>
-                        <div class="card-content">
-                            <h4>{{ ach.name }}</h4>
-                            <p>{{ ach.description }}</p>
-                        </div>
-                    </div>
-
-                {% endif %}
-
+                </div>
             {% endfor %}
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const filterSelect = document.getElementById('achievement-filter');
-        const cards = document.querySelectorAll('.achievement-card');
+document.addEventListener('DOMContentLoaded', () => {
+    const filterSelect = document.getElementById('achievement-filter');
+    const grid = document.querySelector('.achievement-grid');
 
-        if (filterSelect) {
-            filterSelect.addEventListener('change', (event) => {
-                const selectedValue = event.target.value;
-                cards.forEach(card => {
-                    if (selectedValue === 'all' || card.classList.contains(selectedValue)) {
-                        card.style.display = 'flex';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
+    if (filterSelect) {
+        filterSelect.addEventListener('change', (event) => {
+            const selectedValue = event.target.value;
+            // ⭐️ FIX: CSS 클래스 대신 data-status 속성으로 필터링하여 안정성 향상
+            grid.querySelectorAll('.achievement-card').forEach(card => {
+                if (selectedValue === 'all' || card.dataset.status === selectedValue) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
             });
-        }
-    });
+        });
+    }
+});
 </script>
 {% endblock page_content %}
-
-{% block footer %}{% endblock footer %}

@@ -1,0 +1,13 @@
+Eres un analista experto que comprende la intención de las preguntas de los usuarios.
+A continuación se muestra el historial de conversación anterior y la nueva pregunta del usuario.
+
+[Final del historial de conversación]
+{history}
+
+[Nueva pregunta del usuario]
+"{question}"
+
+¿Es esta nueva pregunta una 'pregunta de seguimiento' que continúa el contexto de la conversación anterior, o tiene un formato 'no apto para la búsqueda' debido a expresiones emocionales/errores tipográficos?
+Si es así, sugiere una 'consulta de búsqueda mejorada' que pueda obtener mejores resultados.
+Si la pregunta es clara y suficiente para la búsqueda tal como está, responde únicamente con "Optimización no necesaria".
+No añadas ninguna otra explicación.

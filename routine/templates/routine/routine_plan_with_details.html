@@ -127,8 +127,8 @@
                 {% empty %}
                 <div id="empty-routine-placeholder" class="text-center py-16 px-6 bg-gray-800/50 rounded-2xl border border-dashed border-gray-700">
                     <h3 class="text-xl font-bold text-white"> {% t '루틴에 포함된 운동이 없습니다.' %} </h3>
-                    <p class="text-gray-400 mt-2 view-mode-item">우측의 '루틴 수정하기' 버튼을 눌러 운동을 추가해보세요.</p>
-                    <p class="text-gray-400 mt-2 edit-mode-item">아래 '새 운동 추가하기' 섹션에서 운동을 추가하세요.</p>
+                    <p class="text-gray-400 mt-2 view-mode-item">{% t '우측의 '루틴 수정하기' 버튼을 눌러 운동을 추가해보세요.' %}</p>
+                    <p class="text-gray-400 mt-2 edit-mode-item">{% t '아래 '새 운동 추가하기' 섹션에서 운동을 추가하세요.' %}</p>
                 </div>
                 {% endfor %}
             </div>
@@ -167,8 +167,8 @@
             <div class="sticky top-24 bg-gray-800/80 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-2xl">
                 <!-- 1. 버튼 뷰 -->
                 <div id="panel-buttons-view">
-                    <h3 class="text-xl font-bold text-white mb-1">오늘의 목표</h3>
-                    <p class="text-gray-400 mb-6">이 루틴을 완료하고 건강한 하루를 만드세요!</p>
+                    <h3 class="text-xl font-bold text-white mb-1">{% t '오늘의 목표' %}</h3>
+                    <p class="text-gray-400 mb-6">{% t '이 루틴을 완료하고 건강한 하루를 만드세요!' %}</p>
                     
                     {% if routine_obj %}
                     <form action="{% url 'routine:complete_workout' routine_id=routine_obj.id %}" method="post" class="w-full">
@@ -178,23 +178,23 @@
                     </form>
                     <div class="grid grid-cols-2 gap-4">
                         <button type="button" id="analyze-routine-btn" class="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-4 rounded-lg transition">
-                            <i class="bi bi-robot"></i>AI 분석
+                            <i class="bi bi-robot"></i>{% t 'AI 분석' %}
                         </button>
                         <button type="button" onclick="toggleEditMode(true)" class="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-3 px-4 rounded-lg transition">
-                            <i class="bi bi-pencil-square"></i>루틴 수정
+                            <i class="bi bi-pencil-square"></i>{% t '루틴 수정' %}
                         </button>
                     </div>
                     {% else %}
-                    <p class="text-center text-gray-500 py-8">저장된 루틴이 아니므로 액션을 수행할 수 없습니다.</p>
+                    <p class="text-center text-gray-500 py-8">{% t '저장된 루틴이 아니므로 액션을 수행할 수 없습니다.' %}</p>
                     {% endif %}
                 </div>
                 
                 <!-- 2. AI 분석 결과 뷰 -->
                 <div id="panel-analysis-view">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-bold text-white m-0">AI 루틴 분석 결과</h3>
+                        <h3 class="text-xl font-bold text-white m-0">{% t 'AI 루틴 분석 결과' %}</h3>
                         <button id="back-to-buttons-btn" class="text-sm text-gray-400 hover:text-white transition">
-                            <i class="bi bi-arrow-left mr-1"></i>뒤로
+                            <i class="bi bi-arrow-left mr-1"></i>{% t '뒤로' %}
                         </button>
                     </div>
                     <div id="panel-analysis-content" class="text-sm max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">

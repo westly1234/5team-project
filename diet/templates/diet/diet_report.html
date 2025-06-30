@@ -74,7 +74,7 @@
         <div class="lg:col-span-1 space-y-6">
             <!-- 3대 영양소 도넛 차트 카드 -->
             <div class="bg-gray-800/50 backdrop-blur-sm border border-white/10 p-6 rounded-2xl animate-fade-in-up" style="animation-delay: 0.1s;">
-                <h3 class="text-xl font-bold text-white mb-1">{{ selected_date|date:"Y년 m월 d일" }} 섭취량</h3>
+                <h3 class="text-xl font-bold text-white mb-1">{% t "{date} 섭취량" date=selected_date|date:"DATE_FORMAT" %}</h3>
                 <p class="text-gray-400 text-sm mb-4"> {% t '총 영양 구성' %} </p>
                 <div class="relative h-64">
                     <canvas id="nutrientDoughnutChart"></canvas>
@@ -84,9 +84,9 @@
                     </div>
                 </div>
                 <div class="mt-4 flex justify-around text-center text-xs">
-                    <div><span class="block w-3 h-3 bg-blue-500 rounded-full inline-block mr-1"></span><span class="text-gray-300">탄수화물 {{ daily_totals.carbohydrate|floatformat:0 }}g</span></div>
-                    <div><span class="block w-3 h-3 bg-red-500 rounded-full inline-block mr-1"></span><span class="text-gray-300">단백질 {{ daily_totals.protein|floatformat:0 }}g</span></div>
-                    <div><span class="block w-3 h-3 bg-yellow-500 rounded-full inline-block mr-1"></span><span class="text-gray-300">지방 {{ daily_totals.fat|floatformat:0 }}g</span></div>
+                    <div><span class="block w-3 h-3 bg-blue-500 rounded-full inline-block mr-1"></span><span class="text-gray-300">{% t "탄수화물" %} {{ daily_totals.carbohydrate|floatformat:0 }}g</span></div>
+                    <div><span class="block w-3 h-3 bg-red-500 rounded-full inline-block mr-1"></span><span class="text-gray-300">{% t "단백질" %} {{ daily_totals.protein|floatformat:0 }}g</span></div>
+                    <div><span class="block w-3 h-3 bg-yellow-500 rounded-full inline-block mr-1"></span><span class="text-gray-300">{% t "지방" %} {{ daily_totals.fat|floatformat:0 }}g</span></div>
                 </div>
             </div>
 
@@ -143,11 +143,11 @@
                         <p class="text-2xl font-bold text-purple-400">{{ weekly_summary.average|floatformat:0 }} <span class="text-lg font-medium">kcal</span></p>
                     </div>
                     <div class="bg-gray-900/70 p-4 rounded-lg">
-                        <p class="text-sm text-gray-400 mb-1">최고 섭취일 ({{ weekly_summary.highest.day|default:'-' }})</p>
+                        <p class="text-sm text-gray-400 mb-1">{% t '최고 섭취일' %} ({{ weekly_summary.highest.day|default:'-' }})</p>
                         <p class="text-2xl font-bold text-red-400">{{ weekly_summary.highest.calories|floatformat:0 }} <span class="text-lg font-medium">kcal</span></p>
                     </div>
                     <div class="bg-gray-900/70 p-4 rounded-lg">
-                        <p class="text-sm text-gray-400 mb-1">최저 섭취일 ({{ weekly_summary.lowest.day|default:'-' }})</p>
+                        <p class="text-sm text-gray-400 mb-1">{% t '최저 섭취일' %} ({{ weekly_summary.lowest.day|default:'-' }})</p>
                         <p class="text-2xl font-bold text-green-400">{{ weekly_summary.lowest.calories|floatformat:0 }} <span class="text-lg font-medium">kcal</span></p>
                     </div>
                 </div>

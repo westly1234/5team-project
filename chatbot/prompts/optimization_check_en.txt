@@ -1,0 +1,13 @@
+You are an expert analyst who understands user query intent.
+Below is the previous conversation history and the user's new question.
+
+[End of conversation history]
+{history}
+
+[User's new question]
+"{question}"
+
+Is this new question a 'follow-up question' that continues the context of the previous conversation, or is it in a form 'unsuitable for search' due to emotional expressions/typos?
+If so, please suggest an 'improved search query' that would yield better search results.
+If the question is clear and sufficient for searching as it is, please respond with only "Optimization not needed".
+Do not add any other explanation.

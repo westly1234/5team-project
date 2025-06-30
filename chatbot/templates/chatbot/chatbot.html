@@ -1,7 +1,7 @@
 {% extends 'web/dashboard_sliding_base.html' %}
 {% load static custom_translate i18n %}
 
-{% block title %}AI 챗봇 상담 v2.1{% endblock %}
+{% block title %}{% t "AI 챗봇 상담" %}{% endblock %}
 
 {% block page_content %}
 <style>
@@ -235,17 +235,17 @@
         {% csrf_token %}
         <div id="main-wrapper">
             <div id="sidebar">
-                <h2 id="sidebar-header">AI 상담</h2>
+                <h2 id="sidebar-header">{% t "AI 상담" %}</h2>
                 <button id="new-dialog-btn"><i class="bi bi-plus-lg"></i><span> {% t 'new_dialog_btn' %} </span></button>
-                <input type="text" id="search-box" placeholder="대화 기록 검색...">
+                <input type="text" id="search-box" placeholder="">
                 <div id="file-list"></div>
             </div>
             
             <div id="chat-container">
-                <button id="toggle-sidebar" title="사이드바 열기/닫기"><i class="bi bi-list"></i></button>
+                <button id="toggle-sidebar" title=""><i class="bi bi-list"></i></button>
                 <div id="chatbox"></div>
                 
-                <button id="scroll-to-bottom" title="맨 아래로">
+                <button id="scroll-to-bottom" title="">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
                 </button>
 
@@ -256,10 +256,10 @@
                 <div id="chat-input-section">
                     <div id="attachment-previews"></div>
                     <div id="input-area">
-                        <button id="file-upload-button" title="파일 첨부"><i class="bi bi-paperclip"></i></button>
-                        <textarea id="message" rows="1" placeholder="메시지를 입력하거나 이미지를 붙여넣으세요..."></textarea>
+                        <button id="file-upload-button" title=""><i class="bi bi-paperclip"></i></button>
+                        <textarea id="message" rows="1" placeholder=""></textarea>
                         <input type="file" id="file-input-hidden" style="display: none;" multiple accept="image/*, .txt, .pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx">
-                        <button id="send-button" title="보내기"><i class="bi bi-arrow-up"></i></button>
+                        <button id="send-button" title=""><i class="bi bi-arrow-up"></i></button>
                     </div>
                 </div>
             </div>
@@ -268,21 +268,74 @@
 </div>
 
 <script>
+    const i18n = {{ js_translations|safe }};
     const userProfileImage = "{% if user.profile.image %}{{ user.profile.image.url }}{% else %}/static/chatbot_images/avatar-default.jpeg{% endif %}";
     const DEFAULT_USER_AVATAR = "/static/chatbot_images/avatar-default.jpeg";
+    const DOMElements = {};
     
     // 전역 변수
     let currentDialogId = null;
-    let domReady = false;
-    let chatboxElem, fileListElem, messageInputElem, searchBoxElem, newDialogBtnElem,
-        toggleSidebarBtnElem, errorPopupElem, errorTextElem, scrollBtnElem, sendButtonElem,
-        fileUploadButtonElem, fileInputHiddenElem, attachmentPreviewsElem;
     let attachedFilesStore = [];
     
     // 상수
     const MAX_FILES_COUNT = 5;
     const MAX_FILE_SIZE_MB = 10;
     const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+    function getText(key, replacements = {}) {
+        // 기본값은 한국어 원문 또는 디버깅용 키 이름으로 설정
+        const defaultTexts = {
+            'sidebar_header': 'AI 상담', 'new_dialog_btn': '새 대화 시작',
+            'search_placeholder': '대화 기록 검색...', 
+            'sidebar_toggle_title': '사이드바 열기/닫기',
+            'scroll_btn_title': '맨 아래로', 
+            'file_attach_title': '파일 첨부',
+            'input_placeholder': '메시지를 입력하거나 이미지를 붙여넣으세요...', 
+            'send_btn': '보내기',
+            'user_attached_image_alt': '사용자가 첨부한 이미지', 
+            'default_product_name': '상품명 없음',
+            'confirm_price_on_site': '사이트에서 가격 확인', 
+            'product_disclaimer': '상품 가격 및 정보는 실시간으로 변동될 수 있습니다. (이 링크는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받을 수 있습니다.)',
+            'ai_product_intro': "AI가 찾은 '{keyword}' 추천 상품이에요! 🚀",
+            'server_error_http': '서버 오류 (HTTP {status})',
+            'server_processing_error': '서버 처리 중 오류 발생',
+            'no_response': '(응답 없음)',
+            'new_dialog_greeting': '안녕하세요! AI 챗봇입니다. 건강, 식단, 운동에 관해선 무엇이든지 물어보세요!😁',
+            'no_dialog_history': '대화 기록이 없습니다.',
+            'untitled_dialog': '(제목 없음)',
+            'rename_btn': '제목 수정',
+            'delete_btn': '삭제',
+            'confirm_delete_dialog': '대화를 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+            'delete_request_failed': '삭제 요청 실패',
+            'delete_failed_server_error': '삭제 실패: 서버 오류',
+            'rename_failed_unknown_error': '제목 변경 실패: 알 수 없는 오류',
+            'rename_network_error': '제목 변경 중 네트워크 오류가 발생했습니다.',
+            'dialog_load_failed': '대화 로딩 실패 (Status: {status})',
+            'pasted_image_load_failed': "붙여넣은 이미지 로딩 실패",
+            'new_dialog_failed': "새 대화 생성 실패 (Status: {status})",
+            'invalid_response_new_dialog': "새 대화 API로부터 잘못된 응답 수신",
+            'dialog_list_load_failed': "대화 목록 로딩 실패",
+            'dialog_history_load_error': "대화 기록 로딩 중 오류 발생",
+            'product_recommendation_history': "<strong>'{keyword}'</strong>에 대한 상품 추천 기록입니다. (다시 보려면 새로 질문해주세요)",
+            'price_format': "약 {price}원",
+        };
+        let text = i18n[key] || defaultTexts[key] || `[${key}]`; // 번역 -> 기본값 -> 키 순서로 찾음
+        for (const placeholder in replacements) {
+            text = text.replace(`{${placeholder}}`, replacements[placeholder]);
+        }
+        return text;
+    }
+
+    function setStaticUITexts() {
+        if (DOMElements.sidebarHeader) DOMElements.sidebarHeader.textContent = getText('sidebar_header');
+        if (DOMElements.newDialogBtnSpan) DOMElements.newDialogBtnSpan.textContent = getText('new_dialog_btn');
+        if (DOMElements.searchBox) DOMElements.searchBox.placeholder = getText('search_placeholder');
+        if (DOMElements.toggleSidebar) DOMElements.toggleSidebar.title = getText('sidebar_toggle_title');
+        if (DOMElements.scrollBtn) DOMElements.scrollBtn.title = getText('scroll_btn_title');
+        if (DOMElements.fileUploadButton) DOMElements.fileUploadButton.title = getText('file_attach_title');
+        if (DOMElements.messageInput) DOMElements.messageInput.placeholder = getText('input_placeholder');
+        if (DOMElements.sendButton) DOMElements.sendButton.title = getText('send_btn');
+    }
 
     // --- 유틸리티 함수 ---
     function getCookie(name) {
@@ -301,18 +354,18 @@
     }
 
     function showErrorPopup(message) {
-        if(errorTextElem) errorTextElem.textContent = `⚠️ ${message}`;
-        if(errorPopupElem) errorPopupElem.classList.add("visible");
+        if(DOMElements.errorText) DOMElements.errorText.textContent = `⚠️ ${message}`;
+        if(DOMElements.errorPopup) DOMElements.errorPopup.classList.add("visible");
         setTimeout(() => {
-            if(errorPopupElem) errorPopupElem.classList.remove("visible");
+            if(DOMElements.errorPopup) DOMElements.errorPopup.classList.remove("visible");
         }, 4000);
     }
-    function scrollToBottom() { if (chatboxElem) requestAnimationFrame(() => { chatboxElem.scrollTop = chatboxElem.scrollHeight; }); }
+    function scrollToBottom() { if (DOMElements.chatbox) requestAnimationFrame(() => { DOMElements.chatbox.scrollTop = DOMElements.chatbox.scrollHeight; }); }
     function formatFileSize(bytes) { if (bytes === 0) return '0 Bytes'; const k = 1024; const i = Math.floor(Math.log(bytes) / Math.log(k)); return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${['Bytes', 'KB', 'MB', 'GB'][i]}`; }
 
     // --- 메시지 렌더링 함수 ---
     function renderMessage(sender, htmlContent, imagePath = null) {
-        if (!chatboxElem) return null;
+        if (!DOMElements.chatbox) return null;
         const wrapper = document.createElement("div");
         wrapper.className = `message-wrapper ${sender}`;
         const msgDiv = document.createElement("div");
@@ -325,20 +378,29 @@
         avatarImg.alt = sender;
         avatarImg.onerror = function() { this.src = DEFAULT_USER_AVATAR; };
         avatarWrapper.appendChild(avatarImg);
+
         const bubble = document.createElement("div");
         bubble.className = "bubble";
-        
-        let finalHtmlContent = htmlContent || "";
+        const textDiv = document.createElement('div');
+
+        textDiv.innerHTML = htmlContent || "";
+        bubble.appendChild(textDiv);
+
         if (imagePath) {
-            finalHtmlContent += `<div class="user-attachment-preview"><img src="${imagePath}" alt="첨부된 이미지"></div>`;
+              const previewsContainer = document.createElement('div');
+              previewsContainer.className = 'user-attachment-preview';
+              const img = document.createElement('img');
+              img.src = imagePath;
+              img.alt = getText('user_attached_image_alt');
+              previewsContainer.appendChild(img);
+              bubble.insertBefore(previewsContainer, textDiv);
         }
-        bubble.innerHTML = finalHtmlContent;
         
         if (sender === 'bot') msgDiv.appendChild(avatarWrapper);
         msgDiv.appendChild(bubble);
         if (sender === 'user') msgDiv.appendChild(avatarWrapper);
         wrapper.appendChild(msgDiv);
-        chatboxElem.appendChild(wrapper);
+        DOMElements.chatbox.appendChild(wrapper);
         scrollToBottom();
         return bubble;
     }
@@ -371,7 +433,7 @@
 
     // --- 파일 첨부 관련 함수 ---
     function addPreviewItem(file) {
-        if (!attachmentPreviewsElem) return;
+        if (!DOMElements.attachmentPreviews) return;
         const fileUID = file.name + file.size + file.lastModified;
         const previewId = `preview-${fileUID.replace(/[^a-zA-Z0-9-_]/g, '')}`;
         if (document.getElementById(previewId)) return false;
@@ -387,35 +449,35 @@
             previewItem.querySelector('.thumb').src = "{% static 'chatbot_images/file-icon.png' %}";
         }
         previewItem.querySelector('.remove-preview-btn').onclick = () => removePreviewItem(previewId);
-        attachmentPreviewsElem.appendChild(previewItem);
+        DOMElements.attachmentPreviews.appendChild(previewItem);
         return true;
     }
 
     function removePreviewItem(previewId) {
         document.getElementById(previewId)?.remove();
         attachedFilesStore = attachedFilesStore.filter(f => f.id !== previewId);
-        if (attachedFilesStore.length === 0 && attachmentPreviewsElem) {
-            attachmentPreviewsElem.style.display = "none";
+        if (attachedFilesStore.length === 0 && DOMElements.attachmentPreviews) {
+            DOMElements.attachmentPreviews.style.display = "none";
         }
     }
 
     function clearAllPreviews() {
-        if (attachmentPreviewsElem) {
-            attachmentPreviewsElem.innerHTML = '';
-            attachmentPreviewsElem.style.display = "none";
+        if (DOMElements.attachmentPreviews) {
+            DOMElements.attachmentPreviews.innerHTML = '';
+            DOMElements.attachmentPreviews.style.display = "none";
         }
         attachedFilesStore = [];
     }
 
     function handleFileUpload(files) {
-        if (!files || !attachmentPreviewsElem) return;
+        if (!files || !DOMElements.attachmentPreviews) return;
         let currentFileCount = attachedFilesStore.length;
         for (const file of files) {
             if (currentFileCount >= MAX_FILES_COUNT) {
-                showErrorPopup(`최대 ${MAX_FILES_COUNT}개까지만 파일을 첨부할 수 있습니다.`); break;
+                showErrorPopup(getText('max_files_alert', { count: MAX_FILES_COUNT })); break;
             }
             if (file.size > MAX_FILE_SIZE_BYTES) {
-                showErrorPopup(`'${file.name}' 파일이 너무 큽니다. (최대 ${MAX_FILE_SIZE_MB}MB)`); continue;
+                showErrorPopup(getText('file_too_large_alert', { filename: file.name, size: MAX_FILE_SIZE_MB })); continue;
             }
             const fileUID = file.name + file.size + file.lastModified;
             const previewId = `preview-${fileUID.replace(/[^a-zA-Z0-9-_]/g, '')}`;
@@ -425,23 +487,19 @@
                 currentFileCount++;
             }
         }
-        if (attachedFilesStore.length > 0) attachmentPreviewsElem.style.display = "flex";
-        if(fileInputHiddenElem) fileInputHiddenElem.value = "";
+        if (attachedFilesStore.length > 0) DOMElements.attachmentPreviews.style.display = "flex";
+        if(DOMElements.fileInputHidden) DOMElements.fileInputHidden.value = "";
     }
 
     function handlePaste(event) {
         handleFileUpload((event.clipboardData || event.originalEvent.clipboardData).files);
     }
     
-    // --- [✨ 새로 추가] 상품 카드 렌더링 함수 ---
-        // --- [✨ 최종 수정] 상품 카드 렌더링 함수 ---
-        // --- [✨ 최종 수정] 상품 카드 렌더링 함수 (가격 표시 개선) ---
     function renderProductCards(data) {
         let cardsHtml = '';
         data.products.forEach(product => {
-            const formattedPrice = product.price ? `약 ${Number(product.price).toLocaleString()}원` : '사이트에서 가격 확인';
-            
-            const productName = product.product_name || '상품명 없음';
+            const formattedPrice = product.price ? getText('price_format', { price: Number(product.price).toLocaleString() })  : getText('confirm_price_on_site');
+            const productName = product.product_name || getText('default_product_name');
             const thumbnailUrl = product.thumbnail_url || "{% static 'chatbot_images/default-product.png' %}";
             
             cardsHtml += `
@@ -459,7 +517,7 @@
 
         const introParagraph = data.intro_text 
             ? `<p>${data.intro_text.replace(/\n/g, '<br>')}</p>`
-            : `<p>AI가 찾은 <strong>'${data.keyword}'</strong> 추천 상품이에요! 🚀</p>`;
+            : `<p>${getText('ai_product_intro', { keyword: data.keyword })}</p>`;
 
         const recommendationHtml = `
             <div class="product-recommendation-wrapper">
@@ -468,8 +526,7 @@
                     ${cardsHtml}
                 </div>
                 <div class="product-card-disclaimer">
-                    상품 가격 및 정보는 실시간으로 변동될 수 있습니다.
-                    (이 링크는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받을 수 있습니다.)
+                    ${getText('product_disclaimer')}
                 </div>
             </div>
         `;
@@ -481,9 +538,8 @@
         }
     }
 
-    // --- [✨ 핵심 수정] 메시지 전송 함수 ---
     async function sendMessage() {
-        const msgText = messageInputElem.value.trim();
+        const msgText = DOMElements.messageInput.value.trim();
         if (!msgText && attachedFilesStore.length === 0) return;
 
         let userMessageHtml = msgText;
@@ -494,8 +550,8 @@
         }
         renderMessage("user", userMessageHtml, userImagePreviewUrl);
 
-        messageInputElem.value = "";
-        messageInputElem.style.height = "auto";
+        DOMElements.messageInput.value = "";
+        DOMElements.messageInput.style.height = "auto";
         
         const typingIndicatorHtml = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
         const typingIndicatorBubble = renderMessage("bot", typingIndicatorHtml);
@@ -515,15 +571,15 @@
 
             typingIndicatorBubble?.closest('.message-wrapper')?.remove();
 
-            if (!res.ok) throw new Error(`서버 오류 (HTTP ${res.status})`);
+            if (!res.ok) throw new Error(getText('server_error_http', { status: res.status }));
             const data = await res.json();
             
             if (data.type === 'product_recommendation') {
                 renderProductCards(data);
             } else {
-                if (data.type === "error") throw new Error(data.response || "서버 처리 중 오류 발생");
+                if (data.type === "error") throw new Error(data.response || getText('server_processing_error'));
                 const botBubble = renderMessage("bot", "");
-                if (botBubble) await typeHTML(botBubble, data.response || "(응답 없음)");
+                if (botBubble) await typeHTML(botBubble, data.response || getText('no_response'));
             }
             
             if (data.id && String(currentDialogId) !== String(data.id)) {
@@ -552,21 +608,15 @@
     
     // --- 대화 관련 함수들 ---
     async function startNewDialog() {
-        if (!domReady || !chatboxElem) return;
+        if (!DOMElements.chatbox) return;
         try {
             const res = await fetch("/chatbot/new/");
-            if (!res.ok) throw new Error(`새 대화 생성 실패 (Status: ${res.status})`);
+            if (!res.ok) throw new Error(getText('new_dialog_failed', { status: res.status }));
             const data = await res.json();
-            if (!data || typeof data.id === 'undefined') throw new Error("새 대화 API로부터 잘못된 응답 수신");
             
-            chatboxElem.innerHTML = "";
-            const botBubble = renderMessage("bot", "");
-            if(botBubble) await typeHTML(botBubble, data.message || "안녕하세요! 무엇을 도와드릴까요?");
-            
-            currentDialogId = data.id;
-            localStorage.setItem("currentDialogId", String(data.id));
-            clearAllPreviews();
             await loadDialogs();
+            await loadDialog(data.id);
+
         } catch(err) {
             console.error("startNewDialog failed:", err);
             showErrorPopup(err.message);
@@ -574,16 +624,15 @@
     }
 
     async function loadDialogs() {
-        if (!fileListElem) return;
+        if (!DOMElements.fileList) return;
         try {
             const res = await fetch("/chatbot/list/");
-            if (!res.ok) throw new Error('대화 목록 로딩 실패');
+            if (!res.ok) throw new Error(getText('dialog_list_load_failed'));
             const data = await res.json();
             
-            fileListElem.innerHTML = "";
+            DOMElements.fileList.innerHTML = "";
             if (!data?.dialogs?.length) {
-                fileListElem.innerHTML = "<p style='text-align:center; color: var(--text-secondary);'>대화 기록이 없습니다.</p>";
-                await startNewDialog();
+                DOMElements.fileList.innerHTML = `<p class='no-history' style='text-align:center; color: var(--text-secondary);'>${getText('no_dialog_history')}</p>`;
                 return;
             }
 
@@ -591,10 +640,17 @@
                 const card = document.createElement("div");
                 card.id = `file-card-${d.id}`;
                 card.className = "file-card";
-                
-                card.innerHTML = `<h5></h5><small>${d.timestamp}</small><div class="menu-button"><i class="bi bi-three-dots-vertical"></i></div><div class="menu-popup" id="menu-${d.id}"><button class="rename-btn"><i class="bi bi-pencil"></i> {% t 'rename_btn' %} </button><button class="delete-btn"><i class="bi bi-trash3"></i> {% t 'delete_btn' %} </button></div>`;
+                card.innerHTML = `
+                    <h5></h5>
+                    <small>${d.timestamp}</small>
+                    <div class="menu-button"><i class="bi bi-three-dots-vertical"></i></div>
+                    <div class="menu-popup" id="menu-${d.id}">
+                        <button class="rename-btn"><i class="bi bi-pencil"></i> ${getText('rename_btn')} </button>
+                        <button class="delete-btn"><i class="bi bi-trash3"></i> ${getText('delete_btn')} </button>
+                    </div>
+                `;
                 const h5 = card.querySelector('h5');
-                h5.textContent = d.title || "(제목 없음)";
+                h5.textContent = d.title || getText('untitled_dialog');
                 h5.dataset.fullText = h5.textContent;
                 if (d.is_custom_title) h5.dataset.customTitle = "true";
                 
@@ -613,7 +669,7 @@
                 card.querySelector('.rename-btn').addEventListener('click', (e) => { e.stopPropagation(); menuPopup.style.display = 'none'; startRename(d.id, h5); });
                 card.querySelector('.delete-btn').addEventListener('click', (e) => { e.stopPropagation(); menuPopup.style.display = 'none'; deleteDialog(d.id); });
                 
-                fileListElem.appendChild(card);
+                DOMElements.fileList.appendChild(card);
             });
 
             const activeCard = document.querySelector(`#file-card-${currentDialogId}`);
@@ -621,12 +677,19 @@
 
         } catch(err) {
             console.error("loadDialogs failed:", err);
-            showErrorPopup(err.message);
+            showErrorPopup(getText('dialog_history_load_error'));
         }
     }
+    document.addEventListener("click", e => {
+        if (!e.target.closest('.menu-button')) {
+            document.querySelectorAll('.menu-popup.visible').forEach(popup => {
+                popup.classList.remove('visible');
+            });
+        }
+    });
 
     async function loadDialog(id) {
-        if (!chatboxElem || !id) return;
+        if (!DOMElements.chatbox || !id) return;
         currentDialogId = id; 
         localStorage.setItem("currentDialogId", String(id));
         clearAllPreviews();
@@ -638,26 +701,35 @@
         try {
             const res = await fetch(`/chatbot/load/${id}/`);
             if (res.status === 404) { localStorage.removeItem("currentDialogId"); await startNewDialog(); return; }
-            if (!res.ok) throw new Error(`대화 로딩 실패 (Status: ${res.status})`);
+            if (!res.ok) throw new Error(getText('dialog_load_failed', { status: res.status }));
             
             const data = await res.json();
             if (data.error) throw new Error(data.error);
 
-            chatboxElem.innerHTML = "";
+            DOMElements.chatbox.innerHTML = "";
             data.messages.forEach(msg => {
-                // [✨ 수정] loadDialog 시 상품 카드 렌더링 로직 추가
-                // 백엔드에서 저장한 텍스트를 기반으로 판별
-                if (msg.sender === 'bot' && msg.text.includes('대한 쿠팡 상품을') && msg.text.includes('개 추천했습니다.')) {
-                    const match = msg.text.match(/'(.*?)'에 대한 쿠팡 상품을 (\d+)개 추천했습니다\./);
-                    if (match) {
-                        const keyword = match[1];
-                        // 여기서 실제 상품 정보를 다시 불러오는 대신, 간단한 텍스트로 표시
-                        renderMessage('bot', `<p><strong>'${keyword}'</strong>에 대한 상품 추천 기록입니다. (다시 보려면 새로 질문해주세요)</p>`);
-                    } else {
-                        renderMessage('bot', msg.text);
-                    }
+
+                if (msg.text_key === 'new_dialog_greeting') {
+                    const botBubble = renderMessage("bot", "");
+                    if(botBubble) typeHTML(botBubble, getText(msg.text_key));
+                } else if (msg.sender === 'bot' && msg.text.startsWith('[COUPANG_RECOMMENDATION]')) {
+                    const introMatch = msg.text.match(/intro_text=(.*)/);
+                    const keywordMatch = msg.text.match(/keyword=(.*)/);
+                    const introText = introMatch ? introMatch[1] : '';
+                    const keyword = keywordMatch ? keywordMatch[1] : '...';
+                    
+                    const historyHtml = `
+                        <div class="product-recommendation-history">
+                            <p>${introText.replace(/\n/g, '<br>')}</p>
+                            <div class="history-notice">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <span>${getText('product_recommendation_history', { keyword: keyword })}</span>
+                            </div>
+                        </div>
+                    `;
+                    renderMessage('bot', historyHtml);
                 } else {
-                    renderMessage(msg.sender, msg.text, msg.image_path || null)
+                    renderMessage(msg.sender, msg.text, msg.image_path || null);
                 }
             });
             setTimeout(scrollToBottom, 0);
@@ -669,20 +741,20 @@
     }
     
     function deleteDialog(id) {
-        if (confirm("대화를 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+        if (confirm(getText('confirm_delete_dialog'))) {
             fetch(`/chatbot/delete/${id}/`, { 
                 method: "POST", 
                 headers: {'X-CSRFToken': getCookie('csrftoken')}
             })
             .then(res => {
-                if(!res.ok) throw new Error("삭제 요청 실패");
+                if(!res.ok) throw new Error(getText('delete_request_failed'));
                 return res.json();
             })
             .then(data => {
                 if (data.success) {
                     document.getElementById(`file-card-${id}`)?.remove();
                     if (String(currentDialogId) === String(id)) {
-                        const firstCard = fileListElem.querySelector(".file-card");
+                        const firstCard = DOMElements.fileList.querySelector(".file-card");
                         if (firstCard) {
                             loadDialog(firstCard.id.replace("file-card-", ""));
                         } else {
@@ -690,7 +762,7 @@
                         }
                     }
                 } else { 
-                    showErrorPopup("삭제 실패: " + (data.error || "서버 오류")); 
+                    showErrorPopup(`${getText('delete_failed')}: ${data.error || getText('server_error')}`); 
                 }
             }).catch((err) => showErrorPopup(err.message));
         }
@@ -725,12 +797,12 @@
                         h5Element.dataset.customTitle = "true";
                     } else {
                         h5Element.textContent = oldTitle;
-                        showErrorPopup("제목 변경 실패: " + (data.error || "알 수 없는 오류"));
+                        showErrorPopup(`${getText('rename_failed')}: ${data.error || getText('unknown_error')}`);
                     }
                 })
                 .catch(() => {
                     h5Element.textContent = oldTitle;
-                    showErrorPopup("제목 변경 중 네트워크 오류가 발생했습니다.");
+                    showErrorPopup(getText('rename_network_error'));
                 });
             } else {
                 h5Element.textContent = oldTitle;
@@ -740,50 +812,88 @@
         input.addEventListener("keydown", e => { if (e.key === "Enter") finishEdit(true); if (e.key === "Escape") finishEdit(false); });
     }
 
-    // --- 페이지 로드 및 이벤트 리스너 설정 ---
     window.addEventListener("DOMContentLoaded", () => {
-        domReady = true;
-        chatboxElem = document.getElementById("chatbox"); fileListElem = document.getElementById("file-list");
-        messageInputElem = document.getElementById("message"); searchBoxElem = document.getElementById("search-box");
-        newDialogBtnElem = document.getElementById("new-dialog-btn"); toggleSidebarBtnElem = document.getElementById("toggle-sidebar");
-        errorPopupElem = document.getElementById("error-popup"); errorTextElem = document.getElementById("error-text");
-        scrollBtnElem = document.getElementById("scroll-to-bottom"); sendButtonElem = document.getElementById("send-button");
-        fileUploadButtonElem = document.getElementById("file-upload-button"); fileInputHiddenElem = document.getElementById("file-input-hidden");
-        attachmentPreviewsElem = document.getElementById("attachment-previews");
-
-        newDialogBtnElem?.addEventListener("click", startNewDialog);
-        toggleSidebarBtnElem?.addEventListener("click", () => document.getElementById("main-wrapper")?.classList.toggle("sidebar-hidden"));
-        sendButtonElem?.addEventListener("click", sendMessage);
-        fileUploadButtonElem?.addEventListener("click", () => fileInputHiddenElem.click());
-        fileInputHiddenElem?.addEventListener("change", (e) => handleFileUpload(e.target.files));
-        messageInputElem?.addEventListener("paste", handlePaste);
-        messageInputElem?.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-        messageInputElem?.addEventListener("input", () => { messageInputElem.style.height = "auto"; messageInputElem.style.height = `${Math.min(messageInputElem.scrollHeight, 200)}px`; });
-        searchBoxElem?.addEventListener("input", e => {
-            const keyword = e.target.value.toLowerCase();
-            document.querySelectorAll(".file-card").forEach(card => card.style.display = (card.querySelector('h5')?.textContent.toLowerCase().includes(keyword) ? "" : "none"));
+        Object.assign(DOMElements, {
+            chatbox: document.getElementById("chatbox"),
+            fileList: document.getElementById("file-list"),
+            messageInput: document.getElementById("message"),
+            searchBox: document.getElementById("search-box"),
+            newDialogBtn: document.getElementById("new-dialog-btn"),
+            newDialogBtnSpan: document.getElementById("new-dialog-btn")?.querySelector("span"),
+            toggleSidebar: document.getElementById("toggle-sidebar"),
+            errorPopup: document.getElementById("error-popup"),
+            errorText: document.getElementById("error-text"),
+            scrollBtn: document.getElementById("scroll-to-bottom"),
+            sendButton: document.getElementById("send-button"),
+            fileUploadButton: document.getElementById("file-upload-button"),
+            fileInputHidden: document.getElementById("file-input-hidden"),
+            attachmentPreviews: document.getElementById("attachment-previews"),
+            mainWrapper: document.getElementById("main-wrapper"),
+            sidebarHeader: document.getElementById("sidebar-header")
         });
-        chatboxElem?.addEventListener("scroll", () => scrollBtnElem.classList.toggle("visible", chatboxElem.scrollHeight - chatboxElem.scrollTop > chatboxElem.clientHeight + 150));
-        scrollBtnElem?.addEventListener("click", () => chatboxElem.scrollTo({ top: chatboxElem.scrollHeight, behavior: "smooth" }));
+
+        setStaticUITexts();
+
+        DOMElements.newDialogBtn?.addEventListener("click", startNewDialog);
+        DOMElements.sendButton?.addEventListener("click", sendMessage);
+        DOMElements.toggleSidebar?.addEventListener("click", () => DOMElements.mainWrapper?.classList.toggle("sidebar-hidden"));
+        DOMElements.fileUploadButton?.addEventListener("click", () => DOMElements.fileInputHidden.click());
+        DOMElements.fileInputHidden?.addEventListener("change", (e) => handleFileUpload(e.target.files));
+        DOMElements.messageInput?.addEventListener("paste", handlePaste);
+        DOMElements.messageInput?.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+        
+        DOMElements.messageInput?.addEventListener("input", () => {
+            if (DOMElements.messageInput) {
+                DOMElements.messageInput.style.height = "auto";
+                DOMElements.messageInput.style.height = `${Math.min(DOMElements.messageInput.scrollHeight, 200)}px`;
+            }
+        });
+
+        DOMElements.searchBox?.addEventListener("input", e => {
+            const keyword = e.target.value.toLowerCase();
+            document.querySelectorAll(".file-card").forEach(card => {
+                const title = card.querySelector('h5')?.textContent.toLowerCase() || '';
+                card.style.display = title.includes(keyword) ? "" : "none";
+            });
+        });
+
+        DOMElements.chatbox?.addEventListener("scroll", () => {
+            if (DOMElements.scrollBtn && DOMElements.chatbox) {
+                const shouldBeVisible = DOMElements.chatbox.scrollHeight - DOMElements.chatbox.scrollTop > DOMElements.chatbox.clientHeight + 150;
+                DOMElements.scrollBtn.classList.toggle("visible", shouldBeVisible);
+            }
+        });
+
+        DOMElements.scrollBtn?.addEventListener("click", () => {
+            DOMElements.chatbox?.scrollTo({ top: DOMElements.chatbox.scrollHeight, behavior: "smooth" });
+        });
         
         document.addEventListener("click", e => {
             if (!e.target.closest('.menu-button') && !e.target.closest('.menu-popup')) {
-                document.querySelectorAll('.menu-popup').forEach(popup => { popup.style.display = 'none'; });
+                document.querySelectorAll('.menu-popup').forEach(popup => { 
+                    popup.style.display = 'none';
+                    popup.classList.remove('visible');
+                });
             }
         });
 
         const initialDialogId = "{{ initial_dialog_id|default:'' }}";
-        currentDialogId = initialDialogId || localStorage.getItem("currentDialogId");
-
+        const dialogIdFromStorage = localStorage.getItem("currentDialogId");
+        
         loadDialogs().then(() => {
-            if (currentDialogId) {
-                loadDialog(currentDialogId);
-            } else if (fileListElem.querySelector(".file-card")) {
-                 // 로드할 ID가 없을 경우, 목록의 첫번째 대화를 로드
-                const firstDialogId = fileListElem.querySelector(".file-card").id.replace('file-card-', '');
-                loadDialog(firstDialogId);
+            let dialogToLoad = initialDialogId || dialogIdFromStorage;
+            const cardExists = dialogToLoad ? DOMElements.fileList.querySelector(`#file-card-${dialogToLoad}`) : null;
+
+            if (dialogToLoad && cardExists) {
+                loadDialog(dialogToLoad);
             } else {
-                // 대화 목록이 아예 비어있을 경우 새 대화 시작 (loadDialogs 내부에서 처리)
+                const firstCard = DOMElements.fileList.querySelector(".file-card");
+                if (firstCard) {
+                    const firstDialogId = firstCard.id.replace('file-card-', '');
+                    loadDialog(firstDialogId);
+                } else {
+                    startNewDialog();
+                }
             }
         });
     });
