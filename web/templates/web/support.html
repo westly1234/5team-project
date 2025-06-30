@@ -1,16 +1,21 @@
 <!DOCTYPE html>
+{% comment %}
+    t 태그를 사용하기 위해 custom_translate 라이브러리를 로드합니다.
+    (만약 custom_translate가 t 태그를 정의하지 않았다면, {% load i18n %}으로 변경해야 합니다.)
+{% endcomment %}
 {% load static i18n custom_translate %}
 <html lang="{{ request.LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HealthWise 고객 지원</title>
+    {% t "HealthWise 고객 지원" as page_title %}
+    <title>{{ page_title }}</title>
     
-    <!-- Font Awesome CDN은 헤더를 위해 그대로 유지합니다. -->
+    <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        /* 기본 변수 및 스타일은 그대로 유지됩니다. */
+        /* CSS 스타일은 변경 없이 그대로 유지됩니다. */
         :root {
             --bg-primary: #0F0F1E; 
             --bg-secondary: #1C1C33; 
@@ -42,10 +47,6 @@
             overflow-x: hidden; 
         }
         .container { width: 90%; max-width: 1050px; margin: 0 auto; padding: 35px 0; }
-
-        /* ======================================================= */
-        /* ▼▼▼▼▼ 헤더 스타일링 (include된 _header.html에 적용) ▼▼▼▼▼ */
-        /* ======================================================= */
         .app-header {
             background-color: rgba(21, 21, 40, 0.88); 
             backdrop-filter: blur(12px); 
@@ -58,128 +59,23 @@
             box-shadow: 0 4px 18px rgba(0,0,0,0.25); 
             border-bottom: 1px solid rgba(var(--border-color), 0.4); 
         }
-        
-        .app-header .nav-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-        }
-
-        /* [수정] _header.html의 그라데이션 로고를 덮어쓰고 이 페이지의 스타일을 적용합니다. */
-        .app-header .logo {
-            font-size: 1.8em;
-            font-weight: 700; 
-            color: var(--text-primary);
-            letter-spacing: -0.5px;
-            text-decoration: none;
-            /* 그라데이션 효과 제거 */
-            background: none; 
-            -webkit-text-fill-color: initial;
-        }
-
-        .app-header .nav-menu {
-            list-style: none;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .app-header .nav-menu li {
-            display: flex;
-            align-items: center;
-        }
-        .app-header .nav-item {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 1em;
-            font-weight: 500;
-            transition: color 0.3s ease, transform 0.3s ease;
-            position: relative;
-            padding: 6px 4px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-family: inherit;
-        }
-        .app-header .nav-item::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2.5px; 
-            background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan));
-            transition: width 0.35s ease-out; 
-        }
-        .app-header .nav-item:hover,
-        .app-header .nav-item.active {
-            color: var(--text-primary);
-            transform: translateY(-2px);
-        }
-        .app-header .nav-item:hover::after,
-        .app-header .nav-item.active::after {
-            width: 100%;
-        }
-
-        /* [추가] 아이콘이 반드시 보이도록 폰트를 강제 적용합니다. */
-        .app-header .nav-item .fas {
-            font-family: 'Font Awesome 6 Free', 'FontAwesome' !important;
-            font-weight: 900 !important;
-            color: inherit;
-        }
-
-        /* 언어 선택 드롭다운 스타일 */
-        .language-dropdown-container {
-            position: relative;
-        }
-        #language-toggle-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        #language-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 140%;
-            right: 0;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: var(--card-shadow);
-            overflow: hidden;
-            width: 150px;
-        }
-        #language-dropdown-menu.show {
-            display: block;
-        }
-        .language-option-form {
-            margin: 0;
-        }
-        .language-option-btn {
-            width: 100%;
-            padding: 12px 16px;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            text-align: left;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: background-color 0.2s, color 0.2s;
-        }
-        .language-option-btn:hover {
-            background-color: rgba(var(--accent-cyan-rgb), 0.1);
-            color: var(--text-primary);
-        }
-        .language-option-btn.active {
-            color: var(--accent-cyan);
-            font-weight: 600;
-        }
-        
-        /* ======================================================= */
-        /* ▲▲▲▲▲ 헤더 스타일링 완료 ▲▲▲▲▲ */
-        /* ======================================================= */
-
-        /* Hero Section ... (이하 모든 CSS는 기존과 동일) */
+        .app-header .nav-container { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .app-header .logo { font-size: 1.8em; font-weight: 700; color: var(--text-primary); letter-spacing: -0.5px; text-decoration: none; background: none; -webkit-text-fill-color: initial; }
+        .app-header .nav-menu { list-style: none; display: flex; align-items: center; gap: 15px; }
+        .app-header .nav-menu li { display: flex; align-items: center; }
+        .app-header .nav-item { color: var(--text-secondary); text-decoration: none; font-size: 1em; font-weight: 500; transition: color 0.3s ease, transform 0.3s ease; position: relative; padding: 6px 4px; background: none; border: none; cursor: pointer; font-family: inherit; }
+        .app-header .nav-item::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2.5px; background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan)); transition: width 0.35s ease-out; }
+        .app-header .nav-item:hover, .app-header .nav-item.active { color: var(--text-primary); transform: translateY(-2px); }
+        .app-header .nav-item:hover::after, .app-header .nav-item.active::after { width: 100%; }
+        .app-header .nav-item .fas { font-family: 'Font Awesome 6 Free', 'FontAwesome' !important; font-weight: 900 !important; color: inherit; }
+        .language-dropdown-container { position: relative; }
+        #language-toggle-btn { display: flex; align-items: center; gap: 8px; }
+        #language-dropdown-menu { display: none; position: absolute; top: 140%; right: 0; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: var(--card-shadow); overflow: hidden; width: 150px; }
+        #language-dropdown-menu.show { display: block; }
+        .language-option-form { margin: 0; }
+        .language-option-btn { width: 100%; padding: 12px 16px; background: none; border: none; color: var(--text-secondary); text-align: left; cursor: pointer; font-size: 0.95em; transition: background-color 0.2s, color 0.2s; }
+        .language-option-btn:hover { background-color: rgba(var(--accent-cyan-rgb), 0.1); color: var(--text-primary); }
+        .language-option-btn.active { color: var(--accent-cyan); font-weight: 600; }
         .hero-section { padding: 65px 20px; text-align: center; margin-bottom: 45px; border-radius: 12px; }
         .hero-section h1 { font-size: 3.2em; font-weight: 700; margin-bottom: 30px; line-height: 1.25; background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan), var(--accent-yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; animation: gradientShine 5s linear infinite; background-size: 200% 200%; text-shadow: 0 0 15px rgba(var(--accent-cyan-rgb), 0.2); }
         @keyframes gradientShine { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
@@ -244,24 +140,31 @@
 <style> @keyframes fadeInAndOut { 0% { opacity: 0; transform: translateY(-20px); } 15% { opacity: 1; transform: translateY(0); } 85% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-20px); } } </style>
 {% endif %}
     
-    <!-- ======================================================= -->
-    <!-- ▼▼▼▼▼ [수정] 헤더 부분을 공통 템플릿(_header.html)을 include하는 방식으로 교체합니다 ▼▼▼▼▼ -->
-    <!-- ======================================================= -->
     <header class="app-header">
         {% include "web/_header.html" %}
     </header>
-    <!-- ======================================================= -->
-    <!-- ▲▲▲▲▲ [수정] 헤더 교체 완료 ▲▲▲▲▲ -->
-    <!-- ======================================================= -->
+
+    {% comment %}
+        [수정] t 태그와 'as'를 함께 사용하여 번역된 값을 변수에 저장합니다.
+        이것이 placeholder와 같은 HTML 속성에서 번역을 사용하는 유일하고 올바른 방법입니다.
+    {% endcomment %}
+    {% t "궁금한 점을 검색해보세요 (예: 비밀번호, 운동 기록)" as search_placeholder %}
+    {% t "FAQ 검색" as faq_search_aria_label %}
+    {% t "검색" as search_button_aria_label %}
 
     <div class="container">
-        <!-- 기존 support.html의 본문 내용은 모두 그대로 유지됩니다. -->
         <section class="hero-section">
             <h1>{% t "무엇을 도와드릴까요?" %}</h1>
             <div class="search-container">
-                <input type="search" id="faq-search-input" placeholder="궁금한 점을 검색해보세요 (예: 비밀번호, 운동 기록)" aria-label="FAQ 검색">
-                <button id="faq-search-button" aria-label="검색">
-                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>{% t "검색" %}</button>
+                <input type="search" 
+                    id="faq-search-input" 
+                    placeholder="{{ search_placeholder }}" 
+                    aria-label="{{ faq_search_aria_label }}">
+                    
+                <button id="faq-search-button" aria-label="{{ search_button_aria_label }}">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+                    {% t "검색" %}
+                </button>
             </div>
         </section>
 
@@ -299,7 +202,7 @@
                         <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
                     </button>
                     <div class="faq-answer" id="faq-answer-1" role="region">
-                        <p>로그인 페이지에서 '비밀번호 찾기' 링크를 클릭하여 안내에 따라 비밀번호를 재설정할 수 있습니다. 가입 시 사용한 이메일 주소가 필요합니다.</p>
+                        <p>{% t "로그인 페이지에서 '비밀번호 찾기' 링크를 클릭하여 안내에 따라 비밀번호를 재설정할 수 있습니다. 가입 시 사용한 이메일 주소가 필요합니다." %}</p>
                     </div>
                 </div>
                 <div class="faq-item" data-category="account">
@@ -317,7 +220,7 @@
                         <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
                     </button>
                     <div class="faq-answer" id="faq-answer-3" role="region">
-                        <p>AI 건강 상담 후, 사용자의 목표와 현재 상태에 맞춰 맞춤형 운동 루틴이 '오늘의 추천 루틴'에 표시됩니다. 또는 '운동 목록'에서 원하는 운동을 직접 선택할 수도 있습니다.</p>
+                        <p>{% t "AI 건강 상담 후, 사용자의 목표와 현재 상태에 맞춰 맞춤형 운동 루틴이 '오늘의 추천 루틴'에 표시됩니다. 또는 '운동 목록'에서 원하는 운동을 직접 선택할 수도 있습니다." %}</p>
                     </div>
                 </div>
                 <div class="faq-item" data-category="service">
@@ -344,7 +247,7 @@
                         <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
                     </button>
                     <div class="faq-answer" id="faq-answer-6" role="region">
-                        <p>앱을 최신 버전으로 업데이트하고, 기기의 운영체제도 최신 상태인지 확인해주세요. 문제가 지속되면 앱을 삭제 후 재설치해보거나, '1:1 이메일 문의하기'를 통해 상세 증상을 알려주시면 도움을 드리겠습니다.</p>
+                        <p>{% t "앱을 최신 버전으로 업데이트하고, 기기의 운영체제도 최신 상태인지 확인해주세요. 문제가 지속되면 앱을 삭제 후 재설치해보거나, '1:1 이메일 문의하기'를 통해 상세 증상을 알려주시면 도움을 드리겠습니다." %}</p>
                     </div>
                 </div>
                 <div class="faq-item" data-category="technical">
@@ -353,7 +256,7 @@
                         <svg class="icon-svg-chevron" viewBox="0 0 24 24"><path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"></path></svg>
                     </button>
                     <div class="faq-answer" id="faq-answer-7" role="region">
-                        <p>인터넷 연결 상태를 확인하고, 앱 설정에서 '데이터 동기화' 옵션이 켜져 있는지 확인해주세요. 기기를 재부팅하거나 앱의 캐시를 삭제하는 것도 도움이 될 수 있습니다.</p>
+                        <p>{% t "인터넷 연결 상태를 확인하고, 앱 설정에서 '데이터 동기화' 옵션이 켜져 있는지 확인해주세요. 기기를 재부팅하거나 앱의 캐시를 삭제하는 것도 도움이 될 수 있습니다." %}</p>
                     </div>
                 </div>
             </div>
@@ -364,14 +267,15 @@
             <h2>{% t "도움이 더 필요하신가요?" %}</h2>
             <p>{% t "자주 묻는 질문에서 원하는 답변을 찾지 못하셨거나, HealthWise 사용 중 추가적인 도움이 필요하시면 언제든지 문의해주세요. 전문가가 신속하고 친절하게 답변드리겠습니다." %}</p>
             <a href="{% url 'web:inquiry' %}" class="contact-button">
-                 <svg class="icon-svg-contact" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"></path></svg>{% t "1:1 이메일 문의하기" %}</a>
+                 <svg class="icon-svg-contact" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"></path></svg>
+                 {% t "1:1 이메일 문의하기" %}</a>
         </section>
     </div>
 
     <footer class="app-footer">{% t "©2025 HealthWise. 모든 권리 보유. 당신의 건강한 삶을 응원합니다." %}</footer>
 
-    <!-- 기존 FAQ 스크립트는 그대로 유지됩니다 -->
     <script>
+        // JavaScript 부분은 변경 없이 그대로 유지됩니다.
         document.addEventListener('DOMContentLoaded', () => {
             const faqSearchInput = document.getElementById('faq-search-input');
             const faqSearchButton = document.getElementById('faq-search-button');
@@ -443,8 +347,6 @@
             filterFAQs(false); 
         });
     </script>
-    
-    <!-- [수정] _header.html에 스크립트가 포함되어 있으므로 중복되는 이 스크립트는 제거합니다. -->
     
 </body>
 </html>
