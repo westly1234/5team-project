@@ -24,7 +24,7 @@
     <header class="text-left mb-12">
         <div class="border-l-4 border-violet-400 pl-4">
             <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">My Routine Vault</h1>
-            <p class="text-md text-gray-400 mt-2">{{ user.username }}{% t'님의 모든 운동 기록 보관소입니다.' %}</p>
+            <p class="text-md text-gray-400 mt-2">{% translate "%s님의 모든 운동 기록 보관소입니다."|stringformat:user.username %}</p>
         </div>
     </header>
 

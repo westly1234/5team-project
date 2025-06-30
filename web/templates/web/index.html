@@ -4,20 +4,45 @@
 {% block title %}HealthWise - 혁신적인 AI 헬스케어{% endblock %}
 
 {% block content %}
-<style>
-    /* 상단바/푸터 스타일 유지를 위해 body, html 스타일은 건드리지 않습니다. */
-    .hero-btn {
-        display: inline-block; padding: 12px 28px; margin: 0 10px; border: 2px solid #fff;
-        background-color: transparent; color: #fff; text-decoration: none; font-size: 1rem;
-        font-weight: 600; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
-    }
-    .hero-btn:hover { background-color: #fff; color: #000; }
-</style>
+<!-- 필수 라이브러리 로드 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+<script src="https://unpkg.com/split-type"></script>
 
-<!-- ================================================================== -->
-<!-- 1. 히어로 섹션 -->
-<!-- ================================================================== -->
+<!-- ================================================================ -->
+<!-- 최종 완성본 스타일시트 (v5 - The Ultimate) -->
+<!-- ================================================================ -->
 <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+    :root {
+        --bg-color: #000000;
+        --section-bg-light: #f5f5f7;
+        --text-primary-dark: #f5f5f7;
+        --text-secondary-dark: #ffffff;
+        --text-primary-light: #1d1d1f;
+        --text-secondary-light: #6e6e73;
+        --accent-blue: #0071e3;
+    }
+    html { scroll-behavior: auto; }
+    body {
+        background-color: var(--bg-color); color: var(--text-primary-dark);
+        font-family: "Pretendard", -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+        cursor: auto;
+    }
+    .hidden-for-gsap { opacity: 0; visibility: hidden; }
+        section {
+        padding: 160px 40px;
+        max-width: 980px;
+        margin: 0 auto;
+        text-align: center;
+        background-color: var(--section-bg-light);
+        color: var(--text-primary-light);
+    }
+
+    
     .hero {
         height: 100vh;
         position: relative;
@@ -33,250 +58,292 @@
         position: relative;
         z-index: 2;
     }
-</style>
-
-<section class="hero" id="hero">
-    <div class="hero-content">
-        <h1>AI Healthcare</h1>
-        <p> {% t '스크롤하여 혁신적인 기능들을 확인하세요' %} </p>
-        <a href="#mainContent" class="hero-btn"> {% t '자세히 보기' %} </a>
-        <a href="{% url 'web:services' %}" class="hero-btn"> {% t '시작하기' %} </a>
-    </div>
-</section>
-
-<!-- ================================================================ -->
-<!-- 2. 기능 소개 및 통계 섹션 (화면 고정 효과 적용) -->
-<!-- ================================================================ -->
-<style>
-    .features-sticky-wrapper {
-        position: relative;
-        height: 400vh;
-        background-color: #1a202c;
-    }
-    .features-content {
-        position: sticky;
-        top: 0;
-        height: 100vh;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
+    /* ✨ 문제 해결: h1 태그에 직접 흰색을 지정하여 다른 스타일에 덮어씌워지는 것을 방지합니다. */
+    .hero-content h1 {
         color: #fff;
+        font-size: 5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
     }
-    .feature-display-area {
-        width: 90%;
-        max-width: 1200px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .hero-btn {
+        display: inline-block; padding: 12px 28px; margin: 15px 10px 0 10px; border: 2px solid #fff;
+        background-color: transparent; color: #fff; text-decoration: none; font-size: 1rem;
+        font-weight: 600; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+    }
+    .hero-btn:hover { background-color: #fff; color: #000; }
+
+    /* --- 2. 시네마틱 기능 소개 --- */
+    .cinematic-wrapper {
         position: relative;
-        flex-grow: 1;
+        height: 700vh;
+        background-color: var(--bg-color);
     }
-    .feature-panel {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        gap: 5%;
-        opacity: 0;
-        transition: opacity 0.6s ease-in-out;
-        pointer-events: none;
+    .cinematic-sticky-container {
+        position: sticky; top: 0; height: 100vh;
+        width: 100%; overflow: hidden;
     }
-    .feature-panel.active {
-        opacity: 1;
-        pointer-events: auto;
+    .cinematic-panel {
+        position: relative; width: 100%; height: 100%;
     }
-    .feature-panel:nth-of-type(even) {
+    .cinematic-scene {
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%; padding: 0 5%;
+        box-sizing: border-box;
+        display: flex; justify-content: center;
+        align-items: center; gap: 5%;
+        opacity: 0; visibility: hidden;
+        will-change: opacity, visibility;
+    }
+    .cinematic-scene.layout-reverse {
         flex-direction: row-reverse;
     }
-    .feature-image, .feature-text { flex: 1; }
-    .feature-image img { width: 100%; max-height: 50vh; object-fit: contain; }
-    .feature-text { text-align: left; }
-    .feature-text h2 { font-size: 3rem; margin-bottom: 2rem; font-weight: 600; }
-    .feature-text p { font-size: 1.1rem; line-height: 1.8; color: #ccc; margin-bottom: 2.5rem;}
-    .feature-text .feature-list { list-style-type: none; padding: 0; }
-    .feature-text .feature-list li { margin-bottom: 15px; font-size: 1.1rem; }
-    .feature-text .feature-list li::before { content: '✓'; margin-right: 12px; color: #a5e6ba; }
+    .device-frame-wrapper {
+        flex: 0 0 320px;
+    }
+    .text-wrapper {
+        flex: 1; max-width: 450px;
+    }
+    .device-frame {
+        width: 100%; height: 640px; background: #111;
+        border: 12px solid #333; border-radius: 40px;
+        padding: 10px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .device-screen {
+        width: 100%; height: 100%; position: relative;
+        overflow: hidden; border-radius: 25px; background: #000;
+    }
+    .device-screen img {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        object-fit: cover; opacity: 1;
+    }
+    .text-wrapper h2 {
+        font-size: 56px; font-weight: 700;
+        line-height: 1.2; margin-bottom: 1rem; text-align: left;
+        word-break: keep-all;
+    }
+    .text-wrapper p {
+        font-size: 21px; color: var(--text-secondary-dark); text-align: left;
+        word-break: keep-all;
+    }
+    .layout-reverse .text-wrapper h2,
+    .layout-reverse .text-wrapper p {
+        text-align: right;
+    }
+
+    /* --- 3. 기능 갤러리 (3D 틸트 효과) --- */
+    .feature-gallery-section { background-color: var(--section-bg-light); color: var(--text-primary-light); padding: 120px 0; }
+    .gallery-headline { font-size: 56px; font-weight: 700; margin-bottom: 60px; padding: 0 40px; }
+    .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .gallery-card { position: relative; border-radius: 30px; overflow: hidden; background: #fff; transform-style: preserve-3d; }
+    .gallery-card.large { grid-column: span 2; aspect-ratio: 1.9 / 1; }
+    .gallery-card.small { aspect-ratio: 1 / 1.2; }
+    .gallery-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); transform: scale(1.1); }
+    .gallery-card:hover img { transform: scale(1); }
+    .gallery-card-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; text-align: left; color: #fff; background: linear-gradient(to top, rgba(0,0,0,0.8) 20%, transparent); transform: translateZ(50px); }
+    .gallery-card-content h3 { font-size: 32px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+    .gallery-card-content p { font-size: 18px; font-weight: 500; text-shadow: 0 1px 5px rgba(0,0,0,0.5); }
+
+    /* --- 4. 사용자 후기 (마키 애니메이션) --- */
+    .testimonials-section {
+        background-color: var(--bg-color); padding: 160px 0; overflow: hidden;
+        display: flex; flex-direction: column; align-items: center;
+        justify-content: center; text-align: center;
+    }
+    .section-headline-dark { color: var(--text-primary-dark); font-size: 56px; font-weight: 700; margin-bottom: 80px; }
+    .marquee { display: flex; width: fit-content; }
+    .marquee-wrapper { display: flex; animation: marquee 40s linear infinite; }
+    @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .testimonial-card {
+        width: 400px; margin: 0 20px; background-color: #1d1d1f; border-radius: 24px;
+        padding: 40px; text-align: left; flex-shrink: 0;
+    }
+    .testimonial-body { font-size: 21px; line-height: 1.6; font-weight: 500; margin-bottom: 24px; }
+    .testimonial-user { font-size: 17px; color: var(--text-secondary-dark); }
+    .testimonial-user strong { color: var(--text-primary-dark); font-weight: 600; }
     
-    .stats-container {
-        display: flex; justify-content: space-around; width: 90%; max-width: 1200px;
-        padding: 40px 0; border-top: 1px solid #333;
+    @media (max-width: 900px) { /* 모바일 반응형 */
+        .cinematic-wrapper { height: auto; padding: 100px 0; }
+        .cinematic-sticky-container { position: relative; height: auto; }
+        .cinematic-panel { flex-direction: column; gap: 5vh; }
+        .cinematic-scene { position: relative; opacity: 1; visibility: visible; flex-direction: column !important; }
+        .text-wrapper { text-align: center; }
+        .text-wrapper h2, .text-wrapper p, .layout-reverse .text-wrapper h2, .layout-reverse .text-wrapper p { text-align: center; }
     }
-    .stat-item { flex: 1; min-width: 200px; text-align: center; }
-    .stat-number { font-size: 3.5rem; font-weight: bold; color: #d89aff; margin-bottom: 10px; }
-    .stat-label { font-size: 1rem; color: #ccc; opacity: 0.9; }
+    @media (max-width: 768px) {
+        .custom-cursor { display: none; }
+        body { cursor: auto; }
+        .hero-content h1 { font-size: 3.5rem; }
+        .text-wrapper h2 { font-size: 40px; }
+        .text-wrapper p { font-size: 18px; }
+        .device-frame-wrapper { flex-basis: auto; }
+        .device-frame { width: 250px; height: 500px; }
+        .gallery-grid { grid-template-columns: 1fr; }
+        .gallery-card.large { grid-column: span 1; aspect-ratio: 1.6/1; }
+    }
 </style>
 
-<section class="features-sticky-wrapper" id="mainContent">
-    <div class="features-content">
-        <!-- 기능 내용이 바뀌는 영역 -->
-        <div class="feature-display-area">
-            <!-- 패널 1 -->
-            <div class="feature-panel active">
-                <div class="feature-image"><img src="{% static 'images/hand7.jpg' %}" alt="AI 건강 상담"></div>
-                <div class="feature-text">
-                    <h2> {% t 'AI 건강 상담' %} </h2>
-                    <p> {% t '최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석합니다. 사용자의 건강 상태를 분석하여 맞춤 운동과 식단을 알려줍니다.' %} </p>
-                    <ul class="feature-list"><li> {% t '실시간 나의 상태 분석' %} </li><li> {% t '실시간 건강 모니터링' %} </li><li> {% t '개인 맞춤형 건강 리포트' %} </li><li> {% t '조기 진단 알림 시스템' %} </li></ul>
+<div class="custom-cursor">
+    <div class="cursor-dot"></div>
+    <div class="cursor-ring"></div>
+</div>
+
+<!-- ================================================================== -->
+<!-- 1. 히어로 섹션 -->
+<!-- ================================================================== -->
+
+<section class="hero" id="hero">
+  <div class="hero-content">
+    <h1>AI Healthcare</h1>
+    <p>{% t '스크롤하여 혁신적인 기능들을 확인하세요' %}</p>
+    <div class="hero-buttons">
+      <a href="#mainContent" class="hero-btn">{% t '자세히 보기' %}</a>
+      <a href="{% url 'web:services' %}" class="hero-btn">{% t '시작하기' %}</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ================================================================== -->
+<!-- 2. 시네마틱 기능 소개 -->
+<!-- ================================================================== -->
+<div id="mainContent" class="cinematic-wrapper">
+    <div class="cinematic-sticky-container">
+        <div class="cinematic-panel">
+            <!-- Scene 1 -->
+            <div id="scene-1" class="cinematic-scene">
+                <div class="text-wrapper">
+                    <h2>
+                        <span>당신의 건강,</span>
+                        <span>이제 새로운 차원으로.</span>
+                    </h2>
+                </div>
+                <div class="device-frame-wrapper">
+                    <div class="device-frame">
+                        <div class="device-screen">
+                            <img src="https://plus.unsplash.com/premium_photo-1663050901483-ee8703cc8372?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="AI 건강 상담">
+                        </div>
+                    </div>
                 </div>
             </div>
-            <!-- 패널 2 -->
-            <div class="feature-panel">
-                <div class="feature-image"><img src="{% static 'images/hand8.jpg' %}" alt="장소 서비스"></div>
-                <div class="feature-text">
-                    <h2> {% t '내 위치 맞춤 장소 서비스' %} </h2>
-                    <p> {% t '원하는 장소나 내 주변 운동 장소를 한눈에 보여주는 서비스 입니다.' %} </p>
-                    <ul class="feature-list"><li> {% t '모든 운동 장소 확인 가능' %} </li><li> {% t '실시간 데이터 동기화' %} </li><li> {% t '전지역 내 위치 맞춤 서비스' %} </li><li> {% t '운동 종류별 위치 탐색' %} </li></ul>
+
+            <!-- Scene 2 -->
+            <div id="scene-2" class="cinematic-scene layout-reverse">
+                <div class="text-wrapper">
+                    <h2>
+                        <span>AI가 실시간으로</span>
+                        <span>당신을 분석합니다.</span>
+                    </h2>
+                    <p>최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석하여 맞춤 솔루션을 제공합니다.</p>
+                </div>
+                <div class="device-frame-wrapper">
+                    <div class="device-frame">
+                        <div class="device-screen">
+                            <img src="https://images.unsplash.com/photo-1607962837359-5e7e89f86776?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="맞춤형 운동 코칭">
+                        </div>
+                    </div>
                 </div>
             </div>
-            <!-- 패널 3 -->
-            <div class="feature-panel">
-                <div class="feature-image"><img src="{% static 'images/hand3.JPG' %}" alt="운동 코칭"></div>
-                <div class="feature-text">
-                    <h2> {% t '맞춤형 운동 코칭' %} </h2>
-                    <p> {% t 'AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계합니다. 컴퓨터 비전 기술로 운동 자세를 실시간으로 분석하고 교정합니다.' %} </p>
-                    <ul class="feature-list"><li> {% t '개인별 맞춤 운동 프로그램' %} </li><li> {% t '실시간 자세 교정' %} </li><li> {% t '운동 효과 분석' %} </li><li> {% t '부상 예방 가이드' %} </li></ul>
+
+            <!-- Scene 3 -->
+            <div id="scene-3" class="cinematic-scene">
+                <div class="text-wrapper">
+                    <h2>
+                        <span>먹는 것까지 똑똑하게,</span>
+                        <span>스마트 영양 관리.</span>
+                    </h2>
+                    <p>음식 사진만으로 칼로리와 영양소를 분석하고, 개인 맞춤 식단을 추천합니다.</p>
+                </div>
+                <div class="device-frame-wrapper">
+                    <div class="device-frame">
+                        <div class="device-screen">
+                            <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1453&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="스마트 영양 관리">
+                        </div>
+                    </div>
                 </div>
             </div>
-            <!-- 패널 4 -->
-            <div class="feature-panel">
-                <div class="feature-image"><img src="{% static 'images/hand4.png' %}" alt="영양 관리"></div>
-                <div class="feature-text">
-                    <h2> {% t '스마트 영양 관리' %} </h2>
-                    <p> {% t '음식 사진만으로 칼로리와 영양소를 정확하게 분석합니다. 개인의 건강 목표와 상태에 맞는 식단을 AI가 추천해드립니다.' %} </p>
-                    <ul class="feature-list"><li> {% t 'AI 기반 음식 인식' %} </li><li> {% t '영양소 자동 계산' %} </li><li> {% t '맞춤형 식단 추천' %} </li><li> {% t '알레르기 성분 체크' %} </li></ul>
+
+            <!-- Scene 4 -->
+            <div id="scene-4" class="cinematic-scene layout-reverse">
+                <div class="text-wrapper">
+                    <h2>
+                        <span>오직 당신만을 위한</span>
+                        <span>맞춤형 운동 코칭.</span>
+                    </h2>
+                    <p>AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계하고, 자세까지 교정해줍니다.</p>
+                </div>
+                <div class="device-frame-wrapper">
+                    <div class="device-frame">
+                        <div class="device-screen">
+                            <img src="https://plus.unsplash.com/premium_photo-1670505062582-fdaa83c23c9e?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="건강한 식사">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- 통계 (고정) -->
-        <div class="stats-container">
-            <div class="stat-item"><div class="stat-number">97%</div><p class="stat-label">사용자 만족도</p></div>
-            <div class="stat-item"><div class="stat-number">85점</div><p class="stat-label">평균 건강 점수</p></div>
-            <div class="stat-item"><div class="stat-number">4.5h</div><p class="stat-label">주간 운동 시간</p></div>
-            <div class="stat-item"><div class="stat-number">15%</div><p class="stat-label">의료비 절감</p></div>
+    </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- 3. 기능 갤러리 섹션 -->
+<!-- ================================================================== -->
+<section class="feature-gallery-section">
+    <h2 class="gallery-headline hidden-for-gsap">{% t '그 밖의 놀라운 기능들' %}</h2>
+    <div class="gallery-grid">
+        <div class="gallery-card large hidden-for-gsap">
+            <img src="https://images.unsplash.com/photo-1716367840407-f9414a84b325?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="장소 서비스">
+            <div class="gallery-card-content">
+                <h3>{% t '내 위치 맞춤 장소 서비스' %}</h3><p>{% t '내 주변 모든 운동 장소를 한눈에.' %}</p>
+            </div>
+        </div>
+        <div class="gallery-card small hidden-for-gsap">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71" alt="건강 리포트">
+            <div class="gallery-card-content">
+                <h3>{% t '주간 리포트' %}</h3><p>{% t '한 주간의 건강 변화를 분석.' %}</p>
+            </div>
+        </div>
+        <div class="gallery-card small hidden-for-gsap">
+            <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438" alt="커뮤니티">
+            <div class="gallery-card-content">
+                <h3>{% t '챌린지 & 커뮤니티' %}</h3><p>{% t '함께해서 더 즐거운 건강 관리.' %}</p>
+            </div>
         </div>
     </div>
 </section>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const mainContent = document.getElementById('mainContent');
-    const featurePanels = document.querySelectorAll('.feature-panel');
-    const viewDetailsBtn = document.querySelector('a[href="#mainContent"]');
-
-    if (viewDetailsBtn) {
-        viewDetailsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
-        });
-    }
-
-    window.addEventListener('scroll', () => {
-        const wrapperRect = mainContent.getBoundingClientRect();
-        
-        if (wrapperRect.top <= 0 && wrapperRect.bottom >= window.innerHeight) {
-            const progress = -wrapperRect.top / (mainContent.scrollHeight - window.innerHeight);
-            let activeIndex = Math.floor(progress * featurePanels.length);
-            activeIndex = Math.min(activeIndex, featurePanels.length - 1);
-
-            featurePanels.forEach((panel, index) => {
-                panel.classList.toggle('active', index === activeIndex);
-            });
-        }
-    });
-});
-</script>
-
-<!-- ================================================================ -->
-<!-- 3. 사용자 후기 섹션 -->
-<!-- ================================================================ -->
-<style>
-.testimonials-section {
-    background-color: #0b0a1d;
-    color: #fff;
-    padding: 100px 20px;
-    text-align: center;
-}
-.testimonials-section h2 {
-    font-size: 2.8rem;
-    font-weight: 700;
-    margin-bottom: 70px;
-    background: linear-gradient(90deg, #f977ce, #a361ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-}
-.testimonial-cards-container {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
-}
-.testimonial-card {
-    background-color: #1c1a34;
-    border-radius: 16px;
-    padding: 30px;
-    max-width: 360px;
-    width: 100%;
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-}
-.testimonial-header { display: flex; align-items: center; margin-bottom: 15px; }
-.testimonial-avatar { font-size: 2.5rem; margin-right: 15px; line-height: 1; }
-.testimonial-user h3 { font-size: 1.1rem; font-weight: 600; margin: 0 0 5px 0; }
-.testimonial-user p { font-size: 0.9rem; color: #a0aec0; margin: 0; }
-.testimonial-rating { margin-bottom: 20px; color: #ffc107; font-size: 1.1rem; }
-.testimonial-body { font-size: 1rem; line-height: 1.7; color: #e2e8f0; }
-</style>
-
+<!-- ================================================================== -->
+<!-- 4. 사용자 후기 -->
+<!-- ================================================================== -->
 <section class="testimonials-section">
-    <h2>10만 직장인이 선택한 이유</h2>
-    <div class="testimonial-cards-container">
-        <!-- Testimonial 1: 김지훈 -->
-        <div class="testimonial-card">
-            <div class="testimonial-header"><span class="testimonial-avatar">👨‍💼</span><div class="testimonial-user"><h3>김지훈</h3><p>삼성전자 개발팀</p></div></div>
-            <div class="testimonial-rating">★★★★★</div>
-            <p class="testimonial-body">AI 컨설턴트 덕분에 3개월 만에 체중 10kg 감량했어요. 맞춤형 운동과 식단이 정말 효과적이었습니다.</p>
-        </div>
-        <!-- Testimonial 2: 이서연 -->
-        <div class="testimonial-card">
-            <div class="testimonial-header"><span class="testimonial-avatar">👩‍💼</span><div class="testimonial-user"><h3>이서연</h3><p>LG화학 마케팅팀</p></div></div>
-            <div class="testimonial-rating">★★★★★</div>
-            <p class="testimonial-body">팀 운동 챌린지로 동료들과 재미있게 건강을 관리하고 있어요. 업무 스트레스도 많이 줄었습니다.</p>
-        </div>
-        <!-- Testimonial 3: 박민수 -->
-        <div class="testimonial-card">
-            <div class="testimonial-header"><span class="testimonial-avatar">👨‍💻</span><div class="testimonial-user"><h3>박민수</h3><p>현대자동차 기획팀</p></div></div>
-            <div class="testimonial-rating">★★★★★</div>
-            <p class="testimonial-body">웨어러블 연동으로 실시간 건강 모니터링이 가능해서 좋아요. 건강 관리가 훨씬 쉬워졌습니다.</p>
+    <h2 class="section-headline-dark hidden-for-gsap">{% t '10만 직장인이 선택한 이유' %}</h2>
+    <div class="marquee">
+        <div class="marquee-wrapper">
+            <div class="testimonial-card"><p class="testimonial-body">“AI 덕분에 3개월 만에 10kg 감량했어요. 맞춤형 운동과 식단이 정말 효과적이었습니다.”</p><p class="testimonial-user"><strong>김지훈</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">“팀 운동 챌린지로 동료들과 재미있게 건강을 관리하고 있어요. 업무 스트레스도 많이 줄었습니다.”</p><p class="testimonial-user"><strong>이서연</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">“웨어러블 연동으로 실시간 건강 모니터링이 가능해서 좋아요. 건강 관리가 훨씬 쉬워졌습니다.”</p><p class="testimonial-user"><strong>박민수</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">“운동을 잘 몰라도 정확한 자세와 플랜을 제공받을 수 있어서 좋았습니다.”</p><p class="testimonial-user"><strong>김채연</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">“AI 덕분에 3개월 만에 10kg 감량했어요. 맞춤형 운동과 식단이 정말 효과적이었습니다.”</p><p class="testimonial-user"><strong>김지훈</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">“팀 운동 챌린지로 동료들과 재미있게 건강을 관리하고 있어요. 업무 스트레스도 많이 줄었습니다.”</p><p class="testimonial-user"><strong>이서연</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">“웨어러블 연동으로 실시간 건강 모니터링이 가능해서 좋아요. 건강 관리가 훨씬 쉬워졌습니다.”</p><p class="testimonial-user"><strong>박민수</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">“운동을 잘 몰라도 정확한 자세와 플랜을 제공받을 수 있어서 좋았습니다.”</p><p class="testimonial-user"><strong>김채연</strong></p></div>
         </div>
     </div>
 </section>
 
-<!-- ================================================================ -->
-<!-- 4. 파트너사 로고 스크롤 섹션 (새로 추가된 부분) -->
-<!-- ================================================================ -->
+<!-- ================================================================== -->
+<!-- 5. Growth & Partners 섹션 -->
+<!-- ================================================================== -->
 <style>
-/* 카운팅 애니메이션을 위한 키프레임 (선택사항, 부드러운 등장 효과) */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
 .growth-partners-section {
-    background-color: #0b0a1d; /* 이전 섹션과 동일한 배경 */
+    background-color: #0b0a1d;
     padding: 100px 20px;
     text-align: center;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     overflow: hidden;
 }
-
 .growth-partners-section h2 {
     font-size: 2.8rem;
     font-weight: 700;
@@ -284,7 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
     margin-bottom: 20px;
     animation: fadeIn 1s ease-out;
 }
-
 .growth-partners-section .section-description {
     font-size: 1.1rem;
     color: #a0aec0;
@@ -293,20 +359,17 @@ document.addEventListener('DOMContentLoaded', () => {
     margin-left: auto;
     margin-right: auto;
     animation: fadeIn 1s ease-out 0.2s;
-    animation-fill-mode: backwards; /* 애니메이션 시작 전까지 숨김 */
+    animation-fill-mode: backwards;
 }
-
 .growth-display {
     margin-bottom: 80px;
     animation: fadeIn 1s ease-out 0.4s;
     animation-fill-mode: backwards;
 }
-
 .growth-number {
     font-size: 9rem;
     font-weight: 800;
     line-height: 1;
-    /* 사용자 후기 제목과 동일한 그라데이션 적용 */
     background: linear-gradient(90deg, #f977ce, #a361ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -315,27 +378,22 @@ document.addEventListener('DOMContentLoaded', () => {
     display: inline-block;
     position: relative;
 }
-
-/* 숫자 옆에 '%' 기호 추가 */
 .growth-number::after {
     content: '%';
-    font-size: 0.3em; /* '%' 크기를 숫자보다 작게 */
+    font-size: 0.3em;
     font-weight: 600;
     position: absolute;
     top: 15%;
-    right: -0.6em; /* '%' 기호 위치 조정 */
+    right: -0.6em;
     background: none;
-    -webkit-text-fill-color: #a361ff; /* 그라데이션의 끝 색상과 맞춤 */
+    -webkit-text-fill-color: #a361ff;
 }
-
 .growth-label {
     font-size: 1.2rem;
     color: #ccc;
     margin-top: 10px;
     font-weight: 500;
 }
-
-/* --- 로고 슬라이더 스타일 (이전과 동일) --- */
 @keyframes scroll-left {
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
@@ -349,7 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
 }
 .logos-track {
     display: flex;
-    width: calc(230px * 40); /* 로고너비 150 + 좌우마진 80 = 230 */
+    width: calc(230px * 12);
     animation: scroll-left 60s linear infinite;
 }
 .logos-viewport:hover .logos-track {
@@ -385,57 +443,19 @@ document.addEventListener('DOMContentLoaded', () => {
     <p class="section-description">
         최고의 파트너들과 함께 사용자의 건강 목표 달성률을 높여가고 있습니다.
     </p>
-    
     <div class="growth-display">
-        <!-- data-target에 목표 숫자를 넣으면 JS가 자동으로 카운팅합니다 -->
         <div class="growth-number" data-target="185">0</div>
         <p class="growth-label">사용자 목표 달성률</p>
     </div>
-
     <div class="logos-viewport">
         <div class="logos-track">
-            <!-- 원본 로고 20개 -->
             <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
-
-
-            <!-- 무한 스크롤을 위한 복제본 20개 -->
-            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
-
-
-            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
-
-
-            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
-
-
-            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
-
-
+            <!-- 복제본 -->
             <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
@@ -446,45 +466,151 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 </section>
 
-<!-- 숫자 카운팅 애니메이션을 위한 JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const counter = document.querySelector('.growth-number');
-    if (!counter) return;
-
-    const animateCounter = () => {
-        const target = +counter.getAttribute('data-target');
-        const duration = 2000; // 2초 동안 애니메이션
-        const start = 0;
-        let startTime = null;
-
-        function animation(currentTime) {
-            if (startTime === null) startTime = currentTime;
-            const timeElapsed = currentTime - startTime;
-            const progress = Math.min(timeElapsed / duration, 1);
-            const currentNumber = Math.floor(progress * (target - start) + start);
-            
-            counter.innerText = currentNumber;
-
-            if (progress < 1) {
-                requestAnimationFrame(animation);
+    if (counter) {
+        const animateCounter = () => {
+            const target = +counter.getAttribute('data-target');
+            const duration = 2000;
+            let startTime = null;
+            function animation(currentTime) {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
+                counter.innerText = Math.floor(progress * target);
+                if (progress < 1) requestAnimationFrame(animation);
             }
-        }
-        requestAnimationFrame(animation);
-    };
-
-    // 섹션이 화면에 보일 때 애니메이션 시작 (Intersection Observer API)
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                animateCounter();
-                observer.unobserve(entry.target); // 한 번만 실행
-            }
-        });
-    }, { threshold: 0.5 }); // 섹션이 50% 보일 때 실행
-
-    observer.observe(document.querySelector('.growth-partners-section'));
+            requestAnimationFrame(animation);
+        };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounter();
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        observer.observe(counter);
+    }
 });
 </script>
 
+<!-- ================================================================ -->
+<!-- 최종 완성본 JavaScript (GSAP & ScrollTrigger) -->
+<!-- ================================================================ -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+    const isDesktop = window.matchMedia("(min-width: 901px)").matches;
+
+    let ctx = gsap.context(() => {
+        // --- 1. 커스텀 커서 애니메이션 ---
+        if (isDesktop && document.querySelector('.custom-cursor')) {
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorRing = document.querySelector('.cursor-ring');
+            const interactiveElements = document.querySelectorAll('a, button, .gallery-card');
+            gsap.set([cursorDot, cursorRing], { xPercent: -50, yPercent: -50 });
+            window.addEventListener('mousemove', e => {
+                gsap.to(cursorDot, { duration: 0.2, x: e.clientX, y: e.clientY, ease: 'power2.out' });
+                gsap.to(cursorRing, { duration: 0.4, x: e.clientX, y: e.clientY, ease: 'power2.out' });
+            });
+            interactiveElements.forEach(el => {
+                el.addEventListener('mouseenter', () => document.querySelector('.custom-cursor')?.classList.add('is-hovering'));
+                el.addEventListener('mouseleave', () => document.querySelector('.custom-cursor')?.classList.remove('is-hovering'));
+            });
+        }
+        
+        // --- 2. '자세히 보기' 버튼 스무스 스크롤 ---
+        const learnMoreBtn = document.querySelector('.hero-btn[href="#mainContent"]');
+        if (learnMoreBtn) {
+            learnMoreBtn.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                gsap.to(window, { duration: 1.5, scrollTo: { y: e.target.getAttribute('href'), offsetY: 0 }, ease: 'power3.inOut' });
+            });
+        }
+
+        // --- 3. 히어로 섹션 애니메이션 (h1 문제 해결된 버전) ---
+        if (isDesktop && document.querySelector('.hero-content h1')) {
+            const heroHeadline = new SplitType('.hero-content h1', { types: 'words' });
+            const heroTL = gsap.timeline({ delay: 0.2 });
+
+            // 1. h1 텍스트가 아래에서 위로 나타나는 효과
+            heroTL.from(heroHeadline.words, { 
+                y: 50,
+                autoAlpha: 0,
+                stagger: 0.1, 
+                duration: 1, 
+                ease: 'power3.out' 
+            });
+
+            // 2. p 태그와 버튼들이 아래에서 위로 나타나는 효과
+            heroTL.from('.hero-content p, .hero-content .hero-buttons', { 
+                y: 30, 
+                autoAlpha: 0, 
+                stagger: 0.2, 
+                duration: 1, 
+                ease: 'power3.out' 
+            }, '-=0.8');
+        }
+
+        // --- 4. 시네마틱 스크롤 애니메이션 ---
+        if (isDesktop) {
+            const scenes = gsap.utils.toArray('.cinematic-scene');
+            gsap.set(scenes, { autoAlpha: 0 }); 
+
+            const cinematicTL = gsap.timeline({
+                scrollTrigger: {
+                    trigger: '.cinematic-wrapper',
+                    start: 'top top',
+                    end: 'bottom bottom',
+                    scrub: 1,
+                    pin: '.cinematic-sticky-container',
+                }
+            });
+            
+            scenes.forEach((scene, index) => {
+                cinematicTL.to(scene, { autoAlpha: 1, duration: 1 }, index === 0 ? "+=0.5" : "-=1");
+                if (index < scenes.length - 1) {
+                    cinematicTL.to(scene, { autoAlpha: 0, duration: 1 }, "+=1.5");
+                }
+            });
+        } else { // 모바일
+            gsap.utils.toArray('.cinematic-scene').forEach(el => {
+                gsap.from(el, { y: 50, autoAlpha: 0, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: el, start: "top 90%" } });
+            });
+        }
+            
+        // --- 5. 3D 틸트 갤러리 카드 ---
+        const galleryCards = document.querySelectorAll('.gallery-card');
+        galleryCards.forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                gsap.to(card, {
+                    rotationY: (x / (rect.width / 2)) * 10,
+                    rotationX: -(y / (rect.height / 2)) * 10,
+                    transformPerspective: 1000,
+                    duration: 0.8, ease: 'power2.out'
+                });
+            });
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, { rotationY: 0, rotationX: 0, duration: 0.8, ease: 'elastic.out(1, 0.5)' });
+            });
+        });
+
+        // --- 6. 일반 스크롤 기반 등장 애니메이션 ---
+        const revealElements = gsap.utils.toArray('.hidden-for-gsap');
+        revealElements.forEach(el => {
+            gsap.fromTo(el, { y: 50, autoAlpha: 0 }, { 
+                y: 0, autoAlpha: 1, duration: 1.2, ease: 'power3.out',
+                scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none reverse' }
+            });
+        });
+    });
+
+    return () => ctx.revert();
+});
+</script>
 {% endblock %}
