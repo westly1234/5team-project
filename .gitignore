@@ -1,5 +1,10 @@
 __pycache__/
 *.pyc
+<<<<<<< HEAD
 .venv/
 venv/
 db.sqlite3
+=======
+"*.pyc" 
+"__pycache__/" 
+>>>>>>> 358d6c1 (Git에서 pyc 및 캐시 디렉토리 제외)
