@@ -30,7 +30,7 @@ from .user_context import get_user_profile_context
 import openai
 
 # --- 설정 ---
-VECTORSTORE_PATH = getattr(settings, 'VECTORSTORE_PATH', r"C:\Users\Admin\5team_web_project\5team_project\project_data\vectorstore_food_and_healthy")
+VECTORSTORE_PATH = r"C:\Users\Admin\5team-project\project_data\vectorstore_food_and_healthy"
 EMBEDDING_MODEL_NAME = getattr(settings, 'EMBEDDING_MODEL_NAME', "sentence-transformers/paraphrase-multilingual-mpnet-base-v2")
 OPENAI_API_KEY = settings.OPENAI_API_KEY
 
