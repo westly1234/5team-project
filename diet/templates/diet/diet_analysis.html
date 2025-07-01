@@ -73,9 +73,9 @@
                         <label class="block text-lg font-medium text-gray-300 mb-3"> {% t '2. 식사 시간' %} </label>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="meal-time-selector">
                             <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="아침">{% t '아침' %} ☀️</button>
-                            <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="점심 🏙️">{% t '점심' %} 🏙️</button>
-                            <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="저녁 🌙">{% t '저녁' %} 🌙</button>
-                            <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="간식 🍰">{% t '간식' %} 🍰</button>
+                            <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="점심">{% t '점심' %} 🏙️</button>
+                            <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="저녁">{% t '저녁' %} 🌙</button>
+                            <button type="button" class="meal-btn py-3 px-4 rounded-lg border border-gray-600 text-gray-400 transition-colors hover:border-gray-400 hover:text-white" data-value="간식">{% t '간식' %} 🍰</button>
                         </div>
                         <input type="hidden" name="meal_time" id="meal_time_input">
                     </div>
@@ -125,7 +125,7 @@
                 </li>
                 <li class="flex items-start">
                     <span class="text-green-400 mr-3 mt-1">✓</span>
-                    <span><strong> {% t '정확한 중량:' %} </strong> {% t '식사 중량을 정확히 입력하면, 보다 정확한 영양성분을 파악하는 데 큰 도움이 됩니다' %} </span>
+                    <span><strong> {% t '정확한 중량:' %} </strong> {% t '식사 중량을 정확히 입력하면, 보다 정확한 영양성분을 파악하는 데 큰 도움이 됩니다.' %} </span>
                 </li>
             </ul>
         </div>
@@ -133,6 +133,7 @@
 </div>
 
 <script>
+    const i18n = {{ js_translations|safe }};
     const form = document.getElementById('diet-form');
     const imageInput = document.getElementById('{{ form.image.id_for_label }}');
     const textInput = document.getElementById('{{ form.text_input.id_for_label }}');
@@ -189,7 +190,7 @@
             };
             reader.readAsDataURL(file);
         } else {
-            alert('이미지 파일만 업로드할 수 있습니다.');
+            alert(i18n.alert_only_images);
         }
     }
 
@@ -219,12 +220,12 @@
     form.addEventListener('submit', function(event) {
         // 유효성 검사
         if (!imageInput.value && !textInput.value.trim()) {
-            alert('사진을 올리거나 글로 식단을 작성해주세요.');
+            alert(i18n.alert_select_image_or_text);
             event.preventDefault();
             return;
         }
         if (!mealTimeInput.value) {
-            alert('식사 시간을 선택해주세요.');
+            alert(i18n.alert_select_meal_time);
             event.preventDefault();
             return;
         }
@@ -241,7 +242,7 @@
 
         // 텍스트 input 스타일링
         textInput.classList.add('w-full', 'bg-gray-700', 'border', 'border-gray-600', 'text-gray-300', 'rounded-lg', 'p-3', 'focus:ring-2', 'focus:ring-blue-500', 'focus:border-blue-500', 'transition', 'min-h-[120px]');
-        textInput.placeholder = '예시) 밥 한 공기, 김치찌개, 계란후라이 2개\n소스나 음료 등 사진에 없는 정보도 알려주시면 더 정확해요!';
+        textInput.placeholder =  i18n.placeholder_text_input;
     });
 </script>
 {% endblock %}

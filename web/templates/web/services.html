@@ -207,7 +207,7 @@
     <main class="dark-main-content">
         <header class="main-header">
             <h1>Welcome, {{ user.username|default:"사용자" }}!</h1>
-            <p>오늘의 활동을 한눈에 확인하고 건강한 하루를 시작하세요.</p>
+            <p>{% t '오늘의 활동을 한눈에 확인하고 건강한 하루를 시작하세요.' %}</p>
         </header>
         
         <div class="dashboard-grid">
@@ -216,7 +216,12 @@
             <div class="dashboard-card workout-card">
                 <div class="card-header">
                     <i class="bi bi-fire icon" style="color: #FF6B6B;"></i>
-                    <span class="title">{{ latest_routine.name|default:"오늘의 추천 루틴" }}</span>
+                    <span class="title">{% if latest_routine.name %}
+                                            {{ latest_routine.name }}
+                                        {% else %}
+                                            {% t "오늘의 추천 루틴" %}
+                                        {% endif %}
+                    </span>
                 </div>
                 <div class="card-content">
                     <ul class="workout-list">
@@ -249,7 +254,7 @@
                                 {% if active_title and active_title.achievement.title_reward %}
                                     {{ active_title.achievement.title_reward }}
                                 {% else %}
-                                    칭호 없음
+                                    {% t '칭호 없음' %}
                                 {% endif %}
                             </span>
                         </div>
