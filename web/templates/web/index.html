@@ -11,39 +11,53 @@
 <script src="https://unpkg.com/split-type"></script>
 
 <!-- ================================================================ -->
-<!-- 최종 완성본 스타일시트 (v5 - The Ultimate) -->
+<!-- 통합 스타일시트 (Refined & Polished) -->
 <!-- ================================================================ -->
 <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+    /* --- 0. 기본 & 전역 설정 --- */
     :root {
-        --bg-color: #000000;
-        --section-bg-light: #f5f5f7;
-        --text-primary-dark: #f5f5f7;
-        --text-secondary-dark: #ffffff;
+        --bg-dark: #050505;
+        --bg-light: #f5f5f7;
+        --bg-off-dark: #111111;
+        --text-primary-dark: #e8e8e8;
+        --text-secondary-dark: #a0a0a0;
         --text-primary-light: #1d1d1f;
         --text-secondary-light: #6e6e73;
         --accent-blue: #0071e3;
-    }
-    html { scroll-behavior: auto; }
-    body {
-        background-color: var(--bg-color); color: var(--text-primary-dark);
-        font-family: "Pretendard", -apple-system, sans-serif;
-        -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-        overflow-x: hidden;
-        cursor: auto;
-    }
-    .hidden-for-gsap { opacity: 0; visibility: hidden; }
-        section {
-        padding: 160px 40px;
-        max-width: 980px;
-        margin: 0 auto;
-        text-align: center;
-        background-color: var(--section-bg-light);
-        color: var(--text-primary-light);
+        --accent-purple: #a361ff;
+        --accent-pink: #f977ce;
     }
 
-    
-    .hero {
+    html {
+        scroll-behavior: auto; /* GSAP 스크롤 제어를 위해 auto로 설정 */
+    }
+
+    body {
+        background-color: var(--bg-dark);
+        color: var(--text-primary-dark);
+        font-family: "Pretendard", -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+    }
+
+    .hidden-for-gsap {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .section-base {
+        padding: 140px 40px;
+        max-width: 1080px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+
+    /* --- 1. 히어로 섹션 --- */
+    .hero-section {
         height: 100vh;
         position: relative;
         display: flex;
@@ -51,62 +65,79 @@
         justify-content: center;
         text-align: center;
         overflow: hidden;
-        background-color: #000;
-        color: #fff;
+        background-color: var(--bg-dark);
+        color: var(--text-primary-dark);
     }
     .hero-content {
         position: relative;
         z-index: 2;
     }
-    /* ✨ 문제 해결: h1 태그에 직접 흰색을 지정하여 다른 스타일에 덮어씌워지는 것을 방지합니다. */
     .hero-content h1 {
-        color: #fff;
-        font-size: 5rem;
-        font-weight: 700;
+        color: #fff; /* ✨ 문제 해결: 흰색 명시적 지정 */
+        font-size: clamp(3.5rem, 6vw, 6rem); /* 반응형 폰트 사이즈 */
+        font-weight: 800;
+        letter-spacing: -0.02em;
         margin-bottom: 1rem;
+        text-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+    }
+    .hero-content p {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        color: var(--text-secondary-dark);
+        margin-bottom: 2rem;
     }
     .hero-btn {
-        display: inline-block; padding: 12px 28px; margin: 15px 10px 0 10px; border: 2px solid #fff;
-        background-color: transparent; color: #fff; text-decoration: none; font-size: 1rem;
-        font-weight: 600; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+        display: inline-block;
+        padding: 14px 32px;
+        margin: 15px 10px 0;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        text-decoration: none;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        backdrop-filter: blur(10px);
     }
-    .hero-btn:hover { background-color: #fff; color: #000; }
+    .hero-btn:hover {
+        background-color: #fff;
+        color: #000;
+        border-color: #fff;
+        transform: translateY(-3px);
+    }
 
     /* --- 2. 시네마틱 기능 소개 --- */
     .cinematic-wrapper {
         position: relative;
-        height: 700vh;
-        background-color: var(--bg-color);
+        height: 600vh; /* 스크롤 길이를 충분히 확보 */
+        background-color: var(--bg-dark);
     }
     .cinematic-sticky-container {
-        position: sticky; top: 0; height: 100vh;
-        width: 100%; overflow: hidden;
-    }
-    .cinematic-panel {
-        position: relative; width: 100%; height: 100%;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        width: 100%;
+        overflow: hidden;
     }
     .cinematic-scene {
         position: absolute; top: 0; left: 0;
-        width: 100%; height: 100%; padding: 0 5%;
+        width: 100%; height: 100%;
+        padding: 0 5%;
         box-sizing: border-box;
         display: flex; justify-content: center;
         align-items: center; gap: 5%;
         opacity: 0; visibility: hidden;
-        will-change: opacity, visibility;
+        will-change: opacity, transform, visibility;
     }
-    .cinematic-scene.layout-reverse {
-        flex-direction: row-reverse;
-    }
-    .device-frame-wrapper {
-        flex: 0 0 320px;
-    }
-    .text-wrapper {
-        flex: 1; max-width: 450px;
-    }
+    .cinematic-scene.layout-reverse { flex-direction: row-reverse; }
+    .device-frame-wrapper { flex: 0 0 320px; }
+    .text-wrapper { flex: 1; max-width: 480px; }
     .device-frame {
         width: 100%; height: 640px; background: #111;
         border: 12px solid #333; border-radius: 40px;
-        padding: 10px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        padding: 10px; box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+        transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
     }
     .device-screen {
         width: 100%; height: 100%; position: relative;
@@ -114,84 +145,261 @@
     }
     .device-screen img {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        object-fit: cover; opacity: 1;
+        object-fit: cover;
     }
     .text-wrapper h2 {
-        font-size: 56px; font-weight: 700;
-        line-height: 1.2; margin-bottom: 1rem; text-align: left;
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        font-weight: 700; line-height: 1.2;
+        margin-bottom: 1.5rem; text-align: left;
         word-break: keep-all;
     }
     .text-wrapper p {
-        font-size: 21px; color: var(--text-secondary-dark); text-align: left;
+        font-size: clamp(1.1rem, 2vw, 1.3rem);
+        color: var(--text-secondary-dark); text-align: left;
         word-break: keep-all;
     }
     .layout-reverse .text-wrapper h2,
     .layout-reverse .text-wrapper p {
         text-align: right;
     }
+    /* 첫번째 씬의 특별한 텍스트 스타일 */
+    #scene-1 .text-wrapper h2 span { display: block; }
 
     /* --- 3. 기능 갤러리 (3D 틸트 효과) --- */
-    .feature-gallery-section { background-color: var(--section-bg-light); color: var(--text-primary-light); padding: 120px 0; }
-    .gallery-headline { font-size: 56px; font-weight: 700; margin-bottom: 60px; padding: 0 40px; }
-    .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-    .gallery-card { position: relative; border-radius: 30px; overflow: hidden; background: #fff; transform-style: preserve-3d; }
-    .gallery-card.large { grid-column: span 2; aspect-ratio: 1.9 / 1; }
-    .gallery-card.small { aspect-ratio: 1 / 1.2; }
-    .gallery-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); transform: scale(1.1); }
+    .feature-gallery-section {
+        background-color: #000000;
+        color: #ffffff;
+        padding: 140px 0;
+        width: 100%;
+    }
+
+    .feature-gallery-section .container {
+        width: 80%;
+        margin: 0 auto; /* ✅ 가운데 정렬 */
+    }
+
+    .feature-gallery-section h2 {
+        color: #ffffff; /* ✅ h2를 흰색 글씨로 명시적으로 지정 */
+    }
+    .gallery-headline {
+        text-align: center;
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        font-weight: 700;
+        margin-bottom: 80px;
+        padding: 0 40px; /* 좌우 최소 여백 */
+    }
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        padding: 0 40px; /* 좌우 여백 */
+    }
+    .gallery-card {
+        position: relative;
+        border-radius: 30px;
+        overflow: hidden;
+        background: #fff;
+        transform-style: preserve-3d;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .gallery-card.large { grid-column: span 2; aspect-ratio: 2.2 / 1; } /* 너비가 넓어져 비율 조정 */
+    .gallery-card.small { aspect-ratio: 1 / 1.1; }
+    .gallery-card img {
+        width: 100%; height: 100%; object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        transform: scale(1.1);
+    }
     .gallery-card:hover img { transform: scale(1); }
-    .gallery-card-content { position: absolute; bottom: 0; left: 0; right: 0; padding: 40px; text-align: left; color: #fff; background: linear-gradient(to top, rgba(0,0,0,0.8) 20%, transparent); transform: translateZ(50px); }
-    .gallery-card-content h3 { font-size: 32px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-    .gallery-card-content p { font-size: 18px; font-weight: 500; text-shadow: 0 1px 5px rgba(0,0,0,0.5); }
+    .gallery-card-content {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        padding: 40px; text-align: left; color: #fff;
+        background: linear-gradient(to top, rgba(0,0,0,0.85) 20%, transparent);
+        transform: translateZ(50px);
+    }
+    .gallery-card-content h3 {
+        font-size: clamp(1.5rem, 3vw, 2.2rem);
+        font-weight: 700; margin-bottom: 8px;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+    }
+    .gallery-card-content p {
+        font-size: clamp(1rem, 2vw, 1.2rem);
+        font-weight: 500;
+        text-shadow: 0 1px 5px rgba(0,0,0,0.7);
+    }
 
     /* --- 4. 사용자 후기 (마키 애니메이션) --- */
     .testimonials-section {
-        background-color: var(--bg-color); padding: 160px 0; overflow: hidden;
-        display: flex; flex-direction: column; align-items: center;
-        justify-content: center; text-align: center;
+        background-color: var(--bg-dark);
+        padding: 160px 0;
+        overflow: hidden;
+        text-align: center;  /* ✅ 추가: 내부 텍스트(예: h2)를 가운데 정렬 */
     }
-    .section-headline-dark { color: var(--text-primary-dark); font-size: 56px; font-weight: 700; margin-bottom: 80px; }
+    .section-headline-dark {
+        color: var(--text-primary-dark);
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        font-weight: 700;
+        margin-bottom: 80px;
+    }
     .marquee { display: flex; width: fit-content; }
-    .marquee-wrapper { display: flex; animation: marquee 40s linear infinite; }
-    @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    .marquee-wrapper { display: flex; animation: marquee 60s linear infinite; }
+    @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+    .marquee-wrapper:hover { animation-play-state: paused; }
     .testimonial-card {
-        width: 400px; margin: 0 20px; background-color: #1d1d1f; border-radius: 24px;
+        width: 420px; margin: 0 20px;
+        background-color: #1a1a1a;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
         padding: 40px; text-align: left; flex-shrink: 0;
+        transition: transform 0.3s, box-shadow 0.3s;
     }
-    .testimonial-body { font-size: 21px; line-height: 1.6; font-weight: 500; margin-bottom: 24px; }
-    .testimonial-user { font-size: 17px; color: var(--text-secondary-dark); }
-    .testimonial-user strong { color: var(--text-primary-dark); font-weight: 600; }
-    
-    @media (max-width: 900px) { /* 모바일 반응형 */
-        .cinematic-wrapper { height: auto; padding: 100px 0; }
-        .cinematic-sticky-container { position: relative; height: auto; }
-        .cinematic-panel { flex-direction: column; gap: 5vh; }
-        .cinematic-scene { position: relative; opacity: 1; visibility: visible; flex-direction: column !important; }
-        .text-wrapper { text-align: center; }
-        .text-wrapper h2, .text-wrapper p, .layout-reverse .text-wrapper h2, .layout-reverse .text-wrapper p { text-align: center; }
+    .testimonial-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
     }
-    @media (max-width: 768px) {
-        .custom-cursor { display: none; }
+    .testimonial-body { font-size: 1.25rem; line-height: 1.6; font-weight: 500; margin-bottom: 24px; color: var(--text-primary-dark); }
+    .testimonial-user { font-size: 1rem; color: var(--text-secondary-dark); }
+    .testimonial-user strong { color: #fff; font-weight: 600; }
+
+    /* --- 5. Growth & Partners 섹션 --- */
+    .growth-partners-section {
+        background-color: #0b0a1d;
+        padding: 120px 20px;
+        text-align: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        position: relative;
+    }
+    .growth-partners-section::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(circle at 50% 30%, rgba(163, 97, 255, 0.1), transparent 70%);
+        pointer-events: none;
+    }
+    .growth-partners-section h2 {
+        font-size: clamp(2.5rem, 5vw, 3.2rem);
+        font-weight: 700; color: #e2e8f0; margin-bottom: 20px;
+    }
+    .growth-partners-section .section-description {
+        font-size: 1.1rem; color: #a0aec0; margin-bottom: 80px;
+        max-width: 600px; margin-left: auto; margin-right: auto;
+    }
+    .growth-display { margin-bottom: 100px; }
+    .growth-number {
+        font-size: clamp(6rem, 15vw, 9rem);
+        font-weight: 800; line-height: 1;
+        background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-fill-color: transparent;
+        display: inline-block;
+        position: relative;
+    }
+    .growth-number::after {
+        content: '%'; font-size: 0.3em; font-weight: 600;
+        position: absolute; top: 15%; right: -0.6em;
+        background: none;
+        -webkit-text-fill-color: var(--accent-purple);
+    }
+    .growth-label {
+        font-size: 1.2rem; color: #ccc;
+        margin-top: 10px; font-weight: 500;
+    }
+    /* 전체 뷰포트 설정 */
+    /* 뷰포트: 로고가 흐르도록 마스킹 + 반응형 */
+    .logos-viewport {
+        width: 100%;
+        overflow: hidden;
+        position: relative;
+        padding: 40px 0;
+        background: linear-gradient(135deg, #0f0f1f, #121221);
+        mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+    }
+
+    /* 트랙: 가로 슬라이드 애니메이션 */
+    .logos-track {
+        display: flex;
+        gap: 80px;
+        width: max-content;
+        animation: scroll-left 40s linear infinite;
+        align-items: center;
+    }
+    .logos-track:hover {
+        animation-play-state: paused;
+    }
+
+    /* 로고 항목 컨테이너 */
+    .logo-item {
+        flex-shrink: 0;
+        width: 150px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease;
+    }
+    .logo-item:hover {
+        transform: scale(1.08);
+    }
+
+    /* 로고 이미지 */
+    .logo-item img {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        filter: brightness(1) contrast(1.1);
+        opacity: 0.9;
+        transition: filter 0.3s ease, opacity 0.3s ease;
+    }
+    .logo-item:hover img {
+        filter: brightness(1.2) contrast(1.2);
+        opacity: 1;
+    }
+
+    /* 애니메이션 정의 */
+    @keyframes scroll-left {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+
+
+    /* --- 6. 반응형 미디어 쿼리 --- */
+    @media (max-width: 900px) { /* 태블릿 & 모바일 */
         body { cursor: auto; }
-        .hero-content h1 { font-size: 3.5rem; }
-        .text-wrapper h2 { font-size: 40px; }
-        .text-wrapper p { font-size: 18px; }
-        .device-frame-wrapper { flex-basis: auto; }
-        .device-frame { width: 250px; height: 500px; }
+        .custom-cursor { display: none; }
+        .section-base { padding: 100px 20px; }
+
+        /* 시네마틱 섹션: 스크롤 애니메이션 대신 스택 레이아웃으로 변경 */
+        .cinematic-wrapper { height: auto; padding: 100px 0; }
+        .cinematic-sticky-container { position: static; height: auto; }
+        .cinematic-scene {
+            position: relative; opacity: 1; visibility: visible;
+            flex-direction: column !important; gap: 40px; margin-bottom: 100px;
+        }
+        .text-wrapper h2, .text-wrapper p,
+        .layout-reverse .text-wrapper h2, .layout-reverse .text-wrapper p {
+            text-align: center;
+        }
         .gallery-grid { grid-template-columns: 1fr; }
-        .gallery-card.large { grid-column: span 1; aspect-ratio: 1.6/1; }
+        .gallery-card.large { grid-column: span 1; aspect-ratio: 1.6 / 1; }
+    }
+    @media (max-width: 768px) { /* 모바일 */
+        .device-frame-wrapper { width: 90%; flex-basis: auto; }
+        .device-frame { width: 100%; height: auto; aspect-ratio: 9/18; padding: 8px; border-width: 8px; }
     }
 </style>
 
-<div class="custom-cursor">
-    <div class="cursor-dot"></div>
-    <div class="cursor-ring"></div>
-</div>
 
 <!-- ================================================================== -->
 <!-- 1. 히어로 섹션 -->
 <!-- ================================================================== -->
-
-<section class="hero" id="hero">
+<section class="hero-section" id="hero">
   <div class="hero-content">
     <h1>AI Healthcare</h1>
     <p>{% t '스크롤하여 혁신적인 기능들을 확인하세요' %}</p>
@@ -208,76 +416,57 @@
 <!-- ================================================================== -->
 <div id="mainContent" class="cinematic-wrapper">
     <div class="cinematic-sticky-container">
-        <div class="cinematic-panel">
-            <!-- Scene 1 -->
-            <div id="scene-1" class="cinematic-scene">
-                <div class="text-wrapper">
-                    <h2>
-                        <span>{% t '당신의 건강,' %}</span>
-                        <span>{% t '이제 새로운 차원으로.' %}</span>
-                    </h2>
-                </div>
-                <div class="device-frame-wrapper">
-                    <div class="device-frame">
-                        <div class="device-screen">
-                            <img src="https://plus.unsplash.com/premium_photo-1663050901483-ee8703cc8372?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="AI 건강 상담">
-                        </div>
-                    </div>
-                </div>
+        <!-- Scene 1: Intro -->
+        <div id="scene-1" class="cinematic-scene">
+            <div class="text-wrapper">
+                <h2>
+                    <span>{% t '당신의 건강,' %}</span>
+                    <span>{% t '이제 새로운 차원으로.' %}</span>
+                </h2>
             </div>
-
-            <!-- Scene 2 -->
-            <div id="scene-2" class="cinematic-scene layout-reverse">
-                <div class="text-wrapper">
-                    <h2>
-                        <span>{% t 'AI가 실시간으로' %}</span>
-                        <span>{% t '당신을 분석합니다.' %}</span>
-                    </h2>
-                    <p>{% t '최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석하여 맞춤 솔루션을 제공합니다.' %}</p>
-                </div>
-                <div class="device-frame-wrapper">
-                    <div class="device-frame">
-                        <div class="device-screen">
-                            <img src="https://images.unsplash.com/photo-1607962837359-5e7e89f86776?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="맞춤형 운동 코칭">
-                        </div>
-                    </div>
-                </div>
+            <div class="device-frame-wrapper">
+                <div class="device-frame"><div class="device-screen">
+                    <img src="https://plus.unsplash.com/premium_photo-1663050901483-ee8703cc8372?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0" alt="{% t 'AI 건강 상담' %}">
+                </div></div>
             </div>
+        </div>
 
-            <!-- Scene 3 -->
-            <div id="scene-3" class="cinematic-scene">
-                <div class="text-wrapper">
-                    <h2>
-                        <span>{% t '먹는 것까지 똑똑하게,' %}</span>
-                        <span>{% t '스마트 영양 관리.' %}</span>
-                    </h2>
-                    <p>{% t '음식 사진만으로 칼로리와 영양소를 분석하고, 개인 맞춤 식단을 추천합니다.' %}</p>
-                </div>
-                <div class="device-frame-wrapper">
-                    <div class="device-frame">
-                        <div class="device-screen">
-                            <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1453&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="스마트 영양 관리">
-                        </div>
-                    </div>
-                </div>
+        <!-- Scene 2: Real-time Analysis -->
+        <div id="scene-2" class="cinematic-scene layout-reverse">
+            <div class="text-wrapper">
+                <h2>{% t 'AI가 실시간으로 당신을 분석합니다.' %}</h2>
+                <p>{% t '최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석하여 맞춤 솔루션을 제공합니다.' %}</p>
             </div>
+            <div class="device-frame-wrapper">
+                <div class="device-frame"><div class="device-screen">
+                    <img src="https://images.unsplash.com/photo-1607962837359-5e7e89f86776?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0" alt="{% t '실시간 분석' %}">
+                </div></div>
+            </div>
+        </div>
 
-            <!-- Scene 4 -->
-            <div id="scene-4" class="cinematic-scene layout-reverse">
-                <div class="text-wrapper">
-                    <h2>
-                        <span>{% t '오직 당신만을 위한' %}</span>
-                        <span>{% t '맞춤형 운동 코칭.' %}</span>
-                    </h2>
-                    <p>{% t 'AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계하고, 자세까지 교정해줍니다.' %}</p>
-                </div>
-                <div class="device-frame-wrapper">
-                    <div class="device-frame">
-                        <div class="device-screen">
-                            <img src="https://plus.unsplash.com/premium_photo-1670505062582-fdaa83c23c9e?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="{% t '건강한 식사' %}">
-                        </div>
-                    </div>
-                </div>
+        <!-- Scene 3: Smart Nutrition -->
+        <div id="scene-3" class="cinematic-scene">
+            <div class="text-wrapper">
+                <h2>{% t '먹는 것까지 똑똑하게, 스마트 영양 관리.' %}</h2>
+                <p>{% t '음식 사진만으로 칼로리와 영양소를 분석하고, 개인 맞춤 식단을 추천합니다.' %}</p>
+            </div>
+            <div class="device-frame-wrapper">
+                <div class="device-frame"><div class="device-screen">
+                    <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=1453&auto=format&fit=crop&ixlib=rb-4.1.0" alt="{% t '스마트 영양 관리' %}">
+                </div></div>
+            </div>
+        </div>
+
+        <!-- Scene 4: Custom Coaching -->
+        <div id="scene-4" class="cinematic-scene layout-reverse">
+            <div class="text-wrapper">
+                <h2>{% t '오직 당신만을 위한 맞춤형 운동 코칭.' %}</h2>
+                <p>{% t 'AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계하고, 자세까지 교정해줍니다.' %}</p>
+            </div>
+            <div class="device-frame-wrapper">
+                <div class="device-frame"><div class="device-screen">
+                    <img src="https://plus.unsplash.com/premium_photo-1670505062582-fdaa83c23c9e?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0" alt="{% t '맞춤형 운동 코칭' %}">
+                </div></div>
             </div>
         </div>
     </div>
@@ -314,8 +503,8 @@
 <!-- 4. 사용자 후기 -->
 <!-- ================================================================== -->
 <section class="testimonials-section">
-    <h2 class="section-headline-dark hidden-for-gsap">{% t '10만 직장인이 선택한 이유' %}</h2>
-    <div class="marquee">
+    <h2 class="section-headline-dark hidden-for-gsap">{% t '10만 직장인이 선택한 이유' %}</h2><br><br>
+    <div class="marquee hidden-for-gsap">
         <div class="marquee-wrapper">
             <div class="testimonial-card"><p class="testimonial-body">{% t '“AI 덕분에 3개월 만에 10kg 감량했어요. 맞춤형 운동과 식단이 정말 효과적이었습니다.”' %}</p><p class="testimonial-user"><strong>{% t '김지훈' %}</strong></p></div>
             <div class="testimonial-card"><p class="testimonial-body">{% t '“팀 운동 챌린지로 동료들과 재미있게 건강을 관리하고 있어요. 업무 스트레스도 많이 줄었습니다.”' %}</p><p class="testimonial-user"><strong>{% t '이서연' %}</strong></p></div>
@@ -332,111 +521,6 @@
 <!-- ================================================================== -->
 <!-- 5. Growth & Partners 섹션 -->
 <!-- ================================================================== -->
-<style>
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.growth-partners-section {
-    background-color: #0b0a1d;
-    padding: 100px 20px;
-    text-align: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    overflow: hidden;
-}
-.growth-partners-section h2 {
-    font-size: 2.8rem;
-    font-weight: 700;
-    color: #e2e8f0;
-    margin-bottom: 20px;
-    animation: fadeIn 1s ease-out;
-}
-.growth-partners-section .section-description {
-    font-size: 1.1rem;
-    color: #a0aec0;
-    margin-bottom: 60px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    animation: fadeIn 1s ease-out 0.2s;
-    animation-fill-mode: backwards;
-}
-.growth-display {
-    margin-bottom: 80px;
-    animation: fadeIn 1s ease-out 0.4s;
-    animation-fill-mode: backwards;
-}
-.growth-number {
-    font-size: 9rem;
-    font-weight: 800;
-    line-height: 1;
-    background: linear-gradient(90deg, #f977ce, #a361ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    display: inline-block;
-    position: relative;
-}
-.growth-number::after {
-    content: '%';
-    font-size: 0.3em;
-    font-weight: 600;
-    position: absolute;
-    top: 15%;
-    right: -0.6em;
-    background: none;
-    -webkit-text-fill-color: #a361ff;
-}
-.growth-label {
-    font-size: 1.2rem;
-    color: #ccc;
-    margin-top: 10px;
-    font-weight: 500;
-}
-@keyframes scroll-left {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-}
-.logos-viewport {
-    width: 100%;
-    overflow: hidden;
-    position: relative;
-    -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-}
-.logos-track {
-    display: flex;
-    width: calc(230px * 12);
-    animation: scroll-left 60s linear infinite;
-}
-.logos-viewport:hover .logos-track {
-    animation-play-state: paused;
-}
-.logo-item {
-    flex-shrink: 0;
-    width: 150px;
-    height: 60px;
-    margin: 0 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.logo-item img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    filter: grayscale(100%) brightness(0.8);
-    opacity: 0.7;
-    transition: all 0.3s ease-in-out;
-}
-.logo-item:hover img {
-    filter: grayscale(0%) brightness(1);
-    opacity: 1;
-    transform: scale(1.1);
-}
-</style>
 
 <section class="growth-partners-section">
     <h2>{% t '후원으로 성장률 상승' %}</h2>
@@ -447,170 +531,160 @@
         <div class="growth-number" data-target="185">0</div>
         <p class="growth-label">{% t '사용자 목표 달성률' %}</p>
     </div>
-    <div class="logos-viewport">
+    <div class="logos-viewport hidden-for-gsap">
         <div class="logos-track">
+            <!-- ✨✨✨ 경로 수정 완료 ✨✨✨ -->
+            <!-- 원본 로고 -->
             <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="{% t '고용노동부' %}"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="{% t 'employment' %}"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="{% t '대한민국정부' %}"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="{% t 'EY한영' %}"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="{% t 'mbc아카데미' %}"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="{% t 'mbc' %}"></div>
+            
             <!-- 복제본 -->
             <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="{% t '고용노동부' %}"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="{% t 'employment' %}"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="{% t '대한민국정부' %}"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="{% t 'EY한영' %}"></div>
             <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="{% t 'mbc아카데미' %}"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="{% t 'mbc' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="{% t '고용노동부' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="{% t 'employment' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="{% t '대한민국정부' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="{% t 'EY한영' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="{% t 'mbc아카데미' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="{% t 'mbc"></div>
         </div>
     </div>
-</section>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const counter = document.querySelector('.growth-number');
-    if (counter) {
-        const animateCounter = () => {
-            const target = +counter.getAttribute('data-target');
-            const duration = 2000;
-            let startTime = null;
-            function animation(currentTime) {
-                if (startTime === null) startTime = currentTime;
-                const timeElapsed = currentTime - startTime;
-                const progress = Math.min(timeElapsed / duration, 1);
-                counter.innerText = Math.floor(progress * target);
-                if (progress < 1) requestAnimationFrame(animation);
-            }
-            requestAnimationFrame(animation);
-        };
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    animateCounter();
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.5 });
-        observer.observe(counter);
-    }
-});
-</script>
+</section>
 
 <!-- ================================================================ -->
 <!-- 최종 완성본 JavaScript (GSAP & ScrollTrigger) -->
 <!-- ================================================================ -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // GSAP 플러그인 등록
     gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+    // 데스크탑 환경인지 확인 (모바일에서는 복잡한 애니메이션 제외)
     const isDesktop = window.matchMedia("(min-width: 901px)").matches;
 
+    // GSAP 컨텍스트를 사용하여 모든 애니메이션을 그룹화하고 쉽게 정리
     let ctx = gsap.context(() => {
-        // --- 1. 커스텀 커서 애니메이션 ---
-        if (isDesktop && document.querySelector('.custom-cursor')) {
-            const cursorDot = document.querySelector('.cursor-dot');
-            const cursorRing = document.querySelector('.cursor-ring');
-            const interactiveElements = document.querySelectorAll('a, button, .gallery-card');
-            gsap.set([cursorDot, cursorRing], { xPercent: -50, yPercent: -50 });
-            window.addEventListener('mousemove', e => {
-                gsap.to(cursorDot, { duration: 0.2, x: e.clientX, y: e.clientY, ease: 'power2.out' });
-                gsap.to(cursorRing, { duration: 0.4, x: e.clientX, y: e.clientY, ease: 'power2.out' });
-            });
-            interactiveElements.forEach(el => {
-                el.addEventListener('mouseenter', () => document.querySelector('.custom-cursor')?.classList.add('is-hovering'));
-                el.addEventListener('mouseleave', () => document.querySelector('.custom-cursor')?.classList.remove('is-hovering'));
-            });
-        }
-        
         // --- 2. '자세히 보기' 버튼 스무스 스크롤 ---
-        const learnMoreBtn = document.querySelector('.hero-btn[href="#mainContent"]');
-        if (learnMoreBtn) {
-            learnMoreBtn.addEventListener('click', (e) => {
-                e.preventDefault(); 
-                gsap.to(window, { duration: 1.5, scrollTo: { y: e.target.getAttribute('href'), offsetY: 0 }, ease: 'power3.inOut' });
-            });
-        }
+        document.querySelector('.hero-btn[href="#mainContent"]')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            gsap.to(window, { duration: 1.5, scrollTo: { y: e.target.getAttribute('href'), offsetY: 0 }, ease: 'power3.inOut' });
+        });
 
-        // --- 3. 히어로 섹션 애니메이션 (h1 문제 해결된 버전) ---
-        if (isDesktop && document.querySelector('.hero-content h1')) {
-            const heroHeadline = new SplitType('.hero-content h1', { types: 'words' });
-            const heroTL = gsap.timeline({ delay: 0.2 });
+        // --- 3. 히어로 섹션 등장 애니메이션 ---
+        const heroHeadline = new SplitType('.hero-content h1', { types: 'words, chars' });
+        const heroTL = gsap.timeline({ delay: 0.3 });
+        heroTL.from(heroHeadline.chars, { 
+            yPercent: 100,
+            opacity: 0,
+            stagger: 0.03, 
+            duration: 0.8, 
+            ease: 'power3.out' 
+        }).from('.hero-content p, .hero-content .hero-buttons', { 
+            y: 30, 
+            autoAlpha: 0, 
+            stagger: 0.2, 
+            duration: 1, 
+            ease: 'power3.out' 
+        }, '-=0.8');
 
-            // 1. h1 텍스트가 아래에서 위로 나타나는 효과
-            heroTL.from(heroHeadline.words, { 
-                y: 50,
-                autoAlpha: 0,
-                stagger: 0.1, 
-                duration: 1, 
-                ease: 'power3.out' 
-            });
-
-            // 2. p 태그와 버튼들이 아래에서 위로 나타나는 효과
-            heroTL.from('.hero-content p, .hero-content .hero-buttons', { 
-                y: 30, 
-                autoAlpha: 0, 
-                stagger: 0.2, 
-                duration: 1, 
-                ease: 'power3.out' 
-            }, '-=0.8');
-        }
-
-        // --- 4. 시네마틱 스크롤 애니메이션 ---
+        // --- 4. 시네마틱 스크롤 애니메이션 (데스크탑 전용) ---
         if (isDesktop) {
             const scenes = gsap.utils.toArray('.cinematic-scene');
-            gsap.set(scenes, { autoAlpha: 0 }); 
+            
+            // 첫번째 씬은 처음부터 보이도록 설정
+            gsap.set(scenes[0], { autoAlpha: 1 });
+            gsap.set(scenes.slice(1), { autoAlpha: 0 }); 
 
             const cinematicTL = gsap.timeline({
                 scrollTrigger: {
                     trigger: '.cinematic-wrapper',
                     start: 'top top',
                     end: 'bottom bottom',
-                    scrub: 1,
+                    scrub: 1.2, // 스크롤 반응성을 더 부드럽게
                     pin: '.cinematic-sticky-container',
                 }
             });
             
+            // 각 씬이 순차적으로 나타나고 사라지는 애니메이션
             scenes.forEach((scene, index) => {
-                cinematicTL.to(scene, { autoAlpha: 1, duration: 1 }, index === 0 ? "+=0.5" : "-=1");
-                if (index < scenes.length - 1) {
-                    cinematicTL.to(scene, { autoAlpha: 0, duration: 1 }, "+=1.5");
+                if (index > 0) {
+                    cinematicTL.to(scenes[index - 1], { autoAlpha: 0, duration: 0.5 }, `+=${index === 1 ? 1 : 1.5}`)
+                               .to(scene, { autoAlpha: 1, duration: 1 }, "-=0.5");
                 }
-            });
-        } else { // 모바일
-            gsap.utils.toArray('.cinematic-scene').forEach(el => {
-                gsap.from(el, { y: 50, autoAlpha: 0, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: el, start: "top 90%" } });
             });
         }
             
-        // --- 5. 3D 틸트 갤러리 카드 ---
-        const galleryCards = document.querySelectorAll('.gallery-card');
-        galleryCards.forEach(card => {
-            card.addEventListener('mousemove', e => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left - rect.width / 2;
-                const y = e.clientY - rect.top - rect.height / 2;
-                gsap.to(card, {
-                    rotationY: (x / (rect.width / 2)) * 10,
-                    rotationX: -(y / (rect.height / 2)) * 10,
-                    transformPerspective: 1000,
-                    duration: 0.8, ease: 'power2.out'
+        // --- 5. 3D 틸트 갤러리 카드 (데스크탑 전용) ---
+        if (isDesktop) {
+            document.querySelectorAll('.gallery-card').forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    gsap.to(card, {
+                        rotationY: (x / rect.width) * 15,
+                        rotationX: -(y / rect.height) * 15,
+                        transformPerspective: 1000,
+                        duration: 0.8, ease: 'power2.out'
+                    });
+                });
+                card.addEventListener('mouseleave', () => {
+                    gsap.to(card, { rotationY: 0, rotationX: 0, duration: 1, ease: 'elastic.out(1, 0.5)' });
                 });
             });
-            card.addEventListener('mouseleave', () => {
-                gsap.to(card, { rotationY: 0, rotationX: 0, duration: 0.8, ease: 'elastic.out(1, 0.5)' });
+        }
+
+        // --- 6. 숫자 카운터 애니메이션 ---
+        const counter = document.querySelector('.growth-number');
+        if (counter) {
+            const target = +counter.getAttribute('data-target'); // HTML에서 목표값(98) 가져오기
+
+            // gsap.from() 대신 gsap.to()를 사용하여 목표값까지 애니메이션합니다.
+            gsap.to(counter, {
+                innerText: target,      // 목표: innerText를 target 값으로 변경
+                duration: 2.5,
+                ease: "power2.out",     // 부드러운 애니메이션 효과
+                snap: { innerText: 1 }, // 숫자가 1씩 딱딱 끊어지며 올라가도록 설정
+                scrollTrigger: {
+                    trigger: counter,
+                    start: "top 85%",
+                    toggleActions: "play none none reverse",
+                }
             });
+        }
+
+        // --- 7. 일반 스크롤 기반 등장 애니메이션 ---
+        gsap.utils.toArray('.hidden-for-gsap').forEach(el => {
+            gsap.fromTo(el, 
+                { y: 60, autoAlpha: 0 }, 
+                { 
+                    y: 0, 
+                    autoAlpha: 1, 
+                    duration: 1.2, 
+                    ease: 'power3.out',
+                    scrollTrigger: { 
+                        trigger: el, 
+                        start: 'top 85%', 
+                        toggleActions: 'play none none reverse' 
+                    }
+                }
+            );
         });
 
-        // --- 6. 일반 스크롤 기반 등장 애니메이션 ---
-        const revealElements = gsap.utils.toArray('.hidden-for-gsap');
-        revealElements.forEach(el => {
-            gsap.fromTo(el, { y: 50, autoAlpha: 0 }, { 
-                y: 0, autoAlpha: 1, duration: 1.2, ease: 'power3.out',
-                scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none reverse' }
-            });
-        });
-    });
+    }); // GSAP 컨텍스트 종료
 
-    return () => ctx.revert();
+    // 페이지 벗어날 때 애니메이션 정리
+    return () => ctx.revert(); 
 });
 </script>
 {% endblock %}

@@ -7,53 +7,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> {% t '이메일 인증 완료' %} </title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+        :root {
+            --bg-dark: #000000;
+            --bg-surface: #1a1a1a;
+            --text-primary: #f0f0f0;
+            --text-secondary: #a0a0a0;
+            --accent-pink: #ff8c94;
+            --accent-teal: #68d3d9;
+            --accent-yellow: #ffcf68;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
             min-height: 100vh;
             margin: 0;
-            padding-top: 15vh;
+            padding: 15vh 20px 0;
             box-sizing: border-box;
             text-align: center;
+            background-image:
+                radial-gradient(circle at 15% 25%, rgba(255, 140, 148, 0.12), transparent 35%),
+                radial-gradient(circle at 85% 75%, rgba(104, 211, 217, 0.12), transparent 35%),
+                radial-gradient(circle at 50% 50%, rgba(255, 207, 104, 0.07), transparent 40%);
+            background-attachment: fixed;
         }
+        
         .activation-complete-container {
-            background-color: #ffffff;
-            padding: 35px 45px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            background-color: rgba(16, 16, 16, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 40px 50px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
             width: 100%;
             max-width: 580px;
+            border: 2px solid transparent;
+            background-image: linear-gradient(rgba(16, 16, 16, 0.85), rgba(16, 16, 16, 0.85)), 
+                              linear-gradient(90deg, var(--accent-pink), var(--accent-teal));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
         }
+
         .activation-complete-container h1 {
-            color: #27ae60;
+            background: linear-gradient(90deg, var(--accent-pink), var(--accent-yellow), var(--accent-teal));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
             margin-top: 0;
-            margin-bottom: 25px;
-            font-size: 28px;
-            font-weight: 600;
-        }
-        .activation-complete-container p {
-            color: #555;
-            font-size: 17px;
-            line-height: 1.7;
             margin-bottom: 30px;
+            font-size: 2.5rem;
         }
+
+        .activation-complete-container p {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 35px;
+        }
+
         .login-button {
             display: inline-block;
-            padding: 12px 25px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
             font-size: 16px;
-            font-weight: 500;
-            transition: background-color 0.3s ease;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            background-size: 200% auto;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            color: white;
+            background-image: linear-gradient(to right, var(--accent-teal) 0%, #a7f3d0 51%, var(--accent-teal) 100%);
         }
+
         .login-button:hover {
-            background-color: #0056b3;
+            background-position: right center;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
     </style>
 </head>
