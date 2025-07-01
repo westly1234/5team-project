@@ -2,183 +2,167 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로그인 - HealthWise</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인 - HealthWise</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
-        :root {
-            --text-primary: #212529;
-            --text-secondary: #6c757d;
-            --text-accent: #007bff;
-            --bg-page: #f8f9fa;
-            --bg-form: #ffffff;
-            --border-light: #dee2e6;
-            --border-focus: #80bdff;
-            --button-primary-bg: #007bff;
-            --button-primary-hover-bg: #0056b3;
-            --error-text: #dc3545;
-            --font-family-base: 'Noto Sans KR', sans-serif;
-        }
+    :root {
+      --bg-dark: #000000;
+      --bg-surface: #1a1a1a;
+      --bg-input: #2d2d2d;
+      --border-color: #444444;
+      --text-primary: #f0f0f0;
+      --text-secondary: #a0a0a0;
+      --accent-pink: #ff8c94;
+      --accent-teal: #68d3d9;
+      --accent-yellow: #ffcf68;
+      --font-family-base: 'Noto Sans KR', sans-serif;
+    }
 
-        body {
-            font-family: var(--font-family-base);
-            background-color: var(--bg-page);
-            color: var(--text-primary);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+    body {
+      font-family: var(--font-family-base);
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 20px;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-image:
+          radial-gradient(circle at 15% 25%, rgba(255, 140, 148, 0.12), transparent 35%),
+          radial-gradient(circle at 85% 75%, rgba(104, 211, 217, 0.12), transparent 35%),
+          radial-gradient(circle at 50% 50%, rgba(255, 207, 104, 0.07), transparent 40%);
+      background-attachment: fixed;
+    }
 
-        .login-container {
-            background-color: var(--bg-form);
-            padding: 40px 50px;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-            width: 100%;
-            max-width: 420px;
-            text-align: center;
-        }
+    .login-container {
+      background-color: rgba(16, 16, 16, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      border: 2px solid transparent;
+      background-image: linear-gradient(rgba(16, 16, 16, 0.85), rgba(16, 16, 16, 0.85)), 
+                        linear-gradient(90deg, var(--accent-pink), var(--accent-teal));
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+    }
 
-        .login-container h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--text-primary);
-        }
+    .login-container h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, var(--accent-pink), var(--accent-yellow), var(--accent-teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
 
-        .login-container .subtitle {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            margin-bottom: 30px;
-        }
+    .login-container .subtitle {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+    }
 
-        .login-form {
-            text-align: left;
-        }
+    .login-form {
+      text-align: left;
+    }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+    .form-group {
+      margin-bottom: 20px;
+    }
 
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
 
-        .form-group input[type="text"],
-        .form-group input[type="password"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-light);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            color: var(--text-primary);
-            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
+    .form-group input[type="text"],
+    .form-group input[type="password"] {
+      width: 100%;
+      padding: 12px 15px;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.3s;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+      box-sizing: border-box;
+    }
 
-        .form-group input[type="text"]:focus,
-        .form-group input[type="password"]:focus {
-            border-color: var(--border-focus);
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-        }
+    .form-group input[type="text"]:focus,
+    .form-group input[type="password"]:focus {
+      border-color: var(--accent-teal);
+      box-shadow: 0 0 0 3px rgba(104, 211, 217, 0.3), inset 0 2px 4px rgba(0,0,0,0.3);
+      outline: none;
+    }
 
-        .user-type-group {
-            margin-bottom: 25px;
-        }
-        .user-type-group p {
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-        .user-type-options {
-            display: flex;
-            gap: 20px;
-        }
-        .user-type-options label {
-            font-weight: 400;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-        .user-type-options input[type="radio"] {
-            margin-right: 8px;
-            accent-color: var(--text-accent);
-            transform: scale(1.1);
-        }
+    .login-button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      margin-top: 10px;
+      background-image: linear-gradient(to right, var(--accent-teal) 0%, #a7f3d0 51%, var(--accent-teal) 100%);
+      background-size: 200% auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
 
-        .login-button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--button-primary-bg);
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s ease-in-out;
-            margin-top: 10px;
-        }
+    .login-button:hover {
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
 
-        .login-button:hover {
-            background-color: var(--button-primary-hover-bg);
-        }
+    .form-errors {
+      color: var(--accent-pink);
+      font-size: 0.875rem;
+      margin-bottom: 15px;
+      padding: 10px 15px;
+      background-color: rgba(255, 140, 148, 0.1);
+      border: 1px solid rgba(255, 140, 148, 0.2);
+      border-radius: 8px;
+      list-style: none;
+      text-align: left;
+    }
 
-        .form-errors { /* 폼 상단 에러 메시지 */
-            color: var(--error-text);
-            font-size: 0.875rem;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: rgba(220, 53, 69, 0.05);
-            border: 1px solid rgba(220, 53, 69, 0.1);
-            border-radius: 6px;
-            list-style: none;
-            text-align: left;
-        }
-        .form-errors li {
-             margin-bottom: 5px;
-        }
-        .form-errors li:last-child {
-            margin-bottom: 0;
-        }
-        
-        .field-errorlist { /* Django 폼 필드 에러용 (ul.errorlist에 JS로 추가될 수 있음) */
-            list-style: none;
-            padding: 0;
-            margin: 6px 0 0 0;
-            font-size: 0.85rem;
-            color: var(--error-text);
-        }
+    .form-errors li {
+      margin-bottom: 5px;
+    }
 
-        .signup-link-container {
-            margin-top: 25px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
+    .form-errors li:last-child {
+      margin-bottom: 0;
+    }
 
-        .signup-link-container a {
-            color: var(--text-accent);
-            text-decoration: none;
-            font-weight: 500;
-        }
+    .field-errorlist {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 0 0;
+      font-size: 0.85rem;
+      color: var(--accent-pink);
+    }
 
+<<<<<<< HEAD
         .signup-link-container a:hover {
             text-decoration: underline;
         }
@@ -214,66 +198,95 @@
     <div class="login-container">
         <h1>{% t 'Login' %}</h1>
         <p class="subtitle">{% t 'Welcome to HealthWise. Please log in.' %}</p>
+=======
+    .signup-link-container {
+      margin-top: 25px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
 
-        <form method="post" action="{% url 'accounts:login' %}" class="login-form">
-            {% csrf_token %}
+    .signup-link-container a {
+      color: var(--accent-pink);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
 
-            {% if form.non_field_errors %}
-              <ul class="form-errors">
-                {% for error in form.non_field_errors %}
-                  <li>{{ error }}</li>
-                {% endfor %}
-              </ul>
-            {% endif %}
+    .signup-link-container a:hover {
+      text-decoration: underline;
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Login</h1>
+    <p class="subtitle">Welcome to HealthWise. Please log in.</p>
+>>>>>>> origin/style-update
 
-            <div class="user-type-group">
-                <p> {% t '회원 유형:' %} </p>
-                <div class="user-type-options">
-                    <label><input type="radio" name="user_type" value="company" {% if request.POST.user_type == 'company' %}checked{% endif %} required> {% t '기업' %} </label>
-                    <label><input type="radio" name="user_type" value="normal" {% if not request.POST.user_type or request.POST.user_type == 'normal' %}checked{% endif %} required> {% t '일반' %} </label>
-                </div>
-            </div>
+    <form method="post" action="{% url 'accounts:login' %}" class="login-form">
+      {% csrf_token %}
 
-            <div class="form-group">
-                <label for="{{ form.username.id_for_label }}"> {% t '아이디' %} </label>
-                {{ form.username }}
-                {{ form.username.errors }}
-            </div>
-          
-            <div class="form-group">
-                <label for="{{ form.password.id_for_label }}"> {% t '암호' %} </label>
-                {{ form.password }}
-                {{ form.password.errors }}
-            </div>
+      {% if form.non_field_errors %}
+        <ul class="form-errors">
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
 
-            {% if request.GET.next %}
-                <input type="hidden" name="next" value="{{ request.GET.next }}">
-            {% endif %}
-          
-            <button type="submit" class="login-button"> {% t '로그인' %} </button>
-        </form>
+      <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">아이디</label>
+        {{ form.username }}
+        {{ form.username.errors }}
+      </div>
 
+      <div class="form-group">
+        <label for="{{ form.password.id_for_label }}">암호</label>
+        {{ form.password }}
+        {{ form.password.errors }}
+      </div>
+
+      {% if request.GET.next %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+      {% endif %}
+
+<<<<<<< HEAD
         <div class="signup-link-container">
             {% t "Don't have an account?" %} <a href="{% url 'accounts:signup'%}">{% t 'Sign up here' %}</a>.
         </div>
-    </div>
+=======
+      <button type="submit" class="login-button">로그인</button>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function setupFormField(fieldId, placeholderText) {
-                const inputElement = document.getElementById(fieldId);
-                if (inputElement) {
-                    inputElement.classList.add('form-control'); /* 이 클래스는 CSS에서 input[type="text"] 등으로 직접 스타일링 중 */
-                    inputElement.setAttribute('placeholder', placeholderText);
-                }
-                const errorList = inputElement?.parentElement?.querySelector('ul.errorlist');
-                if (errorList) {
-                    errorList.classList.add('field-errorlist');
-                }
-            }
-            setupFormField('{{ form.username.id_for_label }}', 'Enter your username');
-            setupFormField('{{ form.password.id_for_label }}', 'Enter your password');
-        });
-    </script>
+      <div class="signup-link-container" style="margin-top: 15px;">
+        <a href="{% url 'accounts:find_username' %}">아이디 찾기</a> |
+        <a href="{% url 'accounts:password_reset' %}">비밀번호 찾기</a>
+      </div>
+    </form>
+
+    <div class="signup-link-container">
+      Don't have an account? <a href="{% url 'accounts:signup' %}">Sign up here</a>.
+>>>>>>> origin/style-update
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      function setupFormField(fieldId, placeholderText) {
+        const inputElement = document.getElementById(fieldId);
+        if (inputElement) {
+          inputElement.classList.add('form-control');
+          inputElement.setAttribute('placeholder', placeholderText);
+        }
+        const errorList = inputElement?.parentElement?.querySelector('ul.errorlist');
+        if (errorList) {
+          errorList.classList.add('field-errorlist');
+        }
+      }
+
+      setupFormField('{{ form.username.id_for_label }}', 'Enter your username');
+      setupFormField('{{ form.password.id_for_label }}', 'Enter your password');
+    });
+  </script>
 </body>
 </html>
