@@ -348,6 +348,15 @@
     </main>
 </div>
 
+{# ▼▼▼ 바로 이 위치에 아래 코드를 추가합니다 ▼▼▼ #}
+<div id="js-i18n-strings" style="display: none;">
+    <span data-translation-key="alert_select_exercise_and_mood">{% t '운동과 분위기를 모두 선택해주세요!' %}</span>
+    <span data-translation-key="trending_mix_failed">{% t '트렌딩 믹스를 불러오지 못했습니다.' %}</span>
+    <span data-translation-key="ai_recommend_button">{% t 'AI 추천 받기' %}</span>
+    <span data-translation-key="analyzing_button">{% t '분석 중...' %}</span>
+</div>
+{# ▲▲▲ 여기까지 추가 ▲▲▲ #}
+
 {% csrf_token %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -436,9 +445,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    function getTranslatedText(key) {
+        const element = document.querySelector(`#js-i18n-strings [data-translation-key="${key}"]`);
+        return element ? element.textContent : '';
+    }
+
     async function handleAIRequest() {
         if (!selectedExercise || !selectedMood) {
-            alert('운동과 분위기를 모두 선택해주세요!');
+            // [수정] HTML에서 번역된 메시지를 가져와서 alert에 사용
+            const alertMessage = getTranslatedText('alert_select_exercise_and_mood');
+            alert(alertMessage);
             return;
         }
         setLoadingState(true);
@@ -490,9 +506,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function setLoadingState(isLoading) {
         requestBtn.disabled = isLoading;
         if (isLoading) {
-             requestBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 분석 중...';
+            // [수정] '분석 중...' 텍스트 번역 처리
+            const analyzingText = getTranslatedText('analyzing_button');
+            requestBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${analyzingText}`;
         } else {
-             requestBtn.innerHTML = 'AI 추천 받기';
+            // [수정] 'AI 추천 받기' 텍스트 번역 처리
+            requestBtn.innerHTML = getTranslatedText('ai_recommend_button');
         }
         if (isLoading) {
             trendingSection.style.display = 'none';
@@ -566,8 +585,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } catch (error) {
             console.error("트렌딩 믹스 로딩 실패:", error);
-            hotlistGrid.innerHTML = `<p style="color:#ff6b6b;"> {% t '트렌딩 믹스를 불러오지 못했습니다.' %} </p>`;
-        }
+            const errorText = getTranslatedText('trending_mix_failed');
+            hotlistGrid.innerHTML = `<p style="color:#ff6b6b;">${errorText}</p>`;
+            }
     }
 
     loadTrendingMixes();

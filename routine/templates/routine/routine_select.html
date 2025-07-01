@@ -188,8 +188,13 @@
             exerciseItemInList.classList.add('added');
             exerciseItemInList.classList.remove('clickable');
             exerciseItemInList.removeAttribute('onclick');
-            exerciseItemInList.querySelector('.added-icon').classList.remove('hidden');
+            
+            const addedIcon = exerciseItemInList.querySelector('.added-icon');
+            if (addedIcon) {
+                addedIcon.classList.remove('hidden');
+            }
         }
+
         
         const li = document.createElement("li");
         li.dataset.name = name;

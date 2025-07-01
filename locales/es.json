@@ -685,7 +685,7 @@
   "예: 고혈압약 (아침 식후 1정), 당뇨약 (저녁 식후 1정) 또는 없음": "Ej: medicamento para la hipertensión (1 tableta después del desayuno), medicamento para la diabetes (1 tableta después de la cena) o ninguno",
   "예: 소주 1병 또는 맥주 2캔": "Ej: 1 botella de soju o 2 latas de cerveza",
   "예: 종합비타민, 오메가3, 유산균, 진통제 (필요시) 또는 없음": "Ej: multivitamínico, omega 3, probióticos, analgésicos (si es necesario) o ninguno",
-  "예시) 밥 한 공기, 김치찌개, 계란후라이 2개\\n소스나 음료 등 사진에 없는 정보도 알려주시면 더 정확해요!": "Ejemplo) 1 taza de arroz, estofado de kimchi, 2 huevos fritos\n¡Si me dices información que no está en la foto, como salsas o bebidas, será más preciso!",
+  "예시) 밥 한 공기, 김치찌개, 계란후라이 2개\n소스나 음료 등 사진에 없는 정보도 알려주시면 더 정확해요!": "Ejemplo) 1 taza de arroz, estofado de kimchi, 2 huevos fritos\n¡Si me dices información que no está en la foto, como salsas o bebidas, será más preciso!",
   "오늘 운동 어땠나요?": "¿Cómo fue tu entrenamiento hoy?",
   "오늘도 건강하고 행복한 날이 되시길 바랍니다.<br>감사합니다.": "Espero que hoy sea un día saludable y feliz.<br>Gracias.",
   "오늘의 식단 요약": "Resumen de la dieta de hoy",
@@ -1048,6 +1048,8 @@
   "\n**[4. 최근 3일간 식단 기록]**": "\n**[4. Registros de Dieta en los Últimos 3 Días]**",
   "분석된 음식: {foods} (총 {calories}kcal)": "Comida analizada: {foods} (Total {calories}kcal)",
   "입력된 내용: {text}": "Texto ingresado: {text}",
+  "등": "espalda",
+  "팔": "brazo",
   "- **{datetime}**: {summary}": "- **{datetime}**: {summary}",
   "- (식단 기록 조회 중 오류 발생)": "- (Error al obtener registros de dieta)",
   "\n**[5. 주요 달성 업적 및 칭호]**": "\n**[5. Logros y Títulos Principales]**",
@@ -1132,6 +1134,20 @@
   "파일 크기는 10MB를 초과할 수 없습니다.": "El tamaño del archivo no puede exceder los 10MB.",
   "분석 중 오류가 발생했습니다. 다시 시도해주세요.": "Se produjo un error durante el análisis. Por favor, inténtalo de nuevo.",
   "네트워크 또는 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.": "Ocurrió un error de red o servidor. Por favor, inténtalo más tarde.",
-  "서버와 통신할 수 없습니다.": "No se puede comunicar con el servidor."
-
+  "서버와 통신할 수 없습니다.": "No se puede comunicar con el servidor.",
+  "우측의 '루틴 수정하기' 버튼을 눌러 운동을 추가해보세요": "Haz clic en el botón 'Editar rutina' a la derecha para agregar ejercicios",
+  "아래 '새 운동 추가하기' 섹션에서 운동을 추가하세요.": "Agrega ejercicios en la sección 'Agregar nuevo ejercicio' a continuación.",
+  "내 루틴 목록으로 돌아가기": "Volver a la lista de rutinas",
+  "오늘의 운동 계획을 확인하고 목표를 달성해보세요.": "Revisa tu plan de entrenamiento de hoy y alcanza tu objetivo.",
+  "분": "min",
+  "우측의 '루틴 수정하기' 버튼을 눌러 운동을 추가해보세요.": "Haz clic en el botón 'Editar rutina' a la derecha para agregar ejercicios.",
+  "오늘의 목표": "Meta de hoy",
+  "이 루틴을 완료하고 건강한 하루를 만드세요!": "¡Completa esta rutina y ten un día saludable!",
+  "AI 분석": "Análisis por IA",
+  "루틴 수정": "Editar rutina",
+  "저장된 루틴이 아니므로 액션을 수행할 수 없습니다.": "Esta rutina no está guardada, por lo que no se pueden realizar acciones.",
+  "AI 루틴 분석 결과": "Resultado del análisis de la rutina por IA",
+  "뒤로": "Atrás",
+  "궁금한 모든 것을 해결해 드립니다. 아래에서 검색하거나 카테고리를 선택하세요.": "Te ayudamos a resolver todas tus dudas. Busca abajo o elige una categoría."
 }
+

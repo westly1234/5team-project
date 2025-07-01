@@ -1133,5 +1133,20 @@
   "파일 크기는 10MB를 초과할 수 없습니다.": "File size cannot exceed 10MB.",
   "분석 중 오류가 발생했습니다. 다시 시도해주세요.": "An error occurred during analysis. Please try again.",
   "네트워크 또는 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.": "A network or server error occurred. Please try again later.",
-  "서버와 통신할 수 없습니다.": "Unable to communicate with the server."
+  "서버와 통신할 수 없습니다.": "Unable to communicate with the server.",
+  "우측의 '루틴 수정하기' 버튼을 눌러 운동을 추가해보세요": "Click the 'Edit Routine' button on the right to add exercises",
+  "아래 '새 운동 추가하기' 섹션에서 운동을 추가하세요.": "Add exercises in the 'Add New Exercise' section below.",
+   "내 루틴 목록으로 돌아가기": "Back to My Routine List",
+  "오늘의 운동 계획을 확인하고 목표를 달성해보세요.": "Check your workout plan for today and achieve your goal!",
+  "분": "min",
+  "우측의 '루틴 수정하기' 버튼을 눌러 운동을 추가해보세요.": "Click the 'Edit Routine' button on the right to add exercises.",
+  "오늘의 목표": "Today's Goal",
+  "이 루틴을 완료하고 건강한 하루를 만드세요!": "Complete this routine and have a healthy day!",
+  "AI 분석": "AI Analysis",
+  "루틴 수정": "Edit Routine",
+  "저장된 루틴이 아니므로 액션을 수행할 수 없습니다.": "This is not a saved routine, so actions cannot be performed.",
+  "AI 루틴 분석 결과": "AI Routine Analysis Result",
+  "뒤로": "Back",
+  "궁금한 모든 것을 해결해 드립니다. 아래에서 검색하거나 카테고리를 선택하세요.": "We help you find all the answers. Search below or choose a category."
 }
+

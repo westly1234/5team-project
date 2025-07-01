@@ -166,7 +166,7 @@
         <button class="action-button" id="reSearchBtn" onclick="reSearch()" style="display: none;">
             <i class="bi bi-arrow-repeat"></i> {% t '이 지역에서 다시 검색' %} </button>
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="운동 시설 직접 검색">
+            <input type="text" id="searchInput" placeholder="{% t '운동 시설 직접 검색' %}">
             <button onclick="searchCustom()"><i class="bi bi-search"></i></button>
         </div>
         
@@ -193,6 +193,7 @@
 
 <script>
     // ... (이전과 동일한 JavaScript 코드)
+    const foundText = "{% t '개의 시설을 찾았습니다.' %}";
     let map, ps, infowindow, currentPosition, myLocationMarker, clusterer;
     let markers = [], currentCategory = '';
     const statusEl = document.getElementById('status');
@@ -277,7 +278,7 @@
             
             if (filtered.length > 0) {
                 displayPlaces(filtered);
-                updateStatus(`✅ ${filtered.length}개의 시설을 찾았습니다.`, 'success');
+                updateStatus(`✅ ${filtered.length} {% t '개의 시설을 찾았습니다.' %}`, 'success');
                 resultsHeaderEl.textContent = `총 ${filtered.length}개의 결과`;
                 resultsHeaderEl.style.display = 'block';
             } else {
