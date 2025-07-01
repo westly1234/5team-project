@@ -162,43 +162,6 @@
       color: var(--accent-pink);
     }
 
-<<<<<<< HEAD
-        .signup-link-container a:hover {
-            text-decoration: underline;
-        }
-        .language-selector {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-        .language-selector select {
-            background-color: #fff;
-            border: 1px solid var(--border-light);
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <form action="{% url 'set_language' %}" method="post" class="language-selector">
-        {% csrf_token %}
-        <input name="next" type="hidden" value="{{ redirect_to }}">
-        <select name="language" onchange="this.form.submit()">
-            {% get_current_language as LANGUAGE_CODE %}
-            {% get_available_languages as LANGUAGES %}
-            {% for lang_code, lang_name in LANGUAGES %}
-                <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>
-                    {{ lang_name }}
-                </option>
-            {% endfor %}
-        </select>
-    </form>
-    <div class="login-container">
-        <h1>{% t 'Login' %}</h1>
-        <p class="subtitle">{% t 'Welcome to HealthWise. Please log in.' %}</p>
-=======
     .signup-link-container {
       margin-top: 25px;
       font-size: 0.9rem;
@@ -222,7 +185,7 @@
   <div class="login-container">
     <h1>Login</h1>
     <p class="subtitle">Welcome to HealthWise. Please log in.</p>
->>>>>>> origin/style-update
+
 
     <form method="post" action="{% url 'accounts:login' %}" class="login-form">
       {% csrf_token %}
@@ -251,11 +214,7 @@
         <input type="hidden" name="next" value="{{ request.GET.next }}">
       {% endif %}
 
-<<<<<<< HEAD
-        <div class="signup-link-container">
-            {% t "Don't have an account?" %} <a href="{% url 'accounts:signup'%}">{% t 'Sign up here' %}</a>.
-        </div>
-=======
+
       <button type="submit" class="login-button">로그인</button>
 
       <div class="signup-link-container" style="margin-top: 15px;">
@@ -266,7 +225,7 @@
 
     <div class="signup-link-container">
       Don't have an account? <a href="{% url 'accounts:signup' %}">Sign up here</a>.
->>>>>>> origin/style-update
+
     </div>
   </div>
 

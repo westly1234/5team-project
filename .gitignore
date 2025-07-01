@@ -2,12 +2,4 @@ __pycache__/
 *.pyc
 .venv/
 venv/
-<<<<<<< HEAD
 db.sqlite3
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/style-update
-=======
-/staticfiles/
->>>>>>> aeff6315d13c338743624e89b8e3da76e7e928a3
