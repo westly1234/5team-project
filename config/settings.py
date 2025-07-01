@@ -15,6 +15,7 @@ ALLOWED_HOSTS = ['192.168.0.205', 'localhost', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
+    'modeltranslation',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -24,12 +25,12 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     'achievements',
     'web.apps.WebConfig',
+    'store',
     'music',
     'place',
     'routine',
     'diet',
     'chatbot',
-    'store',
 ]
 
 MIDDLEWARE = [
@@ -93,7 +94,7 @@ USE_I18N = True
 USE_TZ = True
 
 LOCALE_PATHS = [
-    BASE_DIR / 'locale',
+    BASE_DIR / 'locales',
 ]
 
 # Static files (CSS, JavaScript, Images)
@@ -137,6 +138,8 @@ LANGUAGES = [
     ('en', _('English')),
     ('es', _('Spanish')),
 ]
+
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'ko'
 
 # config/settings.py 맨 아래에 추가
 

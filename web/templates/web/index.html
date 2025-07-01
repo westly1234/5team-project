@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static custom_translate i18n %}
 
-{% block title %}HealthWise - 혁신적인 AI 헬스케어{% endblock %}
+{% block title %}HealthWise - {% t '혁신적인 AI 헬스케어' %}{% endblock %}
 
 {% block content %}
 <!-- 필수 라이브러리 로드 -->
@@ -213,8 +213,8 @@
             <div id="scene-1" class="cinematic-scene">
                 <div class="text-wrapper">
                     <h2>
-                        <span>당신의 건강,</span>
-                        <span>이제 새로운 차원으로.</span>
+                        <span>{% t '당신의 건강,' %}</span>
+                        <span>{% t '이제 새로운 차원으로.' %}</span>
                     </h2>
                 </div>
                 <div class="device-frame-wrapper">
@@ -230,10 +230,10 @@
             <div id="scene-2" class="cinematic-scene layout-reverse">
                 <div class="text-wrapper">
                     <h2>
-                        <span>AI가 실시간으로</span>
-                        <span>당신을 분석합니다.</span>
+                        <span>{% t 'AI가 실시간으로' %}</span>
+                        <span>{% t '당신을 분석합니다.' %}</span>
                     </h2>
-                    <p>최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석하여 맞춤 솔루션을 제공합니다.</p>
+                    <p>{% t '최첨단 인공지능이 당신의 건강 상태를 실시간으로 분석하여 맞춤 솔루션을 제공합니다.' %}</p>
                 </div>
                 <div class="device-frame-wrapper">
                     <div class="device-frame">
@@ -248,10 +248,10 @@
             <div id="scene-3" class="cinematic-scene">
                 <div class="text-wrapper">
                     <h2>
-                        <span>먹는 것까지 똑똑하게,</span>
-                        <span>스마트 영양 관리.</span>
+                        <span>{% t '먹는 것까지 똑똑하게,' %}</span>
+                        <span>{% t '스마트 영양 관리.' %}</span>
                     </h2>
-                    <p>음식 사진만으로 칼로리와 영양소를 분석하고, 개인 맞춤 식단을 추천합니다.</p>
+                    <p>{% t '음식 사진만으로 칼로리와 영양소를 분석하고, 개인 맞춤 식단을 추천합니다.' %}</p>
                 </div>
                 <div class="device-frame-wrapper">
                     <div class="device-frame">
@@ -266,15 +266,15 @@
             <div id="scene-4" class="cinematic-scene layout-reverse">
                 <div class="text-wrapper">
                     <h2>
-                        <span>오직 당신만을 위한</span>
-                        <span>맞춤형 운동 코칭.</span>
+                        <span>{% t '오직 당신만을 위한' %}</span>
+                        <span>{% t '맞춤형 운동 코칭.' %}</span>
                     </h2>
-                    <p>AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계하고, 자세까지 교정해줍니다.</p>
+                    <p>{% t 'AI가 당신의 체력과 목표에 맞는 운동 프로그램을 설계하고, 자세까지 교정해줍니다.' %}</p>
                 </div>
                 <div class="device-frame-wrapper">
                     <div class="device-frame">
                         <div class="device-screen">
-                            <img src="https://plus.unsplash.com/premium_photo-1670505062582-fdaa83c23c9e?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="건강한 식사">
+                            <img src="https://plus.unsplash.com/premium_photo-1670505062582-fdaa83c23c9e?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="{% t '건강한 식사' %}">
                         </div>
                     </div>
                 </div>
@@ -290,19 +290,19 @@
     <h2 class="gallery-headline hidden-for-gsap">{% t '그 밖의 놀라운 기능들' %}</h2>
     <div class="gallery-grid">
         <div class="gallery-card large hidden-for-gsap">
-            <img src="https://images.unsplash.com/photo-1716367840407-f9414a84b325?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="장소 서비스">
+            <img src="https://images.unsplash.com/photo-1716367840407-f9414a84b325?q=80&w=1631&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="{% t '장소 서비스' %}">
             <div class="gallery-card-content">
                 <h3>{% t '내 위치 맞춤 장소 서비스' %}</h3><p>{% t '내 주변 모든 운동 장소를 한눈에.' %}</p>
             </div>
         </div>
         <div class="gallery-card small hidden-for-gsap">
-            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71" alt="건강 리포트">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71" alt="{% t '건강 리포트' %}">
             <div class="gallery-card-content">
                 <h3>{% t '주간 리포트' %}</h3><p>{% t '한 주간의 건강 변화를 분석.' %}</p>
             </div>
         </div>
         <div class="gallery-card small hidden-for-gsap">
-            <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438" alt="커뮤니티">
+            <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438" alt="{% t '커뮤니티' %}">
             <div class="gallery-card-content">
                 <h3>{% t '챌린지 & 커뮤니티' %}</h3><p>{% t '함께해서 더 즐거운 건강 관리.' %}</p>
             </div>
@@ -317,14 +317,14 @@
     <h2 class="section-headline-dark hidden-for-gsap">{% t '10만 직장인이 선택한 이유' %}</h2>
     <div class="marquee">
         <div class="marquee-wrapper">
-            <div class="testimonial-card"><p class="testimonial-body">“AI 덕분에 3개월 만에 10kg 감량했어요. 맞춤형 운동과 식단이 정말 효과적이었습니다.”</p><p class="testimonial-user"><strong>김지훈</strong></p></div>
-            <div class="testimonial-card"><p class="testimonial-body">“팀 운동 챌린지로 동료들과 재미있게 건강을 관리하고 있어요. 업무 스트레스도 많이 줄었습니다.”</p><p class="testimonial-user"><strong>이서연</strong></p></div>
-            <div class="testimonial-card"><p class="testimonial-body">“웨어러블 연동으로 실시간 건강 모니터링이 가능해서 좋아요. 건강 관리가 훨씬 쉬워졌습니다.”</p><p class="testimonial-user"><strong>박민수</strong></p></div>
-            <div class="testimonial-card"><p class="testimonial-body">“운동을 잘 몰라도 정확한 자세와 플랜을 제공받을 수 있어서 좋았습니다.”</p><p class="testimonial-user"><strong>김채연</strong></p></div>
-            <div class="testimonial-card"><p class="testimonial-body">“AI 덕분에 3개월 만에 10kg 감량했어요. 맞춤형 운동과 식단이 정말 효과적이었습니다.”</p><p class="testimonial-user"><strong>김지훈</strong></p></div>
-            <div class="testimonial-card"><p class="testimonial-body">“팀 운동 챌린지로 동료들과 재미있게 건강을 관리하고 있어요. 업무 스트레스도 많이 줄었습니다.”</p><p class="testimonial-user"><strong>이서연</strong></p></div>
-            <div class="testimonial-card"><p class="testimonial-body">“웨어러블 연동으로 실시간 건강 모니터링이 가능해서 좋아요. 건강 관리가 훨씬 쉬워졌습니다.”</p><p class="testimonial-user"><strong>박민수</strong></p></div>
-            <div class="testimonial-card"><p class="testimonial-body">“운동을 잘 몰라도 정확한 자세와 플랜을 제공받을 수 있어서 좋았습니다.”</p><p class="testimonial-user"><strong>김채연</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">{% t '“AI 덕분에 3개월 만에 10kg 감량했어요. 맞춤형 운동과 식단이 정말 효과적이었습니다.”' %}</p><p class="testimonial-user"><strong>{% t '김지훈' %}</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">{% t '“팀 운동 챌린지로 동료들과 재미있게 건강을 관리하고 있어요. 업무 스트레스도 많이 줄었습니다.”' %}</p><p class="testimonial-user"><strong>{% t '이서연' %}</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">{% t '“웨어러블 연동으로 실시간 건강 모니터링이 가능해서 좋아요. 건강 관리가 훨씬 쉬워졌습니다.”' %}</p><p class="testimonial-user"><strong>{% t '박민수' %}</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">{% t '“운동을 잘 몰라도 정확한 자세와 플랜을 제공받을 수 있어서 좋았습니다.”' %}</p><p class="testimonial-user"><strong>{% t '김채연' %}</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">{% t '“AI 덕분에 3개월 만에 10kg 감량했어요. 맞춤형 운동과 식단이 정말 효과적이었습니다.”' %}</p><p class="testimonial-user"><strong>{% t '김지훈' %}</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">{% t '“팀 운동 챌린지로 동료들과 재미있게 건강을 관리하고 있어요. 업무 스트레스도 많이 줄었습니다.”' %}</p><p class="testimonial-user"><strong>{% t '이서연' %}</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">{% t '“웨어러블 연동으로 실시간 건강 모니터링이 가능해서 좋아요. 건강 관리가 훨씬 쉬워졌습니다.”' %}</p><p class="testimonial-user"><strong>{% t '박민수' %}</strong></p></div>
+            <div class="testimonial-card"><p class="testimonial-body">{% t '“운동을 잘 몰라도 정확한 자세와 플랜을 제공받을 수 있어서 좋았습니다.”' %}</p><p class="testimonial-user"><strong>{% t '김채연' %}</strong></p></div>
         </div>
     </div>
 </section>
@@ -439,29 +439,29 @@
 </style>
 
 <section class="growth-partners-section">
-    <h2>후원으로 성장률 상승</h2>
+    <h2>{% t '후원으로 성장률 상승' %}</h2>
     <p class="section-description">
-        최고의 파트너들과 함께 사용자의 건강 목표 달성률을 높여가고 있습니다.
+        {% t '최고의 파트너들과 함께 사용자의 건강 목표 달성률을 높여가고 있습니다.' %}
     </p>
     <div class="growth-display">
         <div class="growth-number" data-target="185">0</div>
-        <p class="growth-label">사용자 목표 달성률</p>
+        <p class="growth-label">{% t '사용자 목표 달성률' %}</p>
     </div>
     <div class="logos-viewport">
         <div class="logos-track">
-            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="{% t '고용노동부' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="{% t 'employment' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="{% t '대한민국정부' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="{% t 'EY한영' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="{% t 'mbc아카데미' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="{% t 'mbc' %}"></div>
             <!-- 복제본 -->
-            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="고용노동부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="employment"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="대한민국정부"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="EY한영"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="mbc아카데미"></div>
-            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="mbc"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1554463529-e27854014799.jpeg' %}" alt="{% t '고용노동부' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1529612700005-e35377bf1415.jpeg' %}" alt="{% t 'employment' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1579041925709-798d7d0fed1d.jpeg' %}" alt="{% t '대한민국정부' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1596622723231-b20320c7346b.jpeg' %}" alt="{% t 'EY한영' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651044450619-5ce74d316987.jpeg' %}" alt="{% t 'mbc아카데미' %}"></div>
+            <div class="logo-item"><img src="{% static 'images/photo-1651853082689-706323a31427.jpeg' %}" alt="{% t 'mbc' %}"></div>
         </div>
     </div>
 </section>

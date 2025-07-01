@@ -1,0 +1,5 @@
+Please write a concise and appealing introduction in English for the health/fitness brand '{brand_name}' in 3-4 sentences.
+Key Information:
+- Categories: {categories_str}
+- Core Tags: {tags_str}
+Please provide only the generated introductory text as the result, without any other explanations.

@@ -1,8 +1,8 @@
 {% extends 'web/base_simple.html' %}
-{% load static custom_translate i18n %}
+{% load static i18n store_i18n %}
 {% block title %}{% t '내가 찜한 브랜드' %}{% endblock %}
 
-{% block content %}
+{% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
     /* CSS는 이전과 동일합니다. 수정할 필요 없습니다. */
@@ -47,7 +47,9 @@
     .review-list .review-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 1rem 0; }
     .review-list .review-item:last-child { border-bottom: none; }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="store-container">
     <header class="store-header">
         <h1> {% t '내가 찜한 브랜드' %} </h1>
@@ -83,8 +85,26 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_scripts %}
 <script>
+    window.i18nData = {};
+    try {
+    // ✅ 이제 이 태그는 이 파일에 로드된 store_extras를 사용하므로 100% 작동합니다.
+        const i18nJsonString = '{{ js_translations_json|escapejs }}';
+        window.i18nData = JSON.parse(i18nJsonString);
+    } catch (e) {
+        console.error("I18N 초기화 오류:", e);
+    }
+    function t(key, params = {}) {
+        if (!window.i18nData) { return key; }
+            let translatedString = window.i18nData[key] || key;
+        for (const param in params) {
+            translatedString = translatedString.replace(new RegExp(`{${param}}`, 'g'), params[param]);
+        }
+        return translatedString;
+    }
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -139,7 +159,7 @@
         const form = event.target;
         const rating = form.querySelector('input[name="rating"]:checked');
         const content = form.querySelector('textarea[name="content"]');
-        if (!rating) { alert('평점을 선택해주세요.'); return; }
+        if (!rating) { alert(t('평점을 선택해주세요.')); return; }
         const url = `{% url 'store:add_review_api' 0 %}`.replace('0', brandId);
         fetch(url, {
             method: 'POST',
@@ -152,7 +172,7 @@
                 alert(data.message);
                 document.getElementById('modal-close-btn').click();
             } else {
-                alert(data.message || '리뷰 등록에 실패했습니다.');
+                alert(data.message || t('리뷰 등록에 실패했습니다.'));
             }
         });
     }
@@ -172,30 +192,30 @@
 
             const openModal = (brandId) => {
                 modal.classList.add('active');
-                modalBrandName.textContent = '불러오는 중...';
-                modalBrandDesc.textContent = "정보를 불러오는 중...";
+                modalBrandName.textContent = t('불러오는 중...');
+                modalBrandDesc.textContent = t('정보를 불러오는 중...');
                 reviewFormWrapper.innerHTML = '';
-                reviewListWrapper.innerHTML = '<p>리뷰를 불러오는 중...</p>';
+                reviewListWrapper.innerHTML = `<p>${t('리뷰를 불러오는 중...')}</p>`;
 
                 const url = `{% url 'store:brand_detail_api' 0 %}`.replace('0', brandId);
                 fetch(url)
                     .then(response => response.json())
                     .then(data => {
                         modalBrandName.textContent = data.name;
-                        modalBrandDesc.textContent = data.detailed_description;
+                        modalBrandDesc.textContent = t(data.detailed_description);
                         modalBrandLink.href = data.link;
 
                         if (data.is_authenticated) {
                             const userRating = data.user_review ? data.user_review.rating : 0;
                             const userContent = data.user_review ? data.user_review.content : '';
                             reviewFormWrapper.innerHTML = `
-                                <h4>리뷰 작성/수정</h4>
+                                <h4>${t('리뷰 작성/수정')}</h4>
                                 <form id="review-form" onsubmit="submitReview(event, ${brandId})">
                                     <div class="star-rating">
                                         ${[5,4,3,2,1].map(i => `<input type="radio" id="star${i}" name="rating" value="${i}" ${userRating == i ? 'checked' : ''} required><label for="star${i}">★</label>`).join('')}
                                     </div>
-                                    <textarea name="content" class="review-textarea" placeholder="리뷰를 남겨주세요...">${userContent}</textarea>
-                                    <button type="submit" class="go-to-site-btn review-submit-btn">리뷰 등록</button>
+                                    <textarea name="content" class="review-textarea" placeholder="${t('리뷰를 남겨주세요...')}">${userContent}</textarea>
+                                    <button type="submit" class="go-to-site-btn review-submit-btn">${t('리뷰 등록')}</button>
                                 </form>`;
                         }
 
@@ -207,7 +227,7 @@
                                     <small>${review.created_at}</small>
                                 </div>`).join('')}</div>`;
                         } else {
-                            reviewListWrapper.innerHTML = '<p>아직 작성된 리뷰가 없습니다.</p>';
+                            reviewListWrapper.innerHTML = `<p>${t('아직 작성된 리뷰가 없습니다.')}</p>`;
                         }
                     });
             };

@@ -1,5 +1,3 @@
-# web/utils.py
-
 import json
 from django.conf import settings
 from django.utils import translation
@@ -17,19 +15,28 @@ def load_translations(lang_code):
     if not lang_code:
         lang_code = 'ko'
 
-    # locales/en.json 같은 파일 경로를 찾음
     file_path = settings.BASE_DIR / 'locales' / f'{lang_code}.json'
     
+    # ✅ 수정: FileNotFoundError와 JSONDecodeError를 모두 처리합니다.
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             translations_data = json.load(f)
+            
+            # ✅ 추가: 로드된 데이터가 딕셔너리가 아니거나 비어있는 경우를 대비
+            if not isinstance(translations_data, dict):
+                _translations[lang_code] = {}
+                return {}
+
             _translations[lang_code] = translations_data
             return translations_data
-    except FileNotFoundError:
-        # 만약 해당 언어 파일이 없으면, 한국어 파일이라도 불러옴
+            
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"I18N Warning: Could not load '{file_path}'. Reason: {e}")
+        # 만약 해당 언어 파일에 문제가 있으면, 한국어 파일이라도 불러옴
         if lang_code != 'ko':
             return load_translations('ko')
-        return {} # 한국어 파일도 없으면 빈 데이터 반환
+        # 한국어 파일도 없거나 문제가 있으면 빈 딕셔너리 반환
+        return {}
 
 def t(key, **kwargs):
     # Django의 현재 활성화된 언어 코드를 가져옴 (예: 'ko', 'en')
@@ -44,7 +51,11 @@ def t(key, **kwargs):
     
     # 3. placeholder 변수 치환 (예: "안녕하세요, {name}님!")
     if kwargs:
-        translated_string = translated_string.format(**kwargs)
+        try:
+            translated_string = translated_string.format(**kwargs)
+        except KeyError:
+            # 포맷팅 키가 없는 경우를 대비
+            pass
 
     # 4. HTML 태그가 포함될 수 있으므로 안전하게 처리
     return mark_safe(translated_string)

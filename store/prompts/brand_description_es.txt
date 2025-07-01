@@ -1,0 +1,5 @@
+Por favor, escribe una introducción concisa y atractiva en español para la marca de salud/fitness '{brand_name}' en 3-4 frases.
+Información Clave:
+- Categorías: {categories_str}
+- Etiquetas Principales: {tags_str}
+Como resultado, proporciona únicamente el texto de introducción generado, sin ninguna otra explicación.

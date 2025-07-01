@@ -1,8 +1,8 @@
 {% extends 'web/base_simple.html' %}
-{% load static custom_translate i18n %}
-{% block title %}{%t 'AI 체형 분석' %}{% endblock %}
+{% load static i18n store_i18n %}
+{% block title %}{% t 'AI 체형 분석' %}{% endblock %}
 
-{% block content %}
+{% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -192,7 +192,9 @@
         .page-header h1 { font-size: 2.2rem; }
     }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="analyzer-wrapper">
     <div class="page-header">
         <h1>{% t 'AI 체형 분석 및 스타일 제안' %}</h1>
@@ -304,8 +306,26 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_scripts %}
 <script>
+window.i18nData = {};
+try {
+// ✅ 이제 이 태그는 이 파일에 로드된 store_extras를 사용하므로 100% 작동합니다.
+    const i18nJsonString = '{{ js_translations_json|escapejs }}';
+    window.i18nData = JSON.parse(i18nJsonString);
+} catch (e) {
+    console.error("I18N 초기화 오류:", e);
+}
+function t(key, params = {}) {
+    if (!window.i18nData) { return key; }
+        let translatedString = window.i18nData[key] || key;
+    for (const param in params) {
+        translatedString = translatedString.replace(new RegExp(`{${param}}`, 'g'), params[param]);
+    }
+    return translatedString;
+}
 document.addEventListener('DOMContentLoaded', () => {
     // 기능 유지를 위해 모든 ID를 그대로 사용합니다.
     const uploadForm = document.getElementById('upload-form');
@@ -355,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleFile(file) {
         if (file.size > 10 * 1024 * 1024) {
-            alert('파일 크기는 10MB를 초과할 수 없습니다.');
+            alert(t('파일 크기는 10MB를 초과할 수 없습니다.'));
             resetFileState();
             return;
         }
@@ -427,13 +447,13 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 alert('분석 실패: ' + data.message);
                 placeholderContent.style.display = 'block';
-                placeholderContent.querySelector('p').textContent = "분석 중 오류가 발생했습니다. 다시 시도해주세요.";
+                placeholderContent.querySelector('p').textContent = t("분석 중 오류가 발생했습니다. 다시 시도해주세요.");
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('네트워크 또는 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            alert(t('네트워크 또는 서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'));
             placeholderContent.style.display = 'block';
-            placeholderContent.querySelector('p').textContent = "서버와 통신할 수 없습니다.";
+            placeholderContent.querySelector('p').textContent = t("서버와 통신할 수 없습니다.");
         } finally {
             loader.style.display = 'none';
         }
