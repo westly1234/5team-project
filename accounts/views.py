@@ -1,5 +1,5 @@
 # accounts/views.py (단 한 줄도 생략 없는 최종 전체 코드)
-
+from django.utils.translation import gettext as _
 from .forms import CustomUserCreationForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
@@ -73,17 +73,17 @@ def signup(request: HttpRequest):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             activation_link = request.build_absolute_uri(f"/accounts/activate/{uid}/{token}/")
 
-            subject = t("이메일 인증을 완료해주세요")
+            subject = "이메일 인증을 완료해주세요"
             from_email = settings.DEFAULT_FROM_EMAIL
             to_email = [user.email]
-            text_content = t("다음 링크를 클릭해서 인증을 완료해주세요: {link}", link=activation_link)
+            text_content = f"다음 링크를 클릭해서 인증을 완료해주세요: {activation_link}"
             html_content = render_to_string('accounts/activation_email.html', {
                 'user': user, 'activation_link': activation_link,
-                'title': t("이메일 인증을 완료해주세요"),
-                'greeting': t("안녕하세요, {username}님!", username=user.username),
-                'instruction': t("아래 버튼을 클릭하여 회원가입을 완료해주세요."),
-                'button_text': t("이메일 인증하기"),
-                'salutation': t("HealthWise 팀 드림"),
+                'title': "이메일 인증을 완료해주세요",
+                'greeting': f"안녕하세요, {user.username}님!",
+                'instruction': "아래 버튼을 클릭하여 회원가입을 완료해주세요.",
+                'button_text': "이메일 인증하기",
+                'salutation': "HealthWise 팀 드림",
             })
             msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
             msg.attach_alternative(html_content, "text/html")
@@ -124,8 +124,8 @@ def activate(request, uidb64, token):
         user.is_active = True
         user.save()
         login(request, user)
-        messages.success(request, t('이메일 인증이 성공적으로 완료되었습니다. HealthWise에 오신 것을 환영합니다!'))
-        return redirect('web:services')
+        messages.success(request, '이메일 인증이 성공적으로 완료되었습니다. HealthWise에 오신 것을 환영합니다!')
+        return render(request, 'accounts/activation.html')
     else:
         return render(request, 'accounts/activation_failed.html')
 
@@ -135,9 +135,9 @@ def save_survey_view(request):
     try:
         survey_data = json.loads(request.body.decode('utf-8'))
         request.session['survey_data_temp'] = survey_data
-        return JsonResponse({'success': True, 'message': t('설문 데이터가 임시로 저장되었습니다.')})
+        return JsonResponse({'success': True, 'message': '설문 데이터가 저장되었습니다.'})
     except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': t('잘못된 JSON 데이터 형식입니다.')}, status=400)
+        return JsonResponse({'success': False, 'error': '잘못된 JSON 데이터 형식입니다.'}, status=400)
     except Exception as e:
 
         print(f"Error processing survey: {e}")
