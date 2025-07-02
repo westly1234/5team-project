@@ -3,7 +3,7 @@ from django.urls import path, include
 from web import views as web_views  # home 뷰를 위해 필요
 from django.conf import settings
 from django.conf.urls.static import static
-from accounts import views as accounts_views  # save_survey_view를 위해 필요
+from accounts import views as accounts_views  # save_survey_view를 위해 필요c
 
 urlpatterns = [
     path('admin/', admin.site.urls),

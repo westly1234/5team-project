@@ -1,183 +1,196 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HealthWise - 1:1 문의하기</title>
-    <style>
-        /* CSS 스타일은 그대로 유지 */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+{% extends 'web/dashboard_sliding_base.html' %}
+{% load static custom_translate i18n %}
 
-        body {
-            background-color: #1A1A2E;
-            color: #E0E0E0;
-            font-family: 'Noto Sans KR', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
+{% block title %}{% t '1:1 문의하기' %} - HealthWise{% endblock %}
 
-        .inquiry-form-container {
-            background-color: #23233B;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 600px;
-        }
+{% block page_content %}
+<style>
+    /* ✨ [핵심 수정] 폼을 완벽하게 중앙에 배치하기 위한 래퍼 스타일 */
+    .page-content-wrapper {
+        display: flex;
+        justify-content: center; /* 수평 중앙 정렬 */
+        align-items: center;     /* 수직 중앙 정렬 */
+        width: 100%;
+        min-height: calc(100vh - 65px); /* 헤더 높이를 제외한 전체 높이 */
+        padding: 2rem 1rem; /* 상하좌우 최소 여백 */
+    }
 
-        .inquiry-form-container h2 {
-            text-align: center;
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 30px;
-            color: #FFFFFF;
-        }
+    .inquiry-form-container-new {
+        background: rgba(28, 37, 51, 0.5);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 2.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 44rem; /* 최대 너비를 살짝 줄여 좌우 여백을 더 확보 */
+    }
+    
+    .back-link-container {
+        width: 100%;
+        text-align: right;
+        margin-bottom: 1rem;
+    }
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #9ca3af;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s ease-in-out;
+    }
+    .back-link:hover {
+        color: #e5e7eb;
+    }
+    .back-link i {
+        font-size: 1rem;
+    }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            background-color: #1A1A2E;
-            border: 1px solid #4A4A6A;
-            border-radius: 8px;
-            color: #E0E0E0;
-            font-size: 16px;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #00BFFF;
-            box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.2);
-        }
-
-        .form-control-file::file-selector-button {
-            background: linear-gradient(90deg, #E94560, #00BFFF);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            color: white;
-            cursor: pointer;
-            margin-right: 10px;
-        }
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 2.5rem;
+        justify-content: center;
+    }
+    .form-header i { font-size: 2rem; background: linear-gradient(135deg, #a855f7, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-fill-color: transparent; }
+    .form-header h2 { font-size: 1.75rem; font-weight: 700; color: #FFFFFF; }
+    .form-group-new { margin-bottom: 1.5rem; }
+    .form-group-new label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #d1d5db; }
+    
+    .form-control-new {
+        /* ✨ [핵심 수정] 이 한 줄이 모든 입력창의 너비를 완벽하게 통일시킵니다. */
+        box-sizing: border-box;
         
-        .privacy-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 25px;
-        }
+        width: 100%; 
+        min-height: 46px; 
+        padding: 0.75rem 1rem; 
+        background-color: rgba(17, 24, 39, 0.8); 
+        border: 1px solid #374151; 
+        border-radius: 0.5rem; 
+        color: #f3f4f6; 
+        font-size: 1rem; 
+        transition: border-color 0.2s, box-shadow 0.2s; 
+        line-height: 1.5; 
+        display: flex; 
+        align-items: center;
+    }
+    textarea.form-control-new { min-height: 120px; resize: vertical; }
+    .form-control-new::placeholder { color: #6b7280; }
+    .form-control-new:focus { outline: none; border-color: #a855f7; box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2); }
+    
+    .file-input-wrapper { position: relative; }
+    .file-input-label { 
+        box-sizing: border-box; /* ✨ 일관성을 위해 여기에도 추가합니다. */
+        display: flex; align-items: center; width: 100%; min-height: 46px; padding: 0.75rem 1rem; background-color: rgba(17, 24, 39, 0.8); border: 1px solid #374151; border-radius: 0.5rem; color: #9ca3af; cursor: pointer; transition: border-color 0.2s; 
+    }
+    .file-input-label:hover { border-color: #4f46e5; }
+    .file-input-label i, .file-input-label span { vertical-align: middle; }
+    .file-input-label i { margin-right: 0.75rem; }
+    #attachment { opacity: 0; position: absolute; width: 0.1px; height: 0.1px; z-index: -1; }
+    .privacy-group-new { display: flex; align-items: center; margin-bottom: 2rem; }
+    .privacy-group-new input[type="checkbox"] { margin: 0 0.75rem 0 0; width: 1.125rem; height: 1.125rem; accent-color: #a855f7; cursor: pointer; flex-shrink: 0; }
+    .privacy-group-new label { font-size: 0.875rem; color: #d1d5db; line-height: 1.5; }
+    .privacy-group-new a { color: #06b6d4; text-decoration: none; font-weight: 500; }
+    .privacy-group-new a:hover { text-decoration: underline; }
+    .submit-btn-new { width: 100%; padding: 1rem; font-size: 1.125rem; font-weight: 700; color: #FFFFFF; background: linear-gradient(135deg, #a855f7, #4f46e5); border: none; border-radius: 50px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+    .submit-btn-new:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3); }
+</style>
 
-        .privacy-group input[type="checkbox"] {
-            margin-right: 10px;
-            width: 18px;
-            height: 18px;
-        }
+<div class="page-content-wrapper">
+    <div class="inquiry-form-container-new">
+        
+        <div class="back-link-container">
+            <a href="{% url 'web:support' %}" class="back-link">
+                <i class="bi bi-arrow-left"></i>
+                <span>{% t '돌아가기' %}</span>
+            </a>
+        </div>
+        
+        <div class="form-header">
+            <i class="bi bi-headset"></i>
+            <h2>{% t '1:1 문의하기' %}</h2>
+        </div>
 
-        .privacy-group label {
-            font-size: 14px;
-            margin-bottom: 0;
-        }
-        .privacy-group a {
-            color: #00BFFF;
-            text-decoration: none;
-        }
-        .privacy-group a:hover {
-            text-decoration: underline;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            font-size: 18px;
-            font-weight: 700;
-            color: #FFFFFF;
-            background: linear-gradient(90deg, #E94560 0%, #00BFFF 100%);
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
-
-        .submit-btn:hover {
-            opacity: 0.9;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="inquiry-form-container">
-        <h2>1:1 문의하기</h2>
-        <!-- ★★★★★ 수정된 부분 1 ★★★★★ -->
         <form method="POST" action="{% url 'web:inquiry' %}" enctype="multipart/form-data">
             {% csrf_token %}
-            <!-- 문의 유형 -->
-            <div class="form-group">
-                <label for="category">문의 유형</label>
-                <!-- ★★★★★ 수정된 부분 2: name="category" 추가 ★★★★★ -->
-                <select id="category" name="category" class="form-control" required>
-                    <option value="" disabled selected>문의할 내용을 선택해주세요.</option>
-                    <option value="account">계정 관리 (로그인, 비밀번호, 프로필)</option>
-                    <option value="routine">운동 루틴 생성/관리</option>
-                    <option value="diet">식단 대시보드/기록</option>
-                    <option value="feature">기능 문의 (운동 장소, AI 추천 등)</option>
-                    <option value="bug">오류/버그 신고</option>
-                    <option value="etc">기타 문의</option>
+            
+            <div class="form-group-new">
+                <label for="category">{% t '문의 유형' %}</label>
+                <select id="category" name="category" class="form-control-new" required>
+                    <option value="" disabled selected>{% t '문의할 내용을 선택해주세요.' %}</option>
+                    <option value="account">{% t '계정 관리 (로그인, 비밀번호, 프로필)' %}</option>
+                    <option value="routine">{% t '운동 루틴 생성/관리' %}</option>
+                    <option value="diet">{% t '식단 대시보드/기록' %}</option>
+                    <option value="feature">{% t '기능 문의 (운동 장소, AI 추천 등)' %}</option>
+                    <option value="bug">{% t '오류/버그 신고' %}</option>
+                    <option value="etc">{% t '기타 문의' %}</option>
                 </select>
             </div>
 
-            <!-- 이메일 주소 -->
-            <div class="form-group">
-                <label for="email">답변받을 이메일 주소</label>
-                <!-- ★★★★★ 수정된 부분 3: name="email" 추가 ★★★★★ -->
-                <input type="email" id="email" name="email" class="form-control" placeholder="example@healthwise.com" required>
+            <div class="form-group-new">
+                <label for="email">{% t '답변받을 이메일 주소' %}</label>
+                <input type="email" id="email" name="email" class="form-control-new" placeholder="example@healthwise.com" required>
             </div>
 
-            <!-- 제목 -->
-            <div class="form-group">
-                <label for="subject">제목</label>
-                <!-- ★★★★★ 수정된 부분 4: name="subject" 추가 ★★★★★ -->
-                <input type="text" id="subject" name="subject" class="form-control" placeholder="문의 제목을 입력해주세요." required>
+            <div class="form-group-new">
+                <label for="subject">{% t '제목' %}</label>
+                <input type="text" id="subject" name="subject" class="form-control-new" placeholder="{% t '문의 제목을 입력해주세요.' %}" required>
             </div>
 
-            <!-- 문의 내용 -->
-            <div class="form-group">
-                <label for="message">문의 내용</label>
-                <!-- ★★★★★ 수정된 부분 5: name="message" 추가 ★★★★★ -->
-                <textarea id="message" name="message" class="form-control" rows="6" placeholder="자세한 문의 내용을 작성해주세요." required></textarea>
+            <div class="form-group-new">
+                <label for="message">{% t '문의 내용' %}</label>
+                <textarea id="message" name="message" class="form-control-new" rows="6" placeholder="{% t '자세한 문의 내용을 작성해주세요.' %}" required></textarea>
             </div>
 
-            <!-- 파일 첨부 (선택 사항 - 일단 기능은 빼고 UI만 둠) -->
-            <div class="form-group">
-                <label for="attachment">파일 첨부 (선택)</label>
-                <input type="file" id="attachment" name="attachment" class="form-control form-control-file">
+            <div class="form-group-new">
+                <label for="attachment">{% t '파일 첨부 (선택)' %}</label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="attachment" name="attachment" onchange="updateFileName(this)">
+                    <label for="attachment" class="file-input-label">
+                        <i class="bi bi-paperclip"></i>
+                        <span id="file-name-display">{% t '파일 선택' %}</span>
+                    </label>
+                </div>
             </div>
 
-            <!-- 개인정보 처리방침 동의 -->
-            <div class="privacy-group">
-                <input type="checkbox" id="privacy" required>
-                <label for="privacy"><a href="#">개인정보 처리방침</a>에 동의합니다.</label>
+            <div class="privacy-group-new">
+                <input type="checkbox" id="privacy" name="privacy" required>
+                <label for="privacy">
+                    <a href="#">{% t '개인정보 처리방침' %}</a>{% t '에 동의합니다.' %}
+                </label>
+            </div>
+            
+            <div id="js-i18n-strings" style="display:none;">
+                <span data-key="file-select-text">{% t '파일 선택' %}</span>
             </div>
 
-            <!-- 제출 버튼 -->
-            <button type="submit" class="submit-btn">문의 접수하기</button>
+            <button type="submit" class="submit-btn-new">{% t '문의 접수하기' %}</button>
         </form>
     </div>
+</div>
 
-    <!-- ★★★★★ 수정된 부분 6: <script> 블록을 완전히 삭제했습니다. ★★★★★ -->
+<script>
+    function getTranslatedText(key) {
+        const element = document.querySelector(`#js-i18n-strings [data-key="${key}"]`);
+        return element ? element.textContent : '';
+    }
 
-</body>
-</html>
+    function updateFileName(input) {
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const defaultFileText = getTranslatedText('file-select-text');
+
+        if (input.files && input.files.length > 0) {
+            fileNameDisplay.textContent = input.files[0].name;
+            fileNameDisplay.style.color = '#f3f4f6';
+        } else {
+            fileNameDisplay.textContent = defaultFileText;
+            fileNameDisplay.style.color = '#9ca3af';
+        }
+    }
+</script>
+
+{% endblock %}

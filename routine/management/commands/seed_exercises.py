@@ -8,67 +8,6 @@ from routine.models import Exercise
 from django.conf import settings
 import openai
 
-def get_exercise_info_with_gpt(exercise_name_ko):
-    """하나의 운동에 대한 설명과 주의사항을 생성하고, 모든 언어로 번역합니다."""
-    try:
-        client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
-        
-        # 1. 한국어로 설명/주의사항 생성
-        prompt_generate = f"""
-        헬스 운동 '{exercise_name_ko}'에 대한 '상세 설명 및 팁'과 '핵심 주의사항'을 생성해줘.
-        
-        # 지침:
-        - 각 항목은 2~3개의 짧은 문장으로 간결하게 요약해줘.
-        - 결과는 반드시 아래와 같은 JSON 형식으로만 응답해줘. 다른 말은 절대 추가하지 마.
-        
-        # 출력 형식:
-        {{
-          "description_ko": "운동에 대한 간결한 설명과 팁.",
-          "precautions_ko": "운동 시 핵심 주의사항 요약."
-        }}
-        """
-        response_ko = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt_generate}],
-            response_format={"type": "json_object"}
-        )
-        info_ko = json.loads(response_ko.choices[0].message.content)
-
-        # 2. 영어와 스페인어로 번역
-        text_to_translate = f"description: {info_ko['description_ko']}\nprecautions: {info_ko['precautions_ko']}"
-        prompt_translate = f"""
-        Translate the following exercise information into English and Spanish.
-        
-        # Instructions:
-        - Keep the descriptions and precautions concise (2-3 short sentences each).
-        - Return the result ONLY in the following JSON format. Do not add any other text.
-        
-        # Input text:
-        {text_to_translate}
-
-        # Output JSON format:
-        {{
-          "description_en": "...",
-          "precautions_en": "...",
-          "description_es": "...",
-          "precautions_es": "..."
-        }}
-        """
-        response_translated = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt_translate}],
-            response_format={"type": "json_object"}
-        )
-        info_translated = json.loads(response_translated.choices[0].message.content)
-
-        # 모든 정보를 합쳐서 반환
-        return {**info_ko, **info_translated}
-
-    except Exception as e:
-        print(f"  - 🚨 GPT 정보 생성/번역 오류 ('{exercise_name_ko}'): {e}")
-        return None
-
-
 # ⭐️ FIX: translate_text_with_gpt 함수를 아래 코드로 교체합니다.
 def translate_text_with_gpt(text, target_lang):
     """운동 이름 또는 운동 부위를 지정된 규칙에 따라 번역합니다."""
@@ -475,21 +414,6 @@ class Command(BaseCommand):
                     'gif_url': data['gif_url'],
                 }
             )
-
-            # 설명/주의사항 데이터가 비어있을 경우에만 GPT로 정보 생성
-            if not exercise.description or not exercise.precautions:
-                self.stdout.write("  - 🧠 Generating description/precautions with GPT...")
-                info = get_exercise_info_with_gpt(exercise.name)
-                if info:
-                    exercise.description = info.get('description_ko')
-                    exercise.precautions = info.get('precautions_ko')
-                    exercise.description_en = info.get('description_en')
-                    exercise.precautions_en = info.get('precautions_en')
-                    exercise.description_es = info.get('description_es')
-                    exercise.precautions_es = info.get('precautions_es')
-                time.sleep(1.5) # API 과호출 방지
-            else:
-                self.stdout.write("  - ✅ Description/precautions already exist. Skipping generation.")
 
             # 번역된 이름/부위가 없을 경우에만 번역 수행
             if not exercise.name_en or not exercise.muscle_group_en:
