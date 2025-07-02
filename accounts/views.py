@@ -21,9 +21,9 @@ from django.contrib.auth.decorators import login_required
 # ⬇️ 비밀번호 재설정 폼을 가져오도록 forms.py에서 import 추가
 from .forms import UserUpdateForm, ProfileUpdateForm, FindUsernameForm, CustomPasswordResetForm, CustomSetPasswordForm
 from .models import Profile, BodyCompositionRecord
-from achievements.services import check_and_award_achievement
+from achievements.services import check_and_award_achievement, UserAchievement
 from web.models import FitnessProfile
-
+from web.utils import t
 from django.contrib.auth.models import User
 from django.urls import reverse
 
@@ -73,17 +73,17 @@ def signup(request: HttpRequest):
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             activation_link = request.build_absolute_uri(f"/accounts/activate/{uid}/{token}/")
 
-            subject = "이메일 인증을 완료해주세요"
+            subject = t('이메일 인증을 완료해주세요')
             from_email = settings.DEFAULT_FROM_EMAIL
             to_email = [user.email]
             text_content = f"다음 링크를 클릭해서 인증을 완료해주세요: {activation_link}"
             html_content = render_to_string('accounts/activation_email.html', {
                 'user': user, 'activation_link': activation_link,
-                'title': "이메일 인증을 완료해주세요",
-                'greeting': f"안녕하세요, {user.username}님!",
-                'instruction': "아래 버튼을 클릭하여 회원가입을 완료해주세요.",
-                'button_text': "이메일 인증하기",
-                'salutation': "HealthWise 팀 드림",
+                'title': t('이메일 인증을 완료해주세요'),
+                'greeting': t('안녕하세요, {username}님!', username=user.username),
+                'instruction': t('아래 버튼을 클릭하여 회원가입을 완료해주세요.'),
+                'button_text': t('이메일 인증하기'),
+                'salutation': t('HealthWise 팀 드림'),
             })
             msg = EmailMultiAlternatives(subject, text_content, from_email, to_email)
             msg.attach_alternative(html_content, "text/html")
@@ -124,7 +124,7 @@ def activate(request, uidb64, token):
         user.is_active = True
         user.save()
         login(request, user)
-        messages.success(request, '이메일 인증이 성공적으로 완료되었습니다. HealthWise에 오신 것을 환영합니다!')
+        messages.success(request, t('이메일 인증이 성공적으로 완료되었습니다. HealthWise에 오신 것을 환영합니다!'))
         return render(request, 'accounts/activation.html')
     else:
         return render(request, 'accounts/activation_failed.html')
@@ -135,13 +135,13 @@ def save_survey_view(request):
     try:
         survey_data = json.loads(request.body.decode('utf-8'))
         request.session['survey_data_temp'] = survey_data
-        return JsonResponse({'success': True, 'message': '설문 데이터가 저장되었습니다.'})
+        return JsonResponse({'success': True, 'message': t('설문 데이터가 저장되었습니다.')})
     except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': '잘못된 JSON 데이터 형식입니다.'}, status=400)
+        return JsonResponse({'success': False, 'error': t('잘못된 JSON 데이터 형식입니다.')}, status=400)
     except Exception as e:
 
         print(f"Error processing survey: {e}")
-        return JsonResponse({'success': False, 'error': f'서버 처리 중 오류가 발생했습니다: {str(e)}'}, status=500)
+        return JsonResponse({'success': False, 'error': t('서버 처리 중 오류가 발생했습니다: {error}', error=str(e))}, status=500)
 
 
 @require_POST
@@ -160,7 +160,7 @@ def profile_edit(request):
             user_form.save()
 
             profile_form.save()
-            messages.success(request, '프로필 정보가 성공적으로 업데이트되었습니다!')
+            messages.success(request, t('프로필 정보가 성공적으로 업데이트되었습니다!'))
             # ... (이하 업적 관련 코드는 생략하지 않고 그대로 둡니다) ...
 
             return redirect('web:services')
@@ -206,7 +206,7 @@ def find_username_view(request):
                 user = User.objects.filter(email__iexact=email, is_active=True).first()
                 username = user.username
             except User.DoesNotExist:
-                form.add_error('email', '해당 이메일로 가입된 계정이 없거나, 이메일 인증이 완료되지 않았습니다.')
+                form.add_error('email', t('해당 이메일로 가입된 계정이 없거나, 이메일 인증이 완료되지 않았습니다.'))
     else:
         form = FindUsernameForm()
     return render(request, 'accounts/find_username.html', {"form": form, "username": username})
@@ -228,11 +228,11 @@ def custom_password_reset_view(request):
                     reset_path = reverse('accounts:password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
                     activation_link = request.build_absolute_uri(reset_path)
 
-                    subject = '[HealthWise] 비밀번호 재설정 안내'
+                    subject = t('[HealthWise] 비밀번호 재설정 안내')
 
 
                     # 1. (선택) 만일을 위한 일반 텍스트 버전 이메일 내용
-                    text_content = f"다음 링크를 클릭해서 비밀번호를 재설정해주세요: {activation_link}"
+                    text_content = t('다음 링크를 클릭해서 비밀번호를 재설정해주세요: {activation_link}', activation_link=activation_link)
                     
                     # 2. HTML 버전 이메일 내용
                     html_content = render_to_string('accounts/password_email.html', {

@@ -1,7 +1,7 @@
 {% extends "web/base_simple.html" %}
 {% load static custom_translate i18n %}
 
-{% block title %}종합 대시보드 - HealthWise{% endblock %}
+{% block title %}{% t '종합 대시보드' %} - HealthWise{% endblock %}
 
 {% block content %}
 <!-- Bootstrap Icons CDN 링크 -->
@@ -252,7 +252,7 @@
                             {# active_title 객체가 존재하고, 그 안의 achievement에 title_reward가 있을 경우 표시 #}
                             <span id="active-title-display" style="color: #4ecdc4; font-weight: 600;">
                                 {% if active_title and active_title.achievement.title_reward %}
-                                    {{ active_title.achievement.title_reward }}
+                                    {% t active_title.achievement.title_reward %}
                                 {% else %}
                                     {% t '칭호 없음' %}
                                 {% endif %}
