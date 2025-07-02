@@ -19,6 +19,10 @@ class Exercise(models.Model):
     exercise_type = models.CharField(max_length=20, choices=EXERCISE_TYPES, default='strength', help_text="운동의 종류 (근력/유산소)")
     description = models.TextField(blank=True, null=True, help_text="운동의 주요 자극 부위 및 방법에 대한 상세 설명")
     precautions = models.TextField(blank=True, null=True, help_text="운동 시 주의해야 할 점이나 흔한 실수")
+    description_en = models.TextField(blank=True, null=True, help_text="운동 설명 (영어)")
+    precautions_en = models.TextField(blank=True, null=True, help_text="운동 주의사항 (영어)")
+    description_es = models.TextField(blank=True, null=True, help_text="운동 설명 (스페인어)")
+    precautions_es = models.TextField(blank=True, null=True, help_text="운동 주의사항 (스페인어)")
 
     # ✅ 아래 localized 프로퍼티들이 추가되었습니다.
     # 이 프로퍼티들은 뷰나 템플릿에서 exercise.localized_name처럼 호출하면
@@ -116,7 +120,7 @@ class RoutineExercise(models.Model):
     description = models.TextField(blank=True, null=True, help_text="AI가 생성한 운동 상세 설명")
     precautions = models.TextField(blank=True, null=True, help_text="AI가 생성한 운동 주의사항")
 
-    class Meta:
+    class Meta: 
         unique_together = ('routine', 'exercise')
         ordering = ['id']
 
