@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Profile
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
-
+from web.templatetags.custom_translate import t_lazy
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -24,15 +24,15 @@ class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
-            'placeholder': '이메일 주소'
+            'placeholder': t_lazy('이메일 주소')
         })
     )
     first_name = forms.CharField(
-        label='이름 (별명)',
+        label=t_lazy('이름 (별명)'),
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': '이름 또는 별명'
+            'placeholder': t_lazy('이름 또는 별명')
         })
     )
 
@@ -49,58 +49,58 @@ class ProfileUpdateForm(forms.ModelForm):
             'image': forms.FileInput(attrs={'style': 'display: none;', 'id': 'id_image'}),
             'height': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': '키 (cm)'
+                'placeholder': t_lazy('키 (cm)')
             }),
             'current_weight': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': '현재 체중 (kg)'
+                'placeholder': t_lazy('현재 체중 (kg)')
             }),
             'target_weight': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': '목표 체중 (kg)'
+                'placeholder': t_lazy('목표 체중 (kg)')
             }),
             'skeletal_muscle_mass': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': '골격근량 (kg)'
+                'placeholder': t_lazy('골격근량 (kg)')
             }),
             'body_fat_mass': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': '체지방량 (kg)'
+                'placeholder': t_lazy('체지방량 (kg)')
             }),
         }
         labels = {
-            'height': '키',
-            'current_weight': '현재 체중',
-            'target_weight': '목표 체중',
-            'skeletal_muscle_mass': '골격근량',
-            'body_fat_mass': '체지방량',
+            'height': t_lazy('키'),
+            'current_weight': t_lazy('현재 체중'),
+            'target_weight': t_lazy('목표 체중'),
+            'skeletal_muscle_mass': t_lazy('골격근량'),
+            'body_fat_mass': t_lazy('체지방량'),
         }
 
 
 # ✅ 아이디 찾기 폼
 class FindUsernameForm(forms.Form):
-    email = forms.EmailField(label="가입한 이메일")
+    email = forms.EmailField(label=t_lazy('가입한 이메일'))
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
         if not User.objects.filter(email=email).exists():
-            raise forms.ValidationError("해당 이메일로 가입된 계정이 없습니다.")
+            raise forms.ValidationError(t_lazy('해당 이메일로 가입된 계정이 없습니다.'))
         return email
     
 class CustomPasswordResetForm(PasswordResetForm):
     email = forms.EmailField(
-        label="이메일 주소",
+        label=t_lazy('이메일 주소'),
         max_length=254,
         widget=forms.EmailInput(attrs={'autocomplete': 'email', 'class': 'form-control'})
     )
 
 class CustomSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(
-        label="새 비밀번호",
+        label=t_lazy('새 비밀번호'),
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
     )
     new_password2 = forms.CharField(
-        label="새 비밀번호 확인",
+        label=t_lazy('새 비밀번호 확인'),
         widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
     )
   

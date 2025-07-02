@@ -2,7 +2,7 @@
 
 from django.contrib.auth.models import User
 from datetime import date, datetime, timedelta
-from web.models import HealthSurvey, FitnessProfile
+from web.models import HealthSurvey
 from routine.models import Routine, WorkoutLog
 from diet.models import Meal
 from achievements.models import UserAchievement 
@@ -28,30 +28,42 @@ def get_user_profile_context(user: User, lang_code='ko') -> str:
     # --- 1. 피트니스 프로필 (FitnessProfile) ---
     context_parts.append(translate("\n**[1. 피트니스 정보]**", lang_code))
     try:
-        fp = user.fitness_profile
         profile = user.profile
         
         today = date.today()
         age_str = translate("정보 없음", lang_code)
-        if fp.birth:
-            age = today.year - fp.birth.year - ((today.month, today.day) < (fp.birth.month, fp.birth.day))
+        if hasattr(profile, 'birth') and profile.birth:
+            age = today.year - profile.birth.year - ((today.month, today.day) < (profile.birth.month, profile.birth.day))
             age_str = translate("{age}세", lang_code).format(age=age)
         
         bmi_info = ""
-        if fp.height and fp.weight:
-            bmi = round(fp.weight / ((fp.height / 100) ** 2), 1)
-            bmi_info = f" (BMI: {bmi})"
-
-        context_parts.append(translate("- **기본 정보**: {age}, {gender}", lang_code).format(age=age_str, gender=fp.gender))
-        context_parts.append(translate("- **신체 정보**: {height}cm, {weight}kg{bmi}", lang_code).format(height=profile.height, weight=profile.current_weight, bmi=bmi_info))
-        context_parts.append(translate("- **체성분**: 골격근량 {muscle}kg, 체지방량 {fat}kg", lang_code).format(muscle=profile.skeletal_muscle_mass or translate('미입력', lang_code), fat=profile.body_fat_mass or translate('미입력', lang_code)))
-        context_parts.append(translate("- **운동 목표**: {goal} (목표 체중: {target_weight}kg)", lang_code).format(goal=fp.goal, target_weight=profile.target_weight or translate('미설정', lang_code)))
-        context_parts.append(translate("- **운동 경력/빈도**: {exp}, 주 {freq}회", lang_code).format(exp=fp.experience, freq=fp.frequency))
-        context_parts.append(translate("- **선호 운동 타입**: {types}", lang_code).format(types=fp.types.replace(',', ', ')))
+        if profile.height and profile.current_weight:
+            try:
+                bmi = round(profile.current_weight / ((profile.height / 100) ** 2), 1)
+                bmi_info = f" (BMI: {bmi})"
+            except (TypeError, ValueError):
+                pass
+        not_entered = translate('미입력', lang_code)
+        not_set = translate('미설정', lang_code)
         
-    except (AttributeError, FitnessProfile.DoesNotExist) if FitnessProfile else (AttributeError,):
+        # [수정] 모든 변수를 profile 객체에서 가져옵니다.
+        # get_gender_display(), get_goal_display() 등은 Profile 모델에 정의되어 있어야 합니다.
+        gender_display = profile.get_gender_display() if hasattr(profile, 'get_gender_display') else not_entered
+        goal_display = profile.get_goal_display() if hasattr(profile, 'get_goal_display') else not_entered
+        experience_display = profile.get_experience_display() if hasattr(profile, 'get_experience_display') else not_entered
+        frequency = profile.frequency if hasattr(profile, 'frequency') else not_entered
+        types = profile.types.replace(',', ', ') if hasattr(profile, 'types') and profile.types else not_set
+        
+        context_parts.append(translate("- **기본 정보**: {age}, {gender}", lang_code).format(age=age_str, gender=gender_display))
+        context_parts.append(translate("- **신체 정보**: {height}cm, {weight}kg{bmi}", lang_code).format(height=profile.height or not_entered, weight=profile.current_weight or not_entered, bmi=bmi_info))
+        context_parts.append(translate("- **체성분**: 골격근량 {muscle}kg, 체지방량 {fat}kg", lang_code).format(muscle=profile.skeletal_muscle_mass or not_entered, fat=profile.body_fat_mass or not_entered))
+        context_parts.append(translate("- **운동 목표**: {goal} (목표 체중: {target_weight}kg)", lang_code).format(goal=goal_display, target_weight=profile.target_weight or not_set))
+        context_parts.append(translate("- **운동 경력/빈도**: {exp}, 주 {freq}회", lang_code).format(exp=experience_display, freq=frequency))
+        context_parts.append(translate("- **선호 운동 타입**: {types}", lang_code).format(types=types))
+        
+    # [수정] Profile.DoesNotExist만 확인하면 됩니다.
+    except (Profile.DoesNotExist, AttributeError):
         context_parts.append(translate("- (피트니스 프로필이 입력되지 않았습니다.)", lang_code))
-
     # --- 2. 건강 설문 정보 (HealthSurvey) ---
     context_parts.append(translate("\n**[2. 건강 관련 중요 정보]**", lang_code))
     try:
@@ -59,7 +71,7 @@ def get_user_profile_context(user: User, lang_code='ko') -> str:
 
         def format_json_list(json_data):
             if isinstance(json_data, list) and json_data:
-                return ', '.join([translate(item, lang_code) for item in json_data])
+                return ', '.join([translate(item, lang_code, fallback=item) for item in json_data])
             return translate("없음", lang_code)
 
         context_parts.append(translate("- **혈액형**: {blood_type}", lang_code).format(blood_type=hs.blood_type or translate('정보 없음', lang_code)))
@@ -77,7 +89,7 @@ def get_user_profile_context(user: User, lang_code='ko') -> str:
         context_parts.append(translate("- **가족력**: {history}", lang_code).format(history=format_json_list(hs.family_history)))
         if hs.family_history_details: context_parts.append(translate("  - 상세: {details}", lang_code).format(details=hs.family_history_details))
 
-    except (AttributeError, HealthSurvey.DoesNotExist) if HealthSurvey else (AttributeError,):
+    except (HealthSurvey.DoesNotExist, AttributeError):
         context_parts.append(translate("- (건강 설문이 입력되지 않았습니다.)", lang_code))
 
     # --- 3. 최근 운동 '완료' 기록 요약 (WorkoutLog) ---
@@ -142,7 +154,7 @@ def get_user_profile_context(user: User, lang_code='ko') -> str:
         else:
             context_parts.append(translate("- **최근 달성 업적**: 아직 달성한 업적이 없습니다.", lang_code))
             
-    except Exception as e:
+    except (Profile.DoesNotExist, AttributeError, Exception) as e:
         print(f"업적 정보 조회 오류: {e}")
         context_parts.append(translate("- (업적 정보 조회 중 오류 발생)", lang_code))
         

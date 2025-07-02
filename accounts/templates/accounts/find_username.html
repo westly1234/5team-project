@@ -1,8 +1,10 @@
+{% load static custom_translate i18n %}
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>아이디 찾기</title>
+    <title>{% t '아이디 찾기' %}</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
@@ -147,7 +149,7 @@
 </head>
 <body>
     <div class="form-container">
-        <h1>아이디 찾기</h1>
+        <h1>{% t '아이디 찾기' %}</h1>
         <form method="POST">
             {% csrf_token %}
             {{ form.non_field_errors }}
@@ -156,12 +158,12 @@
                 {{ form.email }}
                 {{ form.email.errors }}
             </div>
-            <button type="submit" class="btn-submit">아이디 찾기</button>
+            <button type="submit" class="btn-submit">{% t '아이디 찾기' %}</button>
         </form>
 
         {% if username %}
             <p class="result-message">
-                <strong>가입된 아이디:</strong> {{ username }}
+                <strong>{% t '가입된 아이디' %}:</strong> {{ username }}
             </p>
         {% endif %}
     </div>

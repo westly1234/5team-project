@@ -1,56 +1,96 @@
-# store/management/commands/seed_translations.py
+import json
+import os
 from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.db import transaction
 from store.models import BrandCategory, Tag
 
 class Command(BaseCommand):
-    help = 'Seeds predefined English and Spanish translations for specific categories and tags.'
+    help = 'Seeds all translation fields for Categories (by code) and Tags (by name_ko).'
 
+    def _load_json_file(self, file_path):
+        """Helper function to load a JSON file."""
+        if not os.path.exists(file_path):
+            self.stdout.write(self.style.WARNING(f"File not found: {file_path}"))
+            return None
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            self.stdout.write(self.style.ERROR(f"Could not parse JSON from: {file_path}"))
+            return None
+
+    @transaction.atomic
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS("--- Starting to seed translations for Categories and Tags ---"))
+        self.stdout.write(self.style.SUCCESS("--- Starting to seed translations ---"))
 
-        # 1. 카테고리 번역 데이터 정의
-        # Key: 한국어 이름, Value: {'en': 영어 번역, 'es': 스페인어 번역}
-        category_translations = {
-            '잡화/액세서리': {'en': 'Accessories', 'es': 'Accesorios'},
-            '보충제': {'en': 'Supplements', 'es': 'Suplementos'},
-            '운동용품': {'en': 'Equipment', 'es': 'Equipo'},
-            '의류': {'en': 'Apparel', 'es': 'Ropa'},
+        # --- 1. 카테고리 코드와 한국어 키를 매핑하는 딕셔너리 ---
+        CATEGORY_CODE_TO_KOREAN_KEY_MAP = {
+            "APPAREL": "의류",
+            "EQUIPMENT": "운동용품",
+            "SUPPLEMENTS": "보충제",
+            "ACCESSORIES": "잡화/액세서리",
         }
 
-        # 2. 태그 번역 데이터 정의
-        tag_translations = {
-            '프리미엄': {'en': 'Premium', 'es': 'Prémium'},
-            '국산': {'en': 'Domestic', 'es': 'Nacional'},
-            '가성비': {'en': 'Cost-effective', 'es': 'Rentable'},
-            '초심자용': {'en': 'For Beginners', 'es': 'Para Principiantes'},
-            '기능성': {'en': 'Functional', 'es': 'Funcional'},
-            '글로벌': {'en': 'Global', 'es': 'Global'},
-            '전문가용': {'en': 'For Experts', 'es': 'Para Expertos'},
-            'WPI': {'en': 'WPI', 'es': 'WPI'},  # Whey Protein Isolate, 고유명사 그대로
-            '다이어트': {'en': 'Diet', 'es': 'Dieta'},
-            '비건': {'en': 'Vegan', 'es': 'Vegano'},
-        }
+        # 2. 모든 언어의 번역 파일을 로드합니다. (키: 한국어)
+        ko_translations = self._load_json_file(os.path.join(settings.BASE_DIR, 'locales', 'ko.json'))
+        en_translations = self._load_json_file(os.path.join(settings.BASE_DIR, 'locales', 'en.json'))
+        es_translations = self._load_json_file(os.path.join(settings.BASE_DIR, 'locales', 'es.json'))
 
-        # 3. 카테고리 번역 실행
+        if not all([ko_translations, en_translations, es_translations]):
+            self.stdout.write(self.style.ERROR("Could not load all translation files. Aborting."))
+            return
+
+        # 3. 카테고리(BrandCategory) 번역 실행 (코드를 기준으로)
         self.stdout.write("\nProcessing Brand Categories...")
+        categories_to_update = []
         for category in BrandCategory.objects.all():
-            if category.name_ko in category_translations:
-                translations = category_translations[category.name_ko]
-                category.name_en = translations['en']
-                category.name_es = translations['es']
-                # 변경된 _en, _es 필드만 저장
-                category.save(update_fields=['name_en', 'name_es'])
-                self.stdout.write(self.style.SUCCESS(f"  > Translated '{category.name_ko}' to EN: '{category.name_en}', ES: '{category.name_es}'"))
+            code = category.code # 실제 필드 이름이 'code'라고 가정
+            korean_key = CATEGORY_CODE_TO_KOREAN_KEY_MAP.get(code)
+            
+            if not korean_key:
+                self.stdout.write(self.style.WARNING(f"  > No mapping found for category code: '{code}'. Skipping."))
+                continue
 
-        # 4. 태그 번역 실행
+            ko_name = ko_translations.get(korean_key)
+            en_name = en_translations.get(korean_key)
+            es_name = es_translations.get(korean_key)
+
+            if all([ko_name, en_name, es_name]):
+                category.name = ko_name
+                category.name_ko = ko_name
+                category.name_en = en_name
+                category.name_es = es_name
+                categories_to_update.append(category)
+
+        if categories_to_update:
+            BrandCategory.objects.bulk_update(categories_to_update, ['name', 'name_ko', 'name_en', 'name_es'])
+            self.stdout.write(self.style.SUCCESS(f"  > Synced translations for {len(categories_to_update)} categories."))
+
+        # 4. 태그(Tag) 번역 실행 (name_ko를 기준으로)
         self.stdout.write("\nProcessing Tags...")
+        tags_to_update = []
         for tag in Tag.objects.all():
-            if tag.name_ko in tag_translations:
-                translations = tag_translations[tag.name_ko]
-                tag.name_en = translations['en']
-                tag.name_es = translations['es']
-                # 변경된 _en, _es 필드만 저장
-                tag.save(update_fields=['name_en', 'name_es'])
-                self.stdout.write(self.style.SUCCESS(f"  > Translated '{tag.name_ko}' to EN: '{tag.name_en}', ES: '{tag.name_es}'"))
+            # ✨ [핵심 수정] DB에 있는 name_ko를 직접 JSON 키로 사용합니다.
+            korean_key = tag.name_ko
+            
+            if not korean_key:
+                self.stdout.write(self.style.WARNING(f"  > Skipping Tag ID {tag.pk} because 'name_ko' is empty."))
+                continue
+
+            en_name = en_translations.get(korean_key)
+            es_name = es_translations.get(korean_key)
+
+            # name_ko는 이미 있으므로, 나머지 필드만 채웁니다.
+            if en_name and es_name:
+                tag.name = korean_key # 원본 필드도 채워줍니다.
+                tag.name_en = en_name
+                tag.name_es = es_name
+                tags_to_update.append(tag)
+        
+        if tags_to_update:
+            # ✨ [핵심 수정] name_ko는 업데이트할 필요 없으므로 목록에서 제외
+            Tag.objects.bulk_update(tags_to_update, ['name', 'name_en', 'name_es'])
+            self.stdout.write(self.style.SUCCESS(f"  > Synced translations for {len(tags_to_update)} tags."))
         
         self.stdout.write(self.style.SUCCESS("\n--- Translation seeding complete! ---"))
