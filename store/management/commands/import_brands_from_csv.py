@@ -8,8 +8,6 @@ from django.conf import settings
 from store.models import Brand, BrandCategory, Tag
 from openai import OpenAI
 
-# --- AI 설정 (중요!) ---
-# settings.py에 OPENAI_API_KEY가 설정되어 있어야 합니다.
 try:
     client = OpenAI(api_key=settings.OPENAI_API_KEY)
     AI_ENABLED = True
@@ -21,7 +19,6 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('csv_file_path', type=str, help='The path to the CSV file.')
-        # AI 분석을 건너뛰고 싶을 때 사용하는 옵션 추가
         parser.add_argument(
             '--no-ai',
             action='store_true',
@@ -33,7 +30,6 @@ class Command(BaseCommand):
         if not AI_ENABLED:
             return None
 
-        # AI에게 제공할 분류 기준 (우리의 시스템에 대한 설명)
         categories_info = "의류, 운동용품, 보충제, 잡화/액세서리"
         tags_info = "가성비, 프리미엄, 국산, 글로벌, 기능성, 초심자용, 전문가용, WPI, 다이어트, 비건"
 
@@ -42,7 +38,7 @@ class Command(BaseCommand):
 
         [분류 기준]
         1. 카테고리 (아래 중 가장 적합한 것을 모두 선택): {categories_info}
-        2. 태그 (아래 중 적합한 것을 모두 선택): {tags_info}
+        2. 태그 (아래 중 적합한 것을 모두 선택, 목록에 없다면 새로 제안 가능): {tags_info}
 
         [분석 대상 브랜드]
         - 이름: "{brand_name}"
@@ -61,14 +57,13 @@ class Command(BaseCommand):
         
         try:
             response = client.chat.completions.create(
-                model="gpt-4o-mini", # 비용 효율적인 모델 사용
+                model="gpt-4o-mini",
                 messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"}, # JSON 출력 강제
-                temperature=0.2, # 일관된 결과를 위해 낮은 온도로 설정
+                response_format={"type": "json_object"},
+                temperature=0.2,
             )
             result_json = json.loads(response.choices[0].message.content)
             
-            # 결과가 올바른 형식인지 확인
             if isinstance(result_json, dict) and 'categories' in result_json and 'tags' in result_json:
                 return result_json
             return None
@@ -81,7 +76,7 @@ class Command(BaseCommand):
         csv_file_path = options['csv_file_path']
         use_ai = not options['no_ai'] and AI_ENABLED
 
-        # --- 기본 카테고리 및 태그 생성 (기존 로직 유지) ---
+        # --- 기본 카테고리 및 태그 생성 ---
         CATEGORY_DEFINITIONS = {'APPAREL': '의류', 'EQUIPMENT': '운동용품', 'SUPPLEMENTS': '보충제', 'ACCESSORIES': '잡화/액세서리'}
         TAG_NAMES = ['가성비', '프리미엄', '국산', '글로벌', '기능성', '초심자용', '전문가용', 'WPI', '다이어트', '비건']
         
@@ -110,8 +105,6 @@ class Command(BaseCommand):
 
                     brand, created = Brand.objects.get_or_create(name=brand_name)
                     
-                    # AI 분석은 새로 생성된 브랜드 또는 링크가 업데이트된 브랜드에 대해 수행 (선택적)
-                    # 여기서는 모든 브랜드에 대해 분석 시도
                     if use_ai:
                         self.stdout.write(f"\n[{i+1}/{total_rows}] 🧠 AI가 '{brand_name}' 브랜드를 분석 중입니다...")
                         
@@ -124,14 +117,24 @@ class Command(BaseCommand):
                                 categories_to_set = BrandCategory.objects.filter(name_ko__in=cat_names)
                                 brand.categories.set(categories_to_set)
                             
-                            # AI가 분류한 태그 할당
+                            # --- ✨ [핵심 수정] AI가 반환한 태그 처리 로직 ---
                             tag_names = classification.get('tags', [])
+                            tags_to_set = []
                             if tag_names:
-                                tags_to_set = Tag.objects.filter(name_ko__in=tag_names)
+                                for tag_name in tag_names:
+                                    # 태그가 없으면 새로 생성하고, 있으면 가져옵니다.
+                                    tag, created = Tag.objects.update_or_create(
+                                        name_ko=tag_name,
+                                        defaults={'name': tag_name} # 새로 생성 시 원본 name 필드도 채움
+                                    )
+                                    if created:
+                                        self.stdout.write(self.style.SUCCESS(f"  - ✨ AI가 제안한 새 태그 생성: '{tag_name}'"))
+                                    tags_to_set.append(tag)
+                                
                                 brand.tags.set(tags_to_set)
 
                             self.stdout.write(self.style.SUCCESS(f"  - AI 분석 완료: 카테고리 {cat_names}, 태그 {tag_names}"))
-                            time.sleep(1) # API 속도 제한을 피하기 위한 간단한 지연
+                            time.sleep(1)
                         else:
                             self.stdout.write(self.style.WARNING(f"  - AI 분석에 실패했거나 결과가 없습니다."))
 
@@ -143,6 +146,7 @@ class Command(BaseCommand):
                     brand.save()
         
         except FileNotFoundError:
+            # ... (이하 동일)
             self.stderr.write(self.style.ERROR(f"오류: 파일을 찾을 수 없습니다 - '{csv_file_path}'"))
             return
         except Exception as e:
