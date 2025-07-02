@@ -309,7 +309,16 @@
                     <input name="next" type="hidden" value="{{ request.get_full_path }}">
                     <input name="language" type="hidden" value="{{ lang_code }}">
                     <button type="submit" class="language-option-btn {% if lang_code == LANGUAGE_CODE %}active{% endif %}">
-                        {{ lang_name }}
+                        {# lang_code 값을 확인하여 고정된 텍스트를 출력합니다. #}
+                        {% if lang_code == 'ko' %}
+                            한국어
+                        {% elif lang_code == 'en' %}
+                            English
+                        {% elif lang_code == 'es' %}
+                            Español
+                        {% else %}
+                            {{ lang_name }} {# 혹시 다른 언어가 추가될 경우를 대비한 기본값 #}
+                        {% endif %}
                     </button>
                 </form>
             {% endfor %}

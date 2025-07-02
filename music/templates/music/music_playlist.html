@@ -1,7 +1,7 @@
 {% extends "web/dashboard_sliding_base.html" %}
 {% load static custom_translate i18n %}
 
-{% block title %}AI 뮤직 허브 - HealthWise{% endblock %}
+{% block title %}{% t 'AI 뮤직 허브' %} - HealthWise{% endblock %}
 
 {% block page_content %}
 <style>
@@ -360,6 +360,7 @@
 {% csrf_token %}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const translations = JSON.parse('{{ js_translations|escapejs }}');
     const youtubeKey = "{{ youtube_api_key }}";
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
@@ -377,6 +378,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let selectedExercise = null, selectedMood = null, selectedGenre = null;
     const loaderHTML = `<div class="loader-wrapper"><div class="loader"></div></div>`;
+
+    function t(key, replacements = {}) {
+        let translated = translations[key] || key;
+        // {placeholder}를 replacements 객체의 값으로 치환
+        for (const placeholder in replacements) {
+            // new RegExp()를 사용하여 모든 placeholder를 안전하게 치환
+            translated = translated.replace(new RegExp(`{${placeholder}}`, 'g'), replacements[placeholder]);
+        }
+        return translated;
+    }
 
     controls.addEventListener('click', (e) => {
         const item = e.target.closest('.option-item');
@@ -419,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || '요청 처리 실패');
+            if (!res.ok) throw new Error(data.error || t('요청 처리 실패'));
 
             // 성공 시 UI 토글
             saveBtn.classList.toggle('saved');
@@ -428,12 +439,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 저장 성공: 체크 아이콘으로 변경
                 icon.classList.remove('bi-plus-circle');
                 icon.classList.add('bi-check-circle-fill');
-                saveBtn.title = '보관함에서 제거';
+                saveBtn.title = t('보관함에서 제거');
             } else {
                 // 저장 취소 성공: 플러스 아이콘으로 변경
                 icon.classList.remove('bi-check-circle-fill');
                 icon.classList.add('bi-plus-circle');
-                saveBtn.title = '내 보관함에 추가';
+                saveBtn.title = t('내 보관함에 추가');
             }
             // alert(data.message); // 사용자 피드백 (필요 시 활성화)
 
@@ -445,16 +456,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function getTranslatedText(key) {
-        const element = document.querySelector(`#js-i18n-strings [data-translation-key="${key}"]`);
-        return element ? element.textContent : '';
-    }
-
     async function handleAIRequest() {
         if (!selectedExercise || !selectedMood) {
             // [수정] HTML에서 번역된 메시지를 가져와서 alert에 사용
-            const alertMessage = getTranslatedText('alert_select_exercise_and_mood');
-            alert(alertMessage);
+            alert(t('운동 종류와 현재 기분을 모두 선택해주세요.'));
             return;
         }
         setLoadingState(true);
@@ -468,11 +473,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
             const data = await res.json();
-            if (!res.ok || data.error) throw new Error(data.error || 'AI 키워드 생성 실패');
+            if (!res.ok || data.error) throw new Error(data.error || t('AI 키워드 생성 실패'));
             await fetchMusicFromKeywords(data.keywords);
         } catch (error) {
             console.error("AI 요청 오류:", error);
-            resultsGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center;">추천 음악을 가져오는 데 실패했습니다: ${error.message}</p>`;
+            resultsGrid.innerHTML = `<p style="color:#ff6b6b; text-align:center;">${t('추천 음악을 가져오는 데 실패했습니다: {error}', {error: error.message})}</p>`;
         } finally {
             setLoadingState(false);
         }
@@ -490,12 +495,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ytResults.forEach((ytData, index) => {
                 if (ytData.items && ytData.items.length > 0) {
                     const video = ytData.items[0];
-                    const card = createSpotifyCard(video, `AI 추천: ${keywords[index]}`);
+                    const card = createSpotifyCard(video, t('AI 추천: {keyword}', {keyword: keywords[index]}));
                     resultsGrid.appendChild(card);
                 }
             });
             if (resultsGrid.innerHTML === '') {
-                resultsGrid.innerHTML = '<p style="color: #aaa; text-align: center;">추천 음악을 찾지 못했습니다. 다른 키워드로 시도해보세요.</p>';
+                resultsGrid.innerHTML = `<p style="color: #aaa; text-align: center;">${t('추천 음악을 찾지 못했습니다. 다른 키워드로 시도해보세요.')}</p>`;
             }
         } catch(error) {
             console.error("YouTube 검색 오류:", error);
@@ -507,17 +512,16 @@ document.addEventListener('DOMContentLoaded', () => {
         requestBtn.disabled = isLoading;
         if (isLoading) {
             // [수정] '분석 중...' 텍스트 번역 처리
-            const analyzingText = getTranslatedText('analyzing_button');
-            requestBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${analyzingText}`;
+            requestBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ${t('분석 중...')}`;
         } else {
             // [수정] 'AI 추천 받기' 텍스트 번역 처리
-            requestBtn.innerHTML = getTranslatedText('ai_recommend_button');
+            requestBtn.innerHTML = t('AI 추천 받기');
         }
         if (isLoading) {
             trendingSection.style.display = 'none';
             aiResultsSection.style.display = 'block';
             resultsGrid.innerHTML = loaderHTML;
-            mainViewTitle.textContent = '당신을 위한 플레이리스트';
+            mainViewTitle.textContent = t('당신을 위한 플레이리스트');
             mainViewHeader.style.background = 'linear-gradient(180deg, #503158 0%, #121212 100%)';
             resetBtn.style.display = 'block';
         }
@@ -529,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
         trendingSection.style.display = 'block';
         aiResultsSection.style.display = 'none';
         resultsGrid.innerHTML = '';
-        mainViewTitle.textContent = '오늘의 트렌딩 믹스';
+        mainViewTitle.textContent = t('오늘의 트렌딩 믹스');
         mainViewHeader.style.background = 'linear-gradient(180deg, #1f4e4a 0%, #121212 100%)';
         resetBtn.style.display = 'none';
     }
@@ -548,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // is_saved 상태에 따라 클래스와 title을 동적으로 설정
         const savedClass = is_saved ? 'saved' : '';
-        const buttonTitle = is_saved ? '보관함에서 제거' : '내 보관함에 추가';
+        const buttonTitle = is_saved ? t('보관함에서 제거') : t('내 보관함에 추가');
         const iconClass = is_saved ? 'bi-check-circle-fill' : 'bi-plus-circle';
 
         card.innerHTML = `
@@ -580,13 +584,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             hotlistGrid.innerHTML = '';
             data.items.forEach(playlist => {
-                const card = createSpotifyCard(playlist, "YouTube 공식 플레이리스트");
+                const card = createSpotifyCard(playlist, t("YouTube 공식 플레이리스트"));
                 hotlistGrid.appendChild(card);
             });
         } catch (error) {
             console.error("트렌딩 믹스 로딩 실패:", error);
-            const errorText = getTranslatedText('trending_mix_failed');
-            hotlistGrid.innerHTML = `<p style="color:#ff6b6b;">${errorText}</p>`;
+            hotlistGrid.innerHTML = `<p style="color:#ff6b6b;">${t('트렌딩 믹스를 불러오는 데 실패했습니다.')}</p>`;
             }
     }
 

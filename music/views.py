@@ -1,7 +1,9 @@
 # music/views.py
 import json
 import logging
+from web.utils import t ,load_translations
 
+from django.utils import translation
 from django.shortcuts import render
 from django.conf import settings
 from django.http import JsonResponse
@@ -18,9 +20,12 @@ logger = logging.getLogger(__name__)
 @login_required
 def music_playlist_view(request):
     """음악 추천 페이지를 렌더링합니다."""
+    lang_code = translation.get_language_from_request(request)
+    js_translations = load_translations(lang_code)
     return render(request, 'music/music_playlist.html', {
         'youtube_api_key': settings.YOUTUBE_API_KEY,
         'active_menu': 'music',
+        'js_translations': json.dumps(js_translations, ensure_ascii=False)
     })
 
 @login_required
@@ -36,7 +41,7 @@ def get_ai_keywords(request):
         mood = data.get('mood')
         genres = data.get('genres', [])
     except json.JSONDecodeError:
-        return JsonResponse({'error': '잘못된 요청입니다.'}, status=400)
+        return JsonResponse({'error': t('잘못된 요청입니다.')}, status=400)
 
     # 캐시 키 생성 (사용자별, 선택 옵션별로 고유하게)
     cache_key = f"music:keywords:{request.user.id}:{exercise}:{mood}:{'-'.join(sorted(genres))}"
@@ -62,7 +67,7 @@ def get_ai_keywords(request):
         disliked_titles = ", ".join(f'"{title}"' for title in disliked_videos)
         personalization_prompt_part += f"\n\n### 이 사용자가 싫어했던 음악 스타일 (이런 종류는 제외할 것):\n- {disliked_titles}"
 
-    genre_info = f"선호 장르는 '{genres[0]}'" if genres else "특별히 선호하는 장르는 없음"
+    genre_info = t("선호 장르는 '{genre}'", genre=genres[0]) if genres else t("특별히 선호하는 장르는 없음")
 
     # --- ✨ AI 프롬프트 고도화 ✨ ---
     prompt = f"""
@@ -97,7 +102,7 @@ def get_ai_keywords(request):
 
     except Exception as e:
         logger.error(f"OpenAI API 호출 오류: {e}")
-        return JsonResponse({'error': 'AI 응답 생성에 실패했습니다. 잠시 후 다시 시도해주세요.'}, status=500)
+        return JsonResponse({'error': t('AI 응답 생성에 실패했습니다. 잠시 후 다시 시도해주세요.')}, status=500)
     
     # --- ✨ 업적 달성 확인 로직 (AI 호출 성공 후 실행) ✨ ---
     try:
@@ -144,7 +149,7 @@ def handle_music_preference(request):
         action = data.get('action') # 'save' 또는 'unsave'
 
         if not all([video_id, video_title, action]):
-            return JsonResponse({'error': '필수 데이터가 누락되었습니다.'}, status=400)
+            return JsonResponse({'error': t('필수 데이터가 누락되었습니다.')}, status=400)
 
         if action == 'save':
             # 기존 기록이 있으면 업데이트, 없으면 생성
@@ -154,7 +159,7 @@ def handle_music_preference(request):
                 preference_type='saved', # 'saved' 타입으로 고정
                 defaults={'video_title': video_title}
             )
-            message = f'"{video_title}"이(가) 보관함에 추가되었습니다.'
+            message = t('"{video_title}"이(가) 보관함에 추가되었습니다.', video_title=video_title)
             
             # '내 보관함 지킴이' 업적: 첫 음악 보관 시
             if created:
@@ -169,9 +174,9 @@ def handle_music_preference(request):
             ).delete()
             
             if deleted_count > 0:
-                message = f'"{video_title}"이(가) 보관함에서 삭제되었습니다.'
+                message = t('"{video_title}"이(가) 보관함에서 삭제되었습니다.', video_title=video_title)
             else:
-                message = '삭제할 항목을 찾지 못했습니다.' # 이미 삭제된 경우
+                message = t('삭제할 항목을 찾지 못했습니다.') # 이미 삭제된 경우
 
         else:
             return JsonResponse({'error': '알 수 없는 액션입니다.'}, status=400)
@@ -180,4 +185,4 @@ def handle_music_preference(request):
 
     except Exception as e:
         logger.error(f"음악 선호도 처리 중 오류: {e}")
-        return JsonResponse({'error': '요청 처리 중 오류가 발생했습니다.'}, status=500)
+        return JsonResponse({'error': t('요청 처리 중 오류가 발생했습니다.')}, status=500)

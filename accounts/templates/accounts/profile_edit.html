@@ -187,15 +187,7 @@
             <h1> {% t '프로필 수정' %} </h1>
             <p> {% t '회원님의 정보를 최신 상태로 유지하세요.' %} </p>
         </div>
-
-        {% if messages %}
-        <ul class="django-messages">
-            {% for message in messages %}
-            <li class="{{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
-
+        
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             
