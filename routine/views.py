@@ -20,6 +20,7 @@ from django.utils import timezone
 from achievements.services import check_and_award_achievement
 from django.utils import translation
 
+
 def populate_exercise_details_if_empty(exercise: Exercise):
     """
     Exercise 객체의 설명 및 주의사항 필드가 비어있을 경우,
@@ -142,11 +143,38 @@ def trigger_workout_completion_achievements(request, workout_log):
 # ✨ Django 뷰 함수 섹션 ✨
 # ==============================================================================
 
+# routine/views.py
+
+# routine/views.py
+
 @login_required
 def routine_select_view(request):
     """루틴 생성 메인 페이지 뷰"""
-    return render(request, 'routine/routine_select.html', {'active_menu': 'routine'})
+    
+    # [핵심 수정] 이 부분을 여기에 추가해야 합니다!
+    # 템플릿에서 사용할 운동 부위와 난이도 목록을 생성합니다.
+    body_parts = [
+        {'key': 'legs', 'name': _('하체')},
+        {'key': 'back', 'name': _('등')},
+        {'key': 'chest', 'name': _('가슴')},
+        {'key': 'shoulders', 'name': _('어깨')},
+        {'key': 'arms', 'name': _('팔')},
+        {'key': 'abs', 'name': _('복근')},
+    ]
+    levels = [
+        {'key': 'beginner', 'name': _('초급')},
+        {'key': 'intermediate', 'name': _('중급')},
+        {'key': 'advanced', 'name': _('고급')},
+    ]
 
+    # 생성한 목록을 context에 담아 템플릿으로 전달합니다.
+    context = {
+        'active_menu': 'routine',
+        'body_parts': body_parts,
+        'levels': levels,
+    }
+    
+    return render(request, 'routine/routine_select.html', context)
 
 def parse_number(value):
     """문자열에서 숫자를 추출하는 유틸리티 함수"""
@@ -155,117 +183,120 @@ def parse_number(value):
     return int(match[0]) if len(match) == 1 else (int(match[0]) + int(match[1])) // 2
 
 
+# routine/views.py
+
+# routine/views.py
+
 @login_required
 def gpt_plan_view(request):
-    level_from_request = request.GET.get('level', '초급')
-    part_from_request = request.GET.get('part', '하체')
+    # [1단계] 언어에 독립적인 고정 key 값을 받음
+    part_key = request.GET.get('part', 'legs')
+    level_key = request.GET.get('level', 'beginner')
 
-    # [핵심 수정] 스페인어 번역이 정확히 일치하는지 확인하고 추가
-    PART_TRANSLATION_MAP = {
-        # 한국어 (기본)
-        '하체': '하체', '등': '등', '가슴': '가슴', '어깨': '어깨', '팔': '팔', '복근': '복근',
-        # 영어
-        'Legs': '하체', 'Back': '등', 'Chest': '가슴', 'Shoulders': '어깨', 'Arms': '팔', 'Abs': '복근',
-        # 스페인어 (실제 .po 파일의 번역과 일치시켜야 함)
-        'Piernas': '하체', 
-        'Espalda': '등', 
-        'Pecho': '가슴', 
-        'Hombros': '어깨', 
-        'Brazos': '팔', 
-        'Abdominales': '복근',
+    # [2단계] 고정 key를 DB가 이해하는 한국어 값으로 변환하는 간단한 맵
+    PART_KEY_TO_DB = {
+        'legs': '하체', 'back': '등', 'chest': '가슴',
+        'shoulders': '어깨', 'arms': '팔', 'abs': '복근'
     }
-    LEVEL_TRANSLATION_MAP = {
-        # 한국어 (기본)
-        '초급': '초급', '중급': '중급', '고급': '고급',
-        # 영어
-        'Beginner': '초급', 'Intermediate': '중급', 'Advanced': '고급',
-        # 스페인어 (실제 .po 파일의 번역과 일치시켜야 함)
-        'Principiante': '초급', 
-        'Intermedio': '중급', 
-        'Avanzado': '고급',
+    LEVEL_KEY_TO_DB = {
+        'beginner': '초급', 'intermediate': '중급', 'advanced': '고급'
     }
     
-    db_part = PART_TRANSLATION_MAP.get(part_from_request, part_from_request)
-    db_level = LEVEL_TRANSLATION_MAP.get(level_from_request, level_from_request)
-
+    db_part = PART_KEY_TO_DB.get(part_key, '하체')
+    db_level = LEVEL_KEY_TO_DB.get(level_key, '초급')
+    
+    # [3단계] DB에서 운동 목록 조회
     available_exercises = list(Exercise.objects.filter(muscle_group=db_part))
-    
+
+    # DB에 운동이 아예 없는 경우에 대한 유일한 실패 처리
     if not available_exercises:
+        # 화면에 표시될 번역된 부위 이름 찾기 (첫 번째 운동 객체에서 가져옴)
+        display_part_name = PART_KEY_TO_DB.get(part_key, _('알 수 없는 부위')) # Fallback
+        for part_info in request.routine_select_view_context['body_parts']:
+            if part_info['key'] == part_key:
+                display_part_name = part_info['name']
+                break
+        
         context = {
             'routine_title': _("루틴 생성 불가"), 'routine': [],
-            'error': _("'%(part)s' 부위에 해당하는 운동이 데이터베이스에 등록되어 있지 않습니다. 관리자에게 문의하세요.") % {'part': part_from_request},
+            'error': _("죄송합니다. 현재 '%(part)s' 부위에 추천할 수 있는 운동이 준비되지 않았습니다.") % {'part': display_part_name},
             'active_menu': 'routine'
         }
         return render(request, 'routine/routine_plan_with_details.html', context)
 
-    exercise_names_str = ", ".join([ex.name for ex in available_exercises])
-    client = OpenAI(api_key=settings.OPENAI_API_KEY)
-
-    prompt = f"""
-    # 역할: 당신은 사용 가능한 운동 목록을 기반으로 최적의 운동 루틴을 생성하는 전문 트레이너 'Jay'입니다.
-    # 지침:
-    1. **반드시 "사용 가능한 운동 목록"에 있는 운동 이름만 사용하세요.** 목록에 없는 운동은 절대로 추천하지 마세요.
-    2. '{db_part}' 부위를 '{db_level}' 수준에 맞게 단련할 **4개에서 6개의 운동**을 선택하세요.
-    3. 결과는 반드시 아래 <출력형식>의 예시와 같이, 각 운동을 `<운동>` 태그로 감싸고, 전체를 `<운동목록>` 태그로 감싸서 응답해야 합니다.
-    4. **무게(kg) 항목에는 반드시 숫자만 기입하세요. (예: "20", "40")**
-    # 사용 가능한 운동 목록: {exercise_names_str}
-    # <출력형식>: <운동목록><운동>"운동이름1::세트::반복횟수::무게(kg)::설명::주의사항"</운동>...</운동목록>
-    """
-    
-    MAX_ATTEMPTS = 3
+    # [4단계] GPT 루틴 생성 시도
     final_valid_exercises = []
-    for attempt in range(MAX_ATTEMPTS):
-        try:
-            response = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}])
-            content = response.choices[0].message.content
-            lines_from_gpt = re.findall(r'<운동>"([^"]+)"</운동>', content)
-            validated_this_attempt = []
-            found_exercise_pks = set()
-            for line in lines_from_gpt:
-                if line.count('::') != 5: continue
-                parts = [p.strip() for p in line.split('::')]
-                name, sets, reps, weight, desc, prec = parts
-                exercise_match = next((ex for ex in available_exercises if ex.name in name), None)
-                if exercise_match and exercise_match.pk not in found_exercise_pks:
-                    weight_val = parse_number(weight) or (10 if db_level == '초급' else (25 if db_level == '중급' else 40))
-                    validated_this_attempt.append({'exercise': exercise_match, 'sets': parse_number(sets), 'reps': parse_number(reps), 'weight': weight_val, 'description': desc, 'precautions': prec})
-                    found_exercise_pks.add(exercise_match.pk)
-            if len(validated_this_attempt) >= 4:
-                final_valid_exercises = validated_this_attempt
-                break
-        except Exception as e:
-            print(f"🚨 AI API 호출 오류 (시도 {attempt + 1}): {e}")
+    try:
+        exercise_names_str = ", ".join([f'"{ex.name}"' for ex in available_exercises])
+        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        prompt = f"""
+        당신은 전문가 트레이너입니다. 다음 "사용 가능 운동" 목록에서 '{db_part}' 부위를 위한 '{db_level}' 수준의 운동 4-6개를 선택하여 루틴을 만드세요.
+        반드시 아래 XML 형식으로만 응답하고, 다른 말은 절대 추가하지 마세요.
+        
+        # 사용 가능 운동:
+        {exercise_names_str}
 
-    if 0 < len(final_valid_exercises) < 4:
-        existing_pks = {ex['exercise'].pk for ex in final_valid_exercises}
-        needed = 4 - len(final_valid_exercises)
-        pool = [ex for ex in available_exercises if ex.pk not in existing_pks]
-        random.shuffle(pool)
-        for i in range(min(needed, len(pool))):
-            new_ex = pool[i]
-            default_weight = 10 if db_level == '초급' else (25 if db_level == '중급' else 40)
-            final_valid_exercises.append({'exercise': new_ex, 'sets': 3, 'reps': 12, 'weight': default_weight, 'description': new_ex.description or "", 'precautions': new_ex.precautions or ""})
+        # 출력 형식:
+        <Routines>
+          <Exercise name="운동이름1" sets="3" reps="12" weight="20" description="간단한 설명" precautions="간단한 주의사항"/>
+          <Exercise name="운동이름2" sets="4" reps="10" weight="50" description="간단한 설명" precautions="간단한 주의사항"/>
+        </Routines>
+        """
+        response = client.chat.completions.create(model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}])
+        content = response.choices[0].message.content
+        matches = re.findall(r'<Exercise\s+name="([^"]+)"\s+sets="([^"]+)"\s+reps="([^"]+)"\s+weight="([^"]+)"\s+description="([^"]+)"\s+precautions="([^"]+)"\s*/>', content)
+        
+        found_pks = set()
+        for match in matches:
+            name, sets, reps, weight, desc, prec = match
+            exercise_match = next((ex for ex in available_exercises if ex.name == name), None)
+            if exercise_match and exercise_match.pk not in found_pks:
+                final_valid_exercises.append({'exercise': exercise_match, 'sets': parse_number(sets), 'reps': parse_number(reps), 'weight': parse_number(weight), 'description': desc, 'precautions': prec})
+                found_pks.add(exercise_match.pk)
+    except Exception as e:
+        print(f"🚨 GPT API 오류 발생. DB 기반으로 루틴을 생성합니다: {e}")
+        final_valid_exercises = []
 
-    if not final_valid_exercises:
-        context = {'routine_title': _("AI 루틴 생성 실패"), 'routine': [], 'error': _("AI가 루틴을 생성하지 못했습니다. 잠시 후 다시 시도해주세요."), 'active_menu': 'routine'}
-        return render(request, 'routine/routine_plan_with_details.html', context)
+    # [5단계] "무조건 생성"을 위한 최종 안전장치
+    if len(final_valid_exercises) < 4:
+        print(f"⚠️ GPT 결과가 부족하거나 실패하여 DB 기반으로 루틴을 강제 생성합니다.")
+        final_valid_exercises = [] # 혹시 모를 부분 성공을 대비해 리스트 초기화
+        random.shuffle(available_exercises)
+        
+        num_exercises_to_create = random.randint(4, min(6, len(available_exercises)))
+        
+        for ex in available_exercises[:num_exercises_to_create]:
+            default_sets, default_reps, default_weight = (3, 12, 10) # 기본값
+            if db_level == '중급': default_weight = 25
+            elif db_level == '고급': default_weight = 40
+            
+            final_valid_exercises.append({
+                'exercise': ex, 'sets': default_sets, 'reps': default_reps, 'weight': default_weight,
+                'description': ex.localized_description or "", 'precautions': ex.localized_precautions or ""
+            })
 
+    # [6단계] 루틴 저장 및 리디렉션
     try:
         with transaction.atomic():
-            routine_name = _("AI 추천: %(part)s (%(level)s)") % {'part': part_from_request, 'level': level_from_request}
+            # 화면 표시용 번역된 이름 가져오기
+            display_part_name = _(db_part)
+            display_level_name = _(db_level)
+            
+            routine_name = _("AI 추천: %(part)s (%(level)s)") % {'part': display_part_name, 'level': display_level_name}
             new_routine = Routine.objects.create(user=request.user, name=routine_name)
+            
             new_routine_exercises = []
             for item in final_valid_exercises:
                 re_obj = RoutineExercise.objects.create(routine=new_routine, exercise=item['exercise'], sets=item['sets'], reps=item['reps'], weight=item['weight'], description=item['description'], precautions=item['precautions'])
                 new_routine_exercises.append(re_obj)
-            if new_routine and new_routine_exercises:
-                trigger_routine_creation_achievements(request, new_routine, new_routine_exercises)
-                check_and_award_achievement(request, request.user, 'ai_trainer')
+            
+            trigger_routine_creation_achievements(request, new_routine, new_routine_exercises)
+            check_and_award_achievement(request, request.user, 'ai_trainer')
 
         messages.success(request, _("'%s' 루틴이 성공적으로 생성되었습니다!") % new_routine.name)
         return redirect('routine:routine_plan_detail', routine_id=new_routine.id)
     except Exception as e:
-        context = {'routine_title': _("루틴 저장 실패"), 'routine': [], 'error': _("루틴 저장 중 오류 발생: %(error)s") % {'error': e}, 'active_menu': 'routine'}
+        context = {'routine_title': _("루틴 저장 실패"), 'routine': [], 'error': _("루틴 저장 중 오류가 발생했습니다: %(error)s") % {'error': str(e)}, 'active_menu': 'routine'}
         return render(request, 'routine/routine_plan_with_details.html', context)
 
 
@@ -307,18 +338,20 @@ def my_routines_view(request):
     return render(request, 'routine/my_routines.html', {'routines': user_routines, 'active_menu': 'routine_list'})
 
 
+# routine/views.py 의 routine_plan_detail_view 함수
+
 @login_required
 def routine_plan_detail_view(request, routine_id):
-    """루틴 상세 보기 페이지 뷰"""
     routine = get_object_or_404(Routine, id=routine_id, user=request.user)
     routine_exercises = routine.routineexercise_set.select_related('exercise').order_by('id')
     all_muscle_groups = sorted(list(set(ex.localized_muscle_group for ex in Exercise.objects.all() if ex.localized_muscle_group)))
 
     routine_details = []
+    # [추가] JavaScript에서 사용할 운동 정보 리스트
+    exercises_for_js = []
+
     for re in routine_exercises:
         exercise = re.exercise
-        
-        # ✨ [핵심 수정] 운동 정보를 사용하기 전에, 정보가 비어있으면 채워넣는 함수를 호출합니다.
         populate_exercise_details_if_empty(exercise)
         
         detail = {
@@ -327,20 +360,32 @@ def routine_plan_detail_view(request, routine_id):
             'muscle_group': exercise.localized_muscle_group,
             'gif_url': exercise.get_final_gif_url,
             'exercise_type': exercise.exercise_type,
-            'description': exercise.localized_description, # 이제 이 값은 None이 아님
-            'precautions': exercise.localized_precautions, # 이제 이 값은 None이 아님
+            'description': exercise.localized_description,
+            'precautions': exercise.localized_precautions,
         }
         if exercise.exercise_type == 'cardio':
             detail.update({'duration_minutes': re.duration_minutes})
         else:
             detail.update({'sets': re.sets, 'reps': re.reps, 'weight': re.weight})
+        
         routine_details.append(detail)
+        
+        # [추가] exercises_for_js 리스트에 필요한 정보만 담기
+        exercises_for_js.append({
+            'id': exercise.id,
+            'name': exercise.localized_name,
+            'muscle_group': exercise.localized_muscle_group,
+            'gif_url': exercise.get_final_gif_url,
+            'exercise_type': exercise.exercise_type,
+        })
     
     context = {
         'routine_obj': routine,
         'routine_title': routine.name,
         'routine': routine_details,
         'all_muscle_groups': all_muscle_groups,
+        # [추가] JSON으로 변환하여 템플릿에 전달
+        'exercises_for_js': json.dumps(exercises_for_js),
         'active_menu': 'routine_list'
     }
     return render(request, 'routine/routine_plan_with_details.html', context)

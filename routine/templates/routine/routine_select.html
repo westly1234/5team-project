@@ -45,6 +45,7 @@
             <div>
                 <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-white"><i class="bi bi-robot text-blue-400"></i> {% t 'AI 추천 루틴' %} </h3>
                 <div class="grid sm:grid-cols-2 gap-4">
+                    <!-- routine_select.html 의 AI 추천 루틴 <select> 부분 -->
                     <div>
                         <label for="part" class="block text-sm font-medium text-gray-400 mb-1"> {% t '운동 부위' %} </label>
                         <select id="part" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-blue-500 focus:border-blue-500">
@@ -155,8 +156,12 @@
         filterExercises(document.getElementById('search-exercise-input').value);
     }
     
+    // routine_select.html 의 script 태그 내부
     function goToGptPlan() {
-        window.location.href = `${gptPlanUrl}?part=${encodeURIComponent(document.getElementById("part").value)}&level=${encodeURIComponent(document.getElementById("level").value)}`;
+        const partKey = document.getElementById("part").value;
+        const levelKey = document.getElementById("level").value;
+        // 이제 URL에 part=legs&level=beginner 와 같이 고정된 키가 전달됨
+        window.location.href = `${gptPlanUrl}?part=${partKey}&level=${levelKey}`;
     }
 
     function addToCart(id, name, muscle_group, gif_url, exercise_type) {

@@ -32,12 +32,11 @@
     #panel-analysis-content ul { list-style-type: disc; padding-left: 1.25rem; color: #d1d5db; margin-bottom: 1rem; }
     #panel-analysis-content li { margin-bottom: 0.5rem; }
     #panel-analysis-content strong { color: #f9fafb; }
-</style>  
-    <!-- 2. 콘텐츠를 감싸는 새로운 중앙 정렬 div: 너비, 중앙정렬, 패딩 담당 -->
+</style>
+    <!-- 2. 콘텐츠를 감싸는 중앙 정렬 div -->
     <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
 
         <!-- 페이지 헤더 -->
-        <!-- 이제 이 header는 부모 div에 의해 중앙 정렬되므로 max-w, mx-auto 불필요 -->
         <header class="text-left mb-12">
             <a href="{% url 'routine:my_routines' %}" class="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition mb-4">
                 <i class="bi bi-arrow-left"></i> {% t "내 루틴 목록으로 돌아가기" %}
@@ -58,7 +57,6 @@
         </header>
 
         {% if messages %}
-        <!-- messages div도 max-w, mx-auto 불필요 -->
         <div class="mb-6 space-y-3">
             {% for message in messages %}
             <div class="{% if message.tags == 'error' %}bg-red-500/20 border-red-500 text-red-300{% else %}bg-emerald-500/20 border-emerald-500 text-emerald-300{% endif %} px-4 py-3 rounded-lg relative" role="alert">
@@ -70,10 +68,9 @@
         {% endif %}
 
         <!-- 메인 콘텐츠 그리드 (2단 레이아웃) -->
-        <!-- 그리드 div도 max-w, mx-auto 불필요 -->
         <div class="grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
             
-            <!-- 좌측: 루틴 목록 (lg 화면에서 2/3 차지) -->
+            <!-- 좌측: 루틴 목록 -->
             <div class="lg:col-span-2">
                 <div id="routine-list-container" class="space-y-6">
                     {% for item in routine %}
@@ -110,7 +107,7 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <button type="button" onclick="showExerciseDetails('{{ item.name|escapejs }}', '{{ item.gif_url }}')" class="bg-gray-700/50 text-cyan-300 hover:bg-gray-700 hover:text-cyan-200 transition-colors px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 sm:ml-auto view-mode-item-inline-flex"><i class="bi bi-camera-video"></i> {% t "운동 자세 보기" %}</button>
+                        <button type="button" onclick="showExerciseDetails(event, '{{ item.name|escapejs }}')" class="bg-gray-700/50 text-cyan-300 hover:bg-gray-700 hover:text-cyan-200 transition-colors px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 sm:ml-auto view-mode-item-inline-flex"><i class="bi bi-camera-video"></i> {% t "운동 자세 보기" %}</button>
                         <button type="button" onclick="this.closest('.routine-exercise-card').remove(); renumberCards();" class="edit-mode-item absolute top-4 right-4 text-red-500 hover:text-red-400 transition-colors" title="{% t '이 운동 삭제' %}"><i class="bi bi-x-circle-fill text-2xl"></i></button>
                     </div>
                     {% empty %}
@@ -176,19 +173,36 @@
             
         </div> <!-- End of main grid -->
 
-    </div> <!-- 3. 새로 추가된 중앙 정렬 div 닫기 -->
+    </div> <!-- End of content wrapper -->
     
-</div> <!-- 4. 최상위 배경 div 닫기 -->
+</div> <!-- End of page wrapper -->
 
-
-<!-- 모달 및 스크립트 부분은 변경 없음 -->
+<!-- 모달 HTML -->
 <div id="exercise-modal-backdrop" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm hidden z-40"></div>
 <div id="exercise-modal" class="fixed inset-0 flex items-center justify-center p-4 hidden z-50">
     <div class="bg-gray-800 border border-gray-700 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col animate-pop-in">
-        <div class="flex items-center justify-between p-4 border-b border-gray-700"><h3 id="modal-title" class="text-xl font-bold text-white"></h3><button id="modal-close-button" class="text-gray-400 hover:text-white text-2xl">×</button></div>
-        <div class="p-6 flex-grow overflow-y-auto custom-scrollbar"><div id="modal-body-content" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div></div>
+        <div class="flex items-center justify-between p-4 border-b border-gray-700">
+            <!-- [수정] 모달 타이틀에 h3 대신 다른 요소 사용 또는 기본 스타일 제거 -->
+            <div id="modal-title" class="text-xl font-bold text-white"></div>
+            <button id="modal-close-button" class="text-gray-400 hover:text-white text-2xl">×</button>
+        </div>
+        <div class="p-6 flex-grow overflow-y-auto custom-scrollbar">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <!-- [수정] 헤딩 레벨 조정 -->
+                    <h4 class="text-lg font-semibold text-emerald-400 mb-2">{% t '운동 자세 (GIF)' %}</h4>
+                    <img id="modal-gif" src="" alt="운동 GIF" class="w-full rounded-lg border border-gray-600">
+                </div>
+                <div>
+                    <!-- [수정] 헤딩 레벨 조정 -->
+                    <h4 class="text-lg font-semibold text-blue-400 mb-2">{% t '참고 영상 (YouTube)' %}</h4>
+                    <div id="modal-youtube-container" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
 
 <script id="js-i18n-data" type="application/json">
 {
@@ -210,18 +224,75 @@
     // ✅ 전역 변수 선언
     const i18n = JSON.parse(document.getElementById('js-i18n-data').textContent);
     const youtubeSearchApiUrl = "{% url 'routine:api_youtube_search' %}";
-    const exerciseApiUrl = "{% url 'routine:api_exercises' %}";
+    // [제거] exerciseApiUrl는 이 페이지에서 사용되지 않음
+    // const exerciseApiUrl = "{% url 'routine:api_exercises' %}";
     const csrfToken = '{{ csrf_token }}';
 
-    // ✅ 모달 관련 함수
-    function showExerciseDetails(exerciseName, gifUrl) {
-        // ... (이 함수는 정상 작동하므로 기존 코드 유지) ...
-    }
-    function hideExerciseDetails() {
-        // ... (이 함수는 정상 작동하므로 기존 코드 유지) ...
+    // [핵심 추가 1/3] 뷰에서 전달한 운동 데이터를 JS 변수로 초기화
+    let allFetchedExercises = JSON.parse('{{ exercises_for_js|safe }}');
+
+    // [핵심 추가 2/3] 모달 관련 DOM 요소 선언
+    const modal = document.getElementById('exercise-modal');
+    const modalBackdrop = document.getElementById('exercise-modal-backdrop');
+    const modalCloseButton = document.getElementById('modal-close-button');
+    const modalTitle = document.getElementById('modal-title');
+    const modalGif = document.getElementById('modal-gif');
+    const modalYoutubeContainer = document.getElementById('modal-youtube-container');
+    
+    // ✅ 모달 관련 함수 (routine_select.html에서 가져옴)
+    async function showExerciseDetails(event, exerciseName) {
+        if (event) event.stopPropagation();
+        
+        const exercise = allFetchedExercises.find(ex => ex.name === exerciseName);
+        if (!exercise) {
+            console.error(`Exercise not found: ${exerciseName}`);
+            return;
+        }
+
+        modalTitle.textContent = exercise.name;
+        modalGif.src = exercise.gif_url;
+        modalGif.alt = `${exercise.name} GIF`;
+        
+        modal.classList.remove('hidden');
+        modalBackdrop.classList.remove('hidden');
+        modalYoutubeContainer.innerHTML = `<div class="text-gray-400 text-center animate-pulse">${i18n.youtube_searching}</div>`;
+
+        try {
+            const searchQuery = encodeURIComponent(`${exercise.name} 운동`);
+            const response = await fetch(`${youtubeSearchApiUrl}?q=${searchQuery}`);
+            if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+            const data = await response.json();
+            modalYoutubeContainer.innerHTML = '';
+            if (data.videos && data.videos.length > 0) {
+                data.videos.forEach(video => {
+                    const videoLink = document.createElement('a');
+                    videoLink.href = `https://www.youtube.com/watch?v=${video.video_id}`;
+                    videoLink.target = '_blank';
+                    videoLink.rel = 'noopener noreferrer';
+                    videoLink.className = 'block bg-gray-900/50 p-3 rounded-lg hover:bg-gray-700 transition-colors text-decoration-none';
+                    videoLink.innerHTML = `
+                        <div class="flex gap-4 items-start">
+                            <img src="${video.thumbnail_url}" alt="${video.title}" class="w-24 h-16 object-cover rounded flex-shrink-0">
+                            <p class="text-sm text-gray-300">${video.title}</p>
+                        </div>`;
+                    modalYoutubeContainer.appendChild(videoLink);
+                });
+            } else {
+                modalYoutubeContainer.innerHTML = `<div class="text-gray-500 text-center">${i18n.youtube_not_found}</div>`;
+            }
+        } catch (error) {
+            console.error("YouTube search failed:", error);
+            modalYoutubeContainer.innerHTML = `<div class="text-red-400 text-center">${i18n.youtube_error}</div>`;
+        }
     }
 
-    // ✅ 수정 모드 토글 및 카드 번호 재정렬 함수
+    function hideExerciseDetails() {
+        modal.classList.add('hidden');
+        modalBackdrop.classList.add('hidden');
+        modalYoutubeContainer.innerHTML = '';
+    }
+
+    // ✅ 수정 모드 토글 및 카드 번호 재정렬 함수 (기존과 동일)
     function toggleEditMode(isEdit) {
         if (isEdit) {
             document.body.classList.add('edit-mode');
@@ -243,7 +314,7 @@
         }
     }
 
-    // ✅ 루틴 저장 함수
+    // ✅ 루틴 저장 함수 (기존과 동일)
     function saveRoutine() {
         const exerciseCards = document.querySelectorAll('#routine-list-container .routine-exercise-card');
         if (exerciseCards.length === 0) {
@@ -273,14 +344,13 @@
         }
     }
 
-    // ✅ AI 분석 함수
+    // ✅ AI 분석 함수 (기존과 동일)
     function setupAIAnalysis() {
         const analyzeBtn = document.getElementById('analyze-routine-btn');
         const actionPanel = document.getElementById('action-panel');
         const analysisContent = document.getElementById('panel-analysis-content');
         const backBtn = document.getElementById('back-to-buttons-btn');
 
-        // 요소가 없으면 함수 종료 (오류 방지)
         if (!analyzeBtn || !actionPanel || !analysisContent || !backBtn) return;
         
         analyzeBtn.addEventListener('click', async () => {
@@ -289,16 +359,11 @@
 
             const exerciseCards = document.querySelectorAll('#routine-list-container .routine-exercise-card');
             
-            // ✅ [핵심 수정] AI에게 보낼 데이터를 '보기 모드(view-mode)' 기준으로 정확하게 수집
             const exercisesData = Array.from(exerciseCards).map(card => {
                 const type = card.querySelector('.exercise-type').value;
-                
-                // h2 태그에서 운동 이름을 가져옴
                 const nameElement = card.querySelector('h2');
                 const name = nameElement ? nameElement.textContent.trim() : 'Unknown Exercise';
-
                 const exercise = { name: name };
-
                 if (type === 'cardio') {
                     const durationEl = card.querySelector('.view-mode-item .font-bold.text-cyan-400');
                     exercise.duration_minutes = durationEl ? durationEl.textContent.trim() : '0';
@@ -311,163 +376,88 @@
                 return exercise;
             });
 
-            // 전송할 데이터 확인용 로그
-            console.log("Sending data to AI for analysis:", exercisesData);
-
             try {
                 const response = await fetch("{% if routine_obj %}{% url 'routine:api_analyze_routine' routine_obj.id %}{% endif %}", {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken // 전역 변수 csrfToken 사용
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
                     body: JSON.stringify(exercisesData)
                 });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `Server error (${response.status})`);
-                }
-                
+                if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || `Server error (${response.status})`); }
                 const data = await response.json();
-                analysisContent.innerHTML = marked.parse(data.analysis || ''); // marked.parse에 null이 들어가지 않도록 처리
-            
+                analysisContent.innerHTML = marked.parse(data.analysis || '');
             } catch (error) {
                 console.error('AI Analysis Error:', error);
                 analysisContent.innerHTML = `<div class="text-center text-red-400 p-8">${i18n.ai_analysis_error} ${error.message}</div>`;
             }
         });
 
-        backBtn.addEventListener('click', () => {
-            actionPanel.classList.remove('analysis-active');
-        });
+        backBtn.addEventListener('click', () => { actionPanel.classList.remove('analysis-active'); });
     }
 
     // ✅ 페이지 로드 완료 후 스크립트 실행
     document.addEventListener('DOMContentLoaded', function() {
+        // [핵심 추가 3/3] 모달 닫기 이벤트 리스너 등록
+        modalBackdrop.addEventListener('click', hideExerciseDetails);
+        modalCloseButton.addEventListener('click', hideExerciseDetails);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape" && !modal.classList.contains('hidden')) {
+                hideExerciseDetails();
+            }
+        });
+
+        // 수정 모드 관련 로직 (기존과 동일)
         (function setupAddExerciseSection() {
             const muscleGroupSelect = document.getElementById('muscle-group-select');
             const exerciseSelect = document.getElementById('exercise-select');
             const addBtn = document.getElementById('add-exercise-btn');
-
-            // 수정 모드 관련 요소가 없으면 함수 종료 (오류 방지)
-            if (!muscleGroupSelect || !exerciseSelect || !addBtn) {
-                console.log("Add exercise section not found. Skipping setup.");
-                return;
-            }
+            if (!muscleGroupSelect || !exerciseSelect || !addBtn) return;
             
-            let exerciseCache = {}; // API 호출 결과 캐싱
+            let exerciseCache = {};
 
-            // 1. 운동 부위 선택 시 이벤트 처리
             muscleGroupSelect.addEventListener('change', async function() {
-                const selectedGroupName = this.value; // '하체', 'Back', 'Piernas' 등 번역된 텍스트
-                
-                // API는 고정된 영문 키를 기대하므로, 번역된 텍스트를 키로 변환
-                const groupKeyMap = {
-                    "{% t '하체' %}": "legs", "{% t '등' %}": "back", "{% t '가슴' %}": "chest",
-                    "{% t '어깨' %}": "shoulders", "{% t '팔' %}": "arms", "{% t '복근' %}": "abs",
-                    "{% t '유산소' %}": "cardio"
-                };
+                const selectedGroupName = this.value;
+                const groupKeyMap = { "{% t '하체' %}": "legs", "{% t '등' %}": "back", "{% t '가슴' %}": "chest", "{% t '어깨' %}": "shoulders", "{% t '팔' %}": "arms", "{% t '복근' %}": "abs", "{% t '유산소' %}": "cardio" };
                 const groupKey = groupKeyMap[selectedGroupName] || selectedGroupName.toLowerCase();
 
-                // UI 초기화
                 exerciseSelect.innerHTML = `<option value="">${i18n.loading_placeholder || '불러오는 중...'}</option>`;
-                exerciseSelect.disabled = true;
-                addBtn.disabled = true;
-
-                if (!groupKey) {
-                    exerciseSelect.innerHTML = `<option value="">${i18n.select_exercise_placeholder || '운동을 선택하세요'}</option>`;
-                    return;
-                }
+                exerciseSelect.disabled = true; addBtn.disabled = true;
+                if (!groupKey) { exerciseSelect.innerHTML = `<option value="">${i18n.select_exercise_placeholder || '운동을 선택하세요'}</option>`; return; }
                 
-                // 캐시 확인 또는 API 호출
-                if (exerciseCache[groupKey]) {
-                    populateExerciseSelect(exerciseCache[groupKey]);
-                } else { 
-                    try { 
-                        const response = await fetch(`${exerciseApiUrl}?muscle_group=${groupKey}`); 
-                        const data = await response.json();
-                        if (data.error) throw new Error(data.error);
-                        exerciseCache[groupKey] = data.exercises; 
-                        populateExerciseSelect(data.exercises); 
-                    } catch(e) { 
-                        console.error('Error fetching exercises:', e); 
-                        exerciseSelect.innerHTML = `<option value="">${i18n.error_placeholder || '오류 발생'}</option>`; 
-                    } 
-                }
+                if (exerciseCache[groupKey]) { populateExerciseSelect(exerciseCache[groupKey]); } 
+                else { try { const response = await fetch(`{% url 'routine:api_exercises' %}?muscle_group=${groupKey}`); const data = await response.json(); if (data.error) throw new Error(data.error); exerciseCache[groupKey] = data.exercises; populateExerciseSelect(data.exercises); } catch(e) { console.error('Error fetching exercises:', e); exerciseSelect.innerHTML = `<option value="">${i18n.error_placeholder || '오류 발생'}</option>`; } }
             });
 
-            // 2. 운동 목록 Select Box 채우기
             function populateExerciseSelect(exercises) {
                 exerciseSelect.innerHTML = `<option value="">${i18n.select_exercise_placeholder || '운동을 선택하세요'}</option>`;
                 if (exercises && Array.isArray(exercises)) {
-                    exercises.forEach(ex => { 
-                        const option = document.createElement('option');
-                        option.value = JSON.stringify(ex); // value에 객체 정보 전체를 저장
-                        option.textContent = ex.name;
-                        exerciseSelect.appendChild(option); 
-                    });
+                    exercises.forEach(ex => { const option = document.createElement('option'); option.value = JSON.stringify(ex); option.textContent = ex.name; exerciseSelect.appendChild(option); });
                 }
                 exerciseSelect.disabled = false;
             }
 
-            // 3. 운동 선택 시 '추가' 버튼 활성화
-            exerciseSelect.addEventListener('change', () => {
-                addBtn.disabled = !exerciseSelect.value;
-            });
+            exerciseSelect.addEventListener('change', () => { addBtn.disabled = !exerciseSelect.value; });
             
-            // 4. '추가' 버튼 클릭 시 이벤트 처리
             addBtn.addEventListener('click', function() {
                 if (!exerciseSelect.value) return;
-
                 const exerciseData = JSON.parse(exerciseSelect.value);
                 const container = document.getElementById('routine-list-container');
-                
-                // 새로 추가할 카드 div 생성
                 const newCard = document.createElement('div');
                 newCard.className = "routine-exercise-card slide-in-fwd relative bg-gray-800/60 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg flex flex-col sm:flex-row items-center gap-6 p-6 transition-all duration-300 border-l-4 border-violet-500";
-                
                 const isCardio = exerciseData.exercise_type === 'cardio';
-                const inputsHtml = isCardio ? 
-                    `<div class="flex items-center justify-center sm:justify-start gap-2"><input type="number" class="exercise-duration bg-gray-900 text-white rounded p-2 w-24 text-center" value="30"> <span class="text-gray-400">{% t "분" %}</span></div>` : 
-                    `<div class="flex items-center justify-center sm:justify-start gap-4">
-                        <input type="number" class="exercise-sets bg-gray-900 text-white rounded p-2 w-20 text-center" value="3"> <span class="text-gray-400">{% t "sets" %}</span>
-                        <input type="number" class="exercise-reps bg-gray-900 text-white rounded p-2 w-20 text-center" value="12"> <span class="text-gray-400">{% t "reps" %}</span>
-                        <input type="number" class="exercise-weight bg-gray-900 text-white rounded p-2 w-20 text-center" value="10"> <span class="text-gray-400">{% t "kg" %}</span>
-                    </div>`;
-                
-                // 카드의 내부 HTML 구성
-                newCard.innerHTML = `
-                    <input type="hidden" class="exercise-id" value="${exerciseData.id}">
-                    <input type="hidden" class="exercise-type" value="${exerciseData.exercise_type}">
-                    <div class="flex-shrink-0 text-5xl font-black text-gray-700 order-number"></div>
-                    <img src="${exerciseData.gif_url}" alt="${exerciseData.name}" class="w-32 h-32 sm:w-40 sm:h-40 rounded-xl object-cover border-2 border-gray-700 shrink-0">
-                    <div class="flex-grow text-center sm:text-left">
-                        <p class="text-sm font-semibold text-violet-400 mb-1">${exerciseData.muscle_group}</p>
-                        <h2 class="text-xl font-bold text-white mb-4">${exerciseData.name}</h2>
-                        <div>${inputsHtml}</div>
-                    </div>
-                    <button type="button" onclick="this.closest('.routine-exercise-card').remove(); renumberCards();" class="absolute top-4 right-4 text-red-500 hover:text-red-400" title="{% t '이 운동 삭제' %}"><i class="bi bi-x-circle-fill text-2xl"></i></button>`;
-                
-                // '빈 루틴' 플레이스홀더가 있다면 숨기기
+                const inputsHtml = isCardio ? `<div class="flex items-center justify-center sm:justify-start gap-2"><input type="number" class="exercise-duration bg-gray-900 text-white rounded p-2 w-24 text-center" value="30"> <span class="text-gray-400">{% t "분" %}</span></div>` : `<div class="flex items-center justify-center sm:justify-start gap-4"><input type="number" class="exercise-sets bg-gray-900 text-white rounded p-2 w-20 text-center" value="3"> <span class="text-gray-400">{% t "sets" %}</span><input type="number" class="exercise-reps bg-gray-900 text-white rounded p-2 w-20 text-center" value="12"> <span class="text-gray-400">{% t "reps" %}</span><input type="number" class="exercise-weight bg-gray-900 text-white rounded p-2 w-20 text-center" value="10"> <span class="text-gray-400">{% t "kg" %}</span></div>`;
+                newCard.innerHTML = `<input type="hidden" class="exercise-id" value="${exerciseData.id}"><input type="hidden" class="exercise-type" value="${exerciseData.exercise_type}"><div class="flex-shrink-0 text-5xl font-black text-gray-700 order-number"></div><img src="${exerciseData.gif_url}" alt="${exerciseData.name}" class="w-32 h-32 sm:w-40 sm:h-40 rounded-xl object-cover border-2 border-gray-700 shrink-0"><div class="flex-grow text-center sm:text-left"><p class="text-sm font-semibold text-violet-400 mb-1">${exerciseData.muscle_group}</p><h2 class="text-xl font-bold text-white mb-4">${exerciseData.name}</h2><div>${inputsHtml}</div></div><button type="button" onclick="this.closest('.routine-exercise-card').remove(); renumberCards();" class="absolute top-4 right-4 text-red-500 hover:text-red-400" title="{% t '이 운동 삭제' %}"><i class="bi bi-x-circle-fill text-2xl"></i></button>`;
                 const placeholder = document.getElementById('empty-routine-placeholder');
                 if (placeholder) placeholder.style.display = 'none';
-
-                // 생성된 카드를 컨테이너에 추가
                 container.appendChild(newCard);
-                renumberCards(); // 카드 번호 다시 매기기
-                
-                // 선택 초기화
-                exerciseSelect.value = '';
-                addBtn.disabled = true;
+                renumberCards();
+                exerciseSelect.value = ''; addBtn.disabled = true;
             });
-        })(); // 즉시 실행 함수 종료
+        })();
 
-        // 페이지 로드 시 초기 설정
+        // 기타 초기 설정 함수 호출
         setupAIAnalysis();
         renumberCards();
     });
 </script>
-
 
 {% endblock %}

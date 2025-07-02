@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.core.mail import send_mail
 from django.conf import settings
 from .models import Inquiry
@@ -115,16 +116,43 @@ def services_page(request):
             context['active_title'] = None
 
     latest_routine = None
-    if Routine:
-        try:
-            latest_routine = Routine.objects.filter(user=user).prefetch_related('routineexercise_set__exercise').latest('created_at')
-            exercises_in_routine = []
-            for routine_ex in latest_routine.routineexercise_set.all()[:5]:
-                exercise_detail = { 'name': routine_ex.exercise.name, 'sets': routine_ex.sets, 'reps': routine_ex.reps }
-                exercises_in_routine.append(exercise_detail)
-            latest_routine.exercises_list = exercises_in_routine
-        except Routine.DoesNotExist:
-            latest_routine = None
+    try:
+        latest_routine = Routine.objects.filter(user=user).prefetch_related('routineexercise_set__exercise').latest('created_at')
+        
+        # [핵심 수정 1] 루틴 이름 분석 로직 추가
+        routine_name_info = {'type': 'custom', 'name': latest_routine.name} # 기본값
+        
+        # 번역된 문자열을 기준으로 비교하기 위해 _() 함수 사용
+        ai_pattern = _("AI 추천:")
+        custom_pattern_end = _("님의 맞춤 루틴")
+
+        if latest_routine.name.startswith(ai_pattern):
+            routine_name_info['type'] = 'ai'
+            # "AI 추천: " 부분을 제거한 나머지 이름
+            routine_name_info['name'] = latest_routine.name[len(ai_pattern):].strip()
+
+        elif latest_routine.name.endswith(custom_pattern_end):
+            routine_name_info['type'] = 'user_custom'
+            # "님의 맞춤 루틴" 부분을 제거한 사용자 이름 부분
+            routine_name_info['name'] = latest_routine.name[:-len(custom_pattern_end)].strip()
+        
+        context['routine_name_info'] = routine_name_info
+
+        # 운동 목록 생성 로직 (이전과 동일하게 localized_name 사용)
+        exercises_in_routine = []
+        for routine_ex in latest_routine.routineexercise_set.all()[:5]:
+            exercise_detail = {
+                'name': routine_ex.exercise.localized_name,
+                'sets': routine_ex.sets,
+                'reps': routine_ex.reps
+            }
+            exercises_in_routine.append(exercise_detail)
+        context['exercises_list'] = exercises_in_routine
+
+    except Routine.DoesNotExist:
+        context['exercises_list'] = []
+        context['routine_name_info'] = None
+        
     context['latest_routine'] = latest_routine
 
     today_diet_summary = defaultdict(float)

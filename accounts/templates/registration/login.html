@@ -44,6 +44,8 @@
     }
 
     .login-container {
+      /* ▼▼▼ 홈 버튼과 언어 드롭다운의 위치 기준점으로 설정 ▼▼▼ */
+      position: relative; 
       background-color: rgba(16, 16, 16, 0.7);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
@@ -60,10 +62,30 @@
       background-clip: padding-box, border-box;
     }
 
+    /* ▼▼▼ 홈 버튼 스타일 ▼▼▼ */
+    .home-button {
+      position: absolute;
+      /* 로그인 컨테이너의 패딩을 고려하여 위치 조정 */
+      top: 30px; 
+      left: 35px;
+      font-size: 1.3rem; /* 아이콘 크기 조정 */
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+    
+    .home-button:hover {
+      color: var(--accent-teal);
+      transform: scale(1.1);
+    }
+    
     .login-container h1 {
       font-size: 2.5rem;
       font-weight: 700;
       margin-bottom: 10px;
+      /* 버튼이 추가되었으므로 제목이 잘리지 않도록 패딩 추가 */
+      padding-top: 20px; 
       background: linear-gradient(90deg, var(--accent-pink), var(--accent-yellow), var(--accent-teal));
       -webkit-background-clip: text;
       background-clip: text;
@@ -135,174 +157,68 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
 
-    .form-errors {
+    .form-errors, .field-errorlist {
       color: var(--accent-pink);
+      list-style: none;
       font-size: 0.875rem;
+      padding: 0;
+      margin: 0;
+    }
+    .form-errors {
       margin-bottom: 15px;
       padding: 10px 15px;
       background-color: rgba(255, 140, 148, 0.1);
       border: 1px solid rgba(255, 140, 148, 0.2);
       border-radius: 8px;
-      list-style: none;
       text-align: left;
     }
+    .form-errors li { margin-bottom: 5px; }
+    .form-errors li:last-child { margin-bottom: 0; }
+    .field-errorlist { margin: 8px 0 0 0; }
+    
+    .signup-link-container { margin-top: 25px; font-size: 0.9rem; color: var(--text-secondary); }
+    .signup-link-container a { color: var(--accent-pink); text-decoration: none; font-weight: 500; transition: color 0.3s; }
+    .signup-link-container a:hover { text-decoration: underline; color: var(--text-primary); }
 
-    .form-errors li {
-      margin-bottom: 5px;
-    }
-
-    .form-errors li:last-child {
-      margin-bottom: 0;
-    }
-
-    .field-errorlist {
-      list-style: none;
-      padding: 0;
-      margin: 8px 0 0 0;
-      font-size: 0.85rem;
-      color: var(--accent-pink);
-    }
-
-    .signup-link-container {
-      margin-top: 25px;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-    }
-
-    .signup-link-container a {
-      color: var(--accent-pink);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.3s;
-    }
-
-    .signup-link-container a:hover {
-      text-decoration: underline;
-      color: var(--text-primary);
-    }
     .language-dropdown-container {
       position: absolute;
-      top: 25px;       /* 컨테이너 상단에서 25px 아래 */
-      right: 25px;      /* 컨테이너 우측에서 25px 왼쪽 */
+      top: 25px;
+      right: 25px;
       z-index: 10;
     }
-
-    /* nav-item 클래스를 버튼처럼 보이도록 스타일링 */
-    .language-dropdown-container .nav-item {
-      background: rgba(255, 255, 255, 0.05); /* 약간 투명한 배경 */
-      border: 1px solid var(--border-color);
-      color: var(--text-secondary);
-      padding: 8px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px; /* 아이콘과 텍스트 사이 간격 */
-      font-family: inherit; /* body의 폰트 상속 */
-      font-size: 0.9rem;  /* 폰트 크기 조절 */
-      font-weight: 500;
-      transition: all 0.3s ease;
-      white-space: nowrap; /* 언어 이름이 길어져도 줄바꿈 방지 */
-    }
-
-    .language-dropdown-container .nav-item:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: var(--accent-teal);
-      color: var(--text-primary);
-    }
-
-    .language-dropdown-container .nav-item .fa-globe {
-      font-size: 1.1em;
-    }
-
-    .language-dropdown-container .nav-item .fa-chevron-down {
-      transition: transform 0.3s ease;
-    }
-
-    /* 드롭다운이 열렸을 때 화살표 아이콘 회전 */
-    #language-toggle-btn.arrow-rotated .fa-chevron-down {
-        transform: translateY(2px) rotate(180deg);
-    }
-
-    .language-dropdown-menu {
-      display: none;
-      position: absolute;
-      top: 100%; /* 버튼 바로 아래에 위치 */
-      right: 0;
-      margin-top: 8px;
-      background-color: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-      min-width: 100%; /* 버튼 너비에 맞게 최소 너비 설정 */
-      overflow: hidden;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-10px);
-      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
-    }
-
-    .language-dropdown-menu.show {
-      display: block;
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .language-option-form {
-      display: block;
-      margin: 0;
-    }
-
-    .language-option-btn {
-      width: 100%;
-      background: none;
-      border: none;
-      padding: 12px 18px;
-      text-align: left;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: background-color 0.2s, color 0.2s;
-      font-family: inherit;
-      font-weight: 500;
-    }
-
-    .language-option-btn:hover {
-      background-color: var(--bg-input);
-      color: var(--text-primary);
-    }
-
-    .language-option-btn.active {
-      color: var(--accent-teal);
-      font-weight: 700;
-      background-color: rgba(104, 211, 217, 0.1);
-    }
+    .language-dropdown-container .nav-item { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 8px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-family: inherit; font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease; white-space: nowrap; }
+    .language-dropdown-container .nav-item:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent-teal); color: var(--text-primary); }
+    .language-dropdown-container .nav-item .fa-globe { font-size: 1.1em; }
+    .language-dropdown-container .nav-item .fa-chevron-down { transition: transform 0.3s ease; }
+    #language-toggle-btn.arrow-rotated .fa-chevron-down { transform: translateY(2px) rotate(180deg); }
+    .language-dropdown-menu { display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5); min-width: 100%; overflow: hidden; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; }
+    .language-dropdown-menu.show { display: block; opacity: 1; visibility: visible; transform: translateY(0); }
+    .language-option-form { display: block; margin: 0; }
+    .language-option-btn { width: 100%; background: none; border: none; padding: 12px 18px; text-align: left; font-size: 0.9rem; color: var(--text-secondary); cursor: pointer; transition: background-color 0.2s, color 0.2s; font-family: inherit; font-weight: 500; }
+    .language-option-btn:hover { background-color: var(--bg-input); color: var(--text-primary); }
+    .language-option-btn.active { color: var(--accent-teal); font-weight: 700; background-color: rgba(104, 211, 217, 0.1); }
   </style>
 </head>
 <body>
   <div class="login-container">
+    
+    <!-- ▼▼▼ 홈 버튼을 login-container 안으로 이동 ▼▼▼ -->
+    <a href="{% url 'home' %}" class="home-button" title="{% t '홈으로' %}">
+      <i class="fas fa-home"></i>
+    </a>
+    
     <div class="language-dropdown-container">
-        <!-- 1. 현재 선택된 언어를 표시하는 버튼 -->
         <button type="button" id="language-toggle-btn" class="nav-item">
             <i class="fas fa-globe"></i>
             <span class="language-text">
                 {% get_current_language as LANGUAGE_CODE %}
-                {% if LANGUAGE_CODE == 'ko' %}언어
-                {% elif LANGUAGE_CODE == 'en' %}Language
-                {% elif LANGUAGE_CODE == 'es' %}Idioma
-                {% else %}Language
-                {% endif %}
+                {% if LANGUAGE_CODE == 'ko' %}언어{% elif LANGUAGE_CODE == 'en' %}Language{% elif LANGUAGE_CODE == 'es' %}Idioma{% else %}Language{% endif %}
             </span>
             <i class="fas fa-chevron-down" style="font-size: 0.7em;"></i>
         </button>
-        
-        <!-- 2. 애니메이션과 함께 나타날 드롭다운 메뉴 -->
         <div id="language-dropdown-menu" class="language-dropdown-menu">
             {% get_available_languages as LANGUAGES %}
             {% get_current_language as LANGUAGE_CODE %}
-            
-            <!-- ▼▼▼ 이 부분이 핵심입니다! lang_name 변수를 사용합니다. ▼▼▼ -->
             {% for lang_code, lang_name in LANGUAGES %}
                 <form action="{% url 'set_language' %}" method="post" class="language-option-form">
                     {% csrf_token %}
@@ -313,9 +229,9 @@
                     </button>
                 </form>
             {% endfor %}
-            <!-- ▲▲▲ 여기까지가 핵심 ▲▲▲ -->
         </div>
     </div>
+
     <h1>{% t '로그인' %}</h1>
     <p class="subtitle">{% t 'HealthWise에 오신 것을 환영합니다. 로그인 해주세요.' %}</p>
 
@@ -346,7 +262,6 @@
         <input type="hidden" name="next" value="{{ request.GET.next }}">
       {% endif %}
 
-
       <button type="submit" class="login-button">{% t '로그인' %}</button>
 
       <div class="signup-link-container" style="margin-top: 15px;">
@@ -357,22 +272,20 @@
 
     <div class="signup-link-container">
       {% t '계정이 없으신가요?' %} <a href="{% url 'accounts:signup' %}">{% t '회원가입' %}</a>.
-
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // 언어 드롭다운 스크립트
       const toggleBtn = document.getElementById('language-toggle-btn');
       const dropdownMenu = document.getElementById('language-dropdown-menu');
-
       if (toggleBtn && dropdownMenu) {
           toggleBtn.addEventListener('click', (event) => {
               event.stopPropagation(); 
               dropdownMenu.classList.toggle('show');
               toggleBtn.classList.toggle('arrow-rotated');
           });
-
           document.addEventListener('click', (event) => {
               if (!toggleBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
                   dropdownMenu.classList.remove('show');
@@ -380,10 +293,12 @@
               }
           });
       }
+      
+      // 폼 필드 설정 스크립트
       function setupFormField(fieldId, placeholderText) {
         const inputElement = document.getElementById(fieldId);
         if (inputElement) {
-          inputElement.classList.add('form-control');
+          // inputElement.classList.add('form-control'); // 이 클래스는 부트스트랩용이므로 필요 시 활성화
           inputElement.setAttribute('placeholder', placeholderText);
         }
         const errorList = inputElement?.parentElement?.querySelector('ul.errorlist');
@@ -392,8 +307,8 @@
         }
       }
 
-      setupFormField('{{ form.username.id_for_label }}', 'Enter your username');
-      setupFormField('{{ form.password.id_for_label }}', 'Enter your password');
+      setupFormField('{{ form.username.id_for_label }}', '{% t "아이디를 입력하세요" %}');
+      setupFormField('{{ form.password.id_for_label }}', '{% t "비밀번호를 입력하세요" %}');
     });
   </script>
 </body>

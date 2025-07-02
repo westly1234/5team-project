@@ -216,16 +216,25 @@
             <div class="dashboard-card workout-card">
                 <div class="card-header">
                     <i class="bi bi-fire icon" style="color: #FF6B6B;"></i>
-                    <span class="title">{% if latest_routine.name %}
-                                            {{ latest_routine.name }}
-                                        {% else %}
-                                            {% t "오늘의 추천 루틴" %}
-                                        {% endif %}
+                    <span class="title">
+                        {% if routine_name_info %}
+                            {# [핵심 수정 2] 뷰에서 전달받은 정보를 사용하여 간단하게 표시 #}
+                            {% if routine_name_info.type == 'ai' %}
+                                {% t "AI 추천" %}: {{ routine_name_info.name }}
+                            {% elif routine_name_info.type == 'user_custom' %}
+                                {{ routine_name_info.name }}{% t "님의 맞춤 루틴" %}
+                            {% else %}
+                                {{ routine_name_info.name }}
+                            {% endif %}
+                        {% else %}
+                            {% t "오늘의 추천 루틴" %}
+                        {% endif %}
                     </span>
                 </div>
                 <div class="card-content">
+                    <!-- 운동 목록 부분은 변경 없음 -->
                     <ul class="workout-list">
-                        {% for exercise in latest_routine.exercises_list %}
+                        {% for exercise in exercises_list %}
                         <li class="exercise-item">
                             <span class="exercise-name">{{ exercise.name }}</span>
                             <span class="exercise-details">{{ exercise.sets }} sets × {{ exercise.reps }} reps</span>
@@ -241,7 +250,24 @@
                     </ul>
                 </div>
             </div>
-
+            {% block user_messages %}
+                {% if messages %}
+                <div class="toast-container">
+                    {% for message in messages %}
+                    {% if 'achievement_unlocked' in message.tags %}
+                    <div class="toast show" role="alert">
+                        <div class="toast-icon">✨</div>
+                        <div class="toast-body">
+                            <strong>{% t '업적 달성!' %}</strong>
+                            <p>{% t message.message %}</p> 
+                        </div>
+                        <button type="button" class="btn-close-toast" onclick="this.parentElement.remove()">×</button>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endblock user_messages %}
             <!-- 프로필 카드 -->
             <a href="{% url 'accounts:profile_edit' %}" class="dashboard-card profile-card profile-link-card">
                  <div class="card-content">
@@ -252,7 +278,9 @@
                             {# active_title 객체가 존재하고, 그 안의 achievement에 title_reward가 있을 경우 표시 #}
                             <span id="active-title-display" style="color: #4ecdc4; font-weight: 600;">
                                 {% if active_title and active_title.achievement.title_reward %}
-                                    {% t active_title.achievement.title_reward %}
+                                    {% with achievement_codename=active_title.achievement.codename %}
+                                        {% t "achievement."|add:achievement_codename|add:".title_reward" %}
+                                    {% endwith %}
                                 {% else %}
                                     {% t '칭호 없음' %}
                                 {% endif %}
@@ -472,6 +500,6 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 {% block footer %}
-    {{ block.super }}
+    {{ block.super }}s
 {% endblock footer %}
 {% endblock %}

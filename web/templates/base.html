@@ -515,22 +515,8 @@
 </head>
 <body>
     <!-- 모든 페이지에 공통으로 들어가는 요소들 -->
-    {% if messages %}
-    <div class="toast-container">
-        {% for message in messages %}
-        {% if 'achievement_unlocked' in message.tags %}
-        <div class="toast show" role="alert">
-            <div class="toast-icon">✨</div>
-            <div class="toast-body">
-                <strong>{% t '업적 달성!' %}</strong>
-                {{ message }}
-            </div>
-            <button type="button" class="btn-close-toast" onclick="this.parentElement.remove()">×</button>
-        </div>
-        {% endif %}
-        {% endfor %}
-    </div>
-    {% endif %}
+    {% block user_messages %}
+    {% endblock user_messages %}
     <div class="cursor-glow"></div>
     <div class="cursor-dot"></div>
 
