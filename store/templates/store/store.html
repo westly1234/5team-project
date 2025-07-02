@@ -1,5 +1,5 @@
 {% extends 'web/base_simple.html' %}
-{% load static custom_translate i18n %}
+{% load static i18n store_i18n %}
 {% block title %}{% t '스토어 - 추천 브랜드' %}{% endblock %}
 
 {% block content %}
@@ -190,11 +190,27 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_scripts %}
 <!-- ✅ 스크립트가 block content의 맨 아래, </body> 태그 바로 앞에 위치하도록 합니다. -->
 <script>
-    // ✅ 1. 비교하기 기능 관련 스크립트
-    // DOMContentLoaded는 페이지의 모든 HTML이 로드된 후 스크립트를 실행하도록 보장합니다.
+    window.i18nData = {};
+    try {
+    // ✅ 이제 이 태그는 이 파일에 로드된 store_extras를 사용하므로 100% 작동합니다.
+        const i18nJsonString = '{{ js_translations_json|escapejs }}';
+        window.i18nData = JSON.parse(i18nJsonString);
+    } catch (e) {
+        console.error("I18N 초기화 오류:", e);
+    }
+    function t(key, params = {}) {
+        if (!window.i18nData) { return key; }
+            let translatedString = window.i18nData[key] || key;
+        for (const param in params) {
+            translatedString = translatedString.replace(new RegExp(`{${param}}`, 'g'), params[param]);
+        }
+        return translatedString;
+    }
     document.addEventListener('DOMContentLoaded', () => {
         // 필수 HTML 요소들을 찾습니다.
         const compareBar = document.getElementById('compare-bar');
@@ -230,12 +246,12 @@
             const selectedCount = selectedBrandIds.length;
             
             if (selectedCount >= 2) {
-                compareCountSpan.textContent = `${selectedCount}개 브랜드 선택됨`;
+                compareCountSpan.textContent = t('{count}개 브랜드 선택됨', {count: selectedCount});
                 const idsQueryString = selectedBrandIds.join(',');
                 compareActionBtn.href = `{% url 'store:compare_page' %}?ids=${idsQueryString}`;
                 compareBar.classList.add('visible');
             } else if (selectedCount === 1) {
-                compareCountSpan.textContent = `1개 더 선택하여 비교해보세요.`;
+                compareCountSpan.textContent = t('1개 더 선택하여 비교해보세요.');
                 compareBar.classList.add('visible');
             } else {
                 compareBar.classList.remove('visible');
@@ -294,7 +310,7 @@
         const form = event.target;
         const rating = form.querySelector('input[name="rating"]:checked');
         const content = form.querySelector('textarea[name="content"]');
-        if (!rating) { alert('평점을 선택해주세요.'); return; }
+        if (!rating) { alert(t('평점을 선택해주세요.')); return; }
         const url = `{% url 'store:add_review_api' 0 %}`.replace('0', brandId);
         fetch(url, {
             method: 'POST',
@@ -307,7 +323,7 @@
                 alert(data.message);
                 document.getElementById('modal-close-btn').click();
             } else {
-                alert(data.message || '리뷰 등록에 실패했습니다.');
+                alert(data.message || t('리뷰 등록에 실패했습니다.'));;
             }
         });
     }
@@ -340,7 +356,7 @@
                 brandListContainer.innerHTML = data.brands_html;
             } catch (error) {
                 console.error('Error fetching brands:', error);
-                brandListContainer.innerHTML = '<p class="no-results">오류가 발생했습니다. 다시 시도해주세요.</p>';
+                brandListContainer.innerHTML = `<p class="no-results">${t('오류가 발생했습니다. 다시 시도해주세요.')}</p>`;
             } finally {
                 loader.style.display = 'none';
                 brandListContainer.style.opacity = '1';
@@ -397,26 +413,26 @@
         const openModal = (brandId) => {
             if (!modal) return;
             modal.classList.add('active');
-            modalBrandName.textContent = '불러오는 중...';
-            modalBrandDesc.textContent = "정보를 불러오는 중...";
+            modalBrandName.textContent = t('불러오는 중...');
+            modalBrandDesc.textContent = t('정보를 불러오는 중...');
             reviewFormWrapper.innerHTML = '';
-            reviewListWrapper.innerHTML = '<p>리뷰를 불러오는 중...</p>';
+            reviewListWrapper.innerHTML = `<p>${t('리뷰를 불러오는 중...')}</p>`;
             const url = `{% url 'store:brand_detail_api' 0 %}`.replace('0', brandId);
             fetch(url).then(response => response.json()).then(data => {
                 modalBrandName.textContent = data.name;
-                modalBrandDesc.textContent = data.detailed_description;
+                modalBrandDesc.textContent = t(data.detailed_description);
                 modalBrandLink.href = data.link;
                 if (data.is_authenticated) {
                     const userRating = data.user_review ? data.user_review.rating : 0;
                     const userContent = data.user_review ? data.user_review.content : '';
                     reviewFormWrapper.innerHTML = `
-                        <h4>리뷰 작성/수정</h4>
+                        <h4>${t('리뷰 작성/수정')}</h4>
                         <form id="review-form" onsubmit="submitReview(event, ${brandId})">
                             <div class="star-rating">
                                 ${[5,4,3,2,1].map(i => `<input type="radio" id="star${i}" name="rating" value="${i}" ${userRating == i ? 'checked' : ''} required><label for="star${i}">★</label>`).join('')}
                             </div>
-                            <textarea name="content" class="review-textarea" placeholder="리뷰를 남겨주세요...">${userContent}</textarea>
-                            <button type="submit" class="go-to-site-btn review-submit-btn">리뷰 등록</button>
+                            <textarea name="content" class="review-textarea" placeholder="${t('리뷰를 남겨주세요...')}">${userContent}</textarea>
+                            <button type="submit" class="go-to-site-btn review-submit-btn">${t('리뷰 등록')}</button>
                         </form>`;
                 }
                 if (data.reviews && data.reviews.length > 0) {
@@ -427,7 +443,7 @@
                             <small>${review.created_at}</small>
                         </div>`).join('')}</div>`;
                 } else {
-                    reviewListWrapper.innerHTML = '<p>아직 작성된 리뷰가 없습니다.</p>';
+                    reviewListWrapper.innerHTML = `<p>${t('아직 작성된 리뷰가 없습니다.')}</p>`;
                 }
             });
         };

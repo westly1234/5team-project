@@ -40,6 +40,8 @@ class Brand(models.Model):
 
     description = models.CharField(max_length=200, blank=True, verbose_name="짧은 설명 (카드 표시용)")
     detailed_description = models.TextField(blank=True, verbose_name="상세 설명 (모달 표시용)")
+    detailed_description_en = models.TextField(blank=True, null=True, help_text="영어 상세 설명")
+    detailed_description_es = models.TextField(blank=True, null=True, help_text="스페인어 상세 설명")
     is_featured = models.BooleanField(default=False, verbose_name="추천 브랜드 여부")
     promotion_info = models.CharField(max_length=50, blank=True, verbose_name="프로모션 정보")
     tags = models.ManyToManyField('Tag', blank=True, related_name='brands', verbose_name="핵심 태그")

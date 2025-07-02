@@ -1,0 +1,5 @@
+From the following text, please extract 3-4 core keywords that best represent this brand, separated by commas (,) in English.
+Do not add any other explanations; just respond in the format 'keyword1,keyword2,keyword3'.
+---
+Text: "{detailed_description}"
+---

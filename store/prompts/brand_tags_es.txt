@@ -1,0 +1,5 @@
+Del siguiente texto, extrae 3-4 palabras clave principales que mejor representen esta marca, separadas por comas (,) en español.
+No añadas ninguna otra explicación; solo responde en el formato 'palabra1,palabra2,palabra3'.
+---
+Texto: "{detailed_description}"
+---

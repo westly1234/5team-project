@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.utils import translation
 from .models import (
     Brand, Tag, Review, BrandCategory, Product, 
     BodyShapeAnalysis, ClothingRecommendation
@@ -21,7 +22,9 @@ from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 import numpy as np
 import uuid
-
+from .templatetags.store_i18n import _get_translation_dict
+from web.utils import t  # ✅ 기존 번역 유틸리티
+from .utils import load_prompt
 try:
     import pillow_heif
     pillow_heif.register_heif_opener()
@@ -52,11 +55,14 @@ def store_home_view(request):
     paginator = Paginator(brands_queryset.distinct().order_by('name'), 25)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    translations_for_js = _get_translation_dict()
+    js_translations_json = json.dumps(translations_for_js)
     context = {
         'page_obj': page_obj, 'alphabet': list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
         'categories': BrandCategory.objects.all().order_by('name'), 'current_category': category_code,
         'current_filter': starts_with, 'search_query': query, 'current_filter_params': current_filter_params,
         'active_menu': 'store', 'favorite_brand_ids': favorite_brand_ids,
+        'js_translations_json': js_translations_json,
     }
     return render(request, 'store/store.html', context)
 
@@ -64,7 +70,9 @@ def store_home_view(request):
 def favorite_brands_view(request):
     favorite_brands = request.user.favorite_brands.all().prefetch_related('categories')
     favorite_brand_ids = favorite_brands.values_list('id', flat=True)
-    context = {'favorite_brands': favorite_brands, 'favorite_brand_ids': favorite_brand_ids, 'active_menu': 'store'}
+    translations_for_js = _get_translation_dict()
+    js_translations_json = json.dumps(translations_for_js)
+    context = {'favorite_brands': favorite_brands, 'favorite_brand_ids': favorite_brand_ids, 'active_menu': 'store', 'js_translations_json': js_translations_json}
     return render(request, 'store/my_favorites.html', context)
 
 def brand_finder_view(request):
@@ -79,61 +87,111 @@ def brand_finder_view(request):
         elif priority == 'cost': results = results.filter(tags__name__in=['가성비'])
         if category_code and category_code != 'ALL': 
             results = results.filter(categories__code=category_code)
+        translations_for_js = _get_translation_dict()
+        js_translations_json = json.dumps(translations_for_js)  
         context = {
             'results': results.distinct().annotate(avg_rating=Avg('reviews__rating')).order_by('-avg_rating')[:5],
             'is_result': True, 'active_menu': 'store',
         }
         return render(request, 'store/brand_finder.html', context)
-    context = {'categories': BrandCategory.objects.all().order_by('name'), 'is_result': False, 'active_menu': 'store'}
+    context = {'categories': BrandCategory.objects.all().order_by('name'), 'is_result': False, 'active_menu': 'store', 'js_translations_json': js_translations_json}
     return render(request, 'store/brand_finder.html', context)
 
 def compare_page_view(request):
-    context = {'ids': request.GET.get('ids', ''), 'active_menu': 'store'}
+    translations_for_js = _get_translation_dict()
+    js_translations_json = json.dumps(translations_for_js)
+    context = {'ids': request.GET.get('ids', ''), 'active_menu': 'store', 'js_translations_json': js_translations_json}
     return render(request, 'store/compare_page.html', context)
 
 @login_required
 def body_shape_analyzer_view(request):
+    translations_for_js = _get_translation_dict()
+    js_translations_json = json.dumps(translations_for_js)
     try:
         import cv2, mediapipe
         library_installed = True
     except ImportError:
         library_installed = False
-    return render(request, 'store/body_shape_analyzer.html', {'library_installed': library_installed})
+    return render(request, 'store/body_shape_analyzer.html', {'library_installed': library_installed, 'js_translations_json': js_translations_json})
 
 def brand_detail_api(request, brand_id):
     try:
         brand = Brand.objects.get(pk=brand_id)
-        if not brand.detailed_description:
+        lang_code = translation.get_language() # 현재 언어 코드 (ko, en, es)
+
+        # 1. 보여줄 상세 설명을 담을 변수 초기화
+        description_to_show = ""
+        
+        # 2. 언어별 필드 이름을 동적으로 결정
+        # 한국어는 _ko 접미사가 없으므로 별도 처리
+        if lang_code == 'ko':
+            desc_field_name = 'detailed_description'
+        else:
+            desc_field_name = f'detailed_description_{lang_code}'
+
+        # 3. 해당 언어의 설명이 DB에 있는지 확인
+        description_to_show = getattr(brand, desc_field_name, None)
+
+        # 4. 설명이 없다면, 해당 언어의 프롬프트로 새로 생성
+        if not description_to_show:
             api_key = os.getenv("OPENAI_API_KEY")
             if api_key:
                 try:
-                    categories_str = ", ".join([cat.name for cat in brand.categories.all()])
-                    tags_str = ", ".join([tag.name for tag in brand.tags.all()])
-                    prompt_text = f"헬스/피트니스 브랜드 '{brand.name}'에 대한 간결하고 매력적인 한국어 소개글을 3~4문장으로 작성해줘.\n주요 정보:\n- 카테고리: {categories_str or '정보 없음'}\n- 핵심 태그: {tags_str or '정보 없음'}\n결과는 다른 부연 설명 없이, 생성된 소개글 텍스트만 깔끔하게 출력해줘."
+                    # ✅ 'brand_description' 프롬프트를 현재 언어에 맞게 가져옵니다.
+                    # load_prompt 함수는 prompts/brand_description_en.txt 등을 읽어옵니다.
+                    prompt_context = {
+                        "brand_name": brand.name, # 브랜드 이름은 번역하지 않고 그대로 사용
+                        "categories_str": ", ".join([cat.name for cat in brand.categories.all()]) or t('정보 없음'),
+                        "tags_str": ", ".join([tag.name for tag in brand.tags.all()]) or t('정보 없음')
+                    }
+                    prompt_text = load_prompt('brand_description', context=prompt_context)
+                    
                     client = openai.OpenAI(api_key=api_key)
-                    response = client.chat.completions.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt_text}], temperature=0.7, max_tokens=300)
-                    brand.detailed_description = response.choices[0].message.content.strip()
-                    brand.save(update_fields=['detailed_description'])
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[{"role": "user", "content": prompt_text}],
+                        temperature=0.7
+                    )
+                    generated_desc = response.choices[0].message.content.strip()
+                    
+                    # ✅ 생성된 설명을 해당 언어 필드에 저장
+                    setattr(brand, desc_field_name, generated_desc)
+                    brand.save(update_fields=[desc_field_name])
+
+                    # 방금 생성한 설명을 보여주도록 변수에 할당
+                    description_to_show = generated_desc
+
                 except Exception as e:
-                    print(f"OpenAI API 호출 중 오류 발생: {e}")
-            else:
-                print("OPENAI_API_KEY가 설정되지 않았습니다.")
+                    print(f"OpenAI 상세 설명 생성 오류 ({lang_code}): {e}")
+        
+        # 5. 최종 데이터 구성 (리뷰는 번역 없이 원본 그대로)
         reviews_agg = brand.reviews.aggregate(avg_rating=Avg('rating'), review_count=Count('id'))
-        reviews = brand.reviews.select_related('user').order_by('-created_at')[:10]
+        # ✅ Review.objects.all()을 사용하여 원본 리뷰를 가져옵니다.
+        reviews = Review.objects.filter(brand=brand).select_related('user').order_by('-created_at')[:10]
         reviews_data = [{'user_username': r.user.username, 'rating': r.rating, 'content': r.content, 'created_at': r.created_at.strftime('%Y-%m-%d')} for r in reviews]
+        
         user_review_data = None
         if request.user.is_authenticated:
             user_review = Review.objects.filter(brand=brand, user=request.user).first()
-            if user_review: user_review_data = {'rating': user_review.rating, 'content': user_review.content}
+            if user_review:
+                user_review_data = {'rating': user_review.rating, 'content': user_review.content}
+
         data = {
-            'id': brand.id, 'name': brand.name, 'link': brand.link, 'thumbnail_url': brand.thumbnail.url if brand.thumbnail else None,
-            'detailed_description': brand.detailed_description or "상세 설명이 아직 없습니다.",
-            'avg_rating': reviews_agg['avg_rating'] or 0, 'review_count': reviews_agg['review_count'] or 0,
-            'reviews': reviews_data, 'user_review': user_review_data, 'is_authenticated': request.user.is_authenticated,
+            'id': brand.id,
+            'name': brand.name, # 이름은 번역하지 않음
+            'link': brand.link,
+            'thumbnail_url': brand.thumbnail.url if brand.thumbnail else None,
+            'detailed_description': description_to_show or t("상세 설명이 아직 없습니다."),
+            'avg_rating': reviews_agg['avg_rating'] or 0,
+            'review_count': reviews_agg['review_count'] or 0,
+            'reviews': reviews_data, # 원본 리뷰 목록
+            'user_review': user_review_data, # 원본 내 리뷰
+            'is_authenticated': request.user.is_authenticated,
         }
         return JsonResponse(data)
+
     except Brand.DoesNotExist:
-        return JsonResponse({'error': 'Brand not found'}, status=404)
+        return JsonResponse({'error': t('브랜드를 찾을 수 없습니다.')}, status=404)
 
 @login_required
 def toggle_favorite_api(request, brand_id):
@@ -155,15 +213,19 @@ def add_review_api(request, brand_id):
         data = json.loads(request.body)
         rating, content = data.get('rating'), data.get('content')
         if not rating or not content:
-            return JsonResponse({'status': 'error', 'message': '평점과 내용을 모두 입력해주세요.'}, status=400)
+            # ✅ 번역 적용
+            return JsonResponse({'status': 'error', 'message': t('평점과 내용을 모두 입력해주세요.')}, status=400)
+
         review, created = Review.objects.update_or_create(brand=brand, user=request.user, defaults={'rating': rating, 'content': content})
-        message = '리뷰가 성공적으로 등록되었습니다.' if created else '리뷰가 성공적으로 수정되었습니다.'
+        # ✅ 번역 적용
+        message = t('리뷰가 성공적으로 등록되었습니다.') if created else t('리뷰가 성공적으로 수정되었습니다.')
         return JsonResponse({'status': 'ok', 'message': message})
-    return HttpResponseBadRequest("Invalid request method.")
+    # ✅ 번역 적용
+    return HttpResponseBadRequest(t("잘못된 요청 방식입니다."))
 
 def compare_brands_api(request):
     ids_str = request.GET.get('ids')
-    if not ids_str: return JsonResponse({'error': 'No brand IDs provided'}, status=400)
+    if not ids_str: return JsonResponse({'error': t('브랜드 ID가 제공되지 않았습니다.')}, status=400)
     ids = [int(id) for id in ids_str.split(',') if id.isdigit()]
     brands = Brand.objects.filter(pk__in=ids).annotate(avg_rating=Avg('reviews__rating')).prefetch_related('tags', 'categories')
     brands_data = []
@@ -172,7 +234,9 @@ def compare_brands_api(request):
             api_key = os.getenv("OPENAI_API_KEY")
             if api_key:
                 try:
-                    prompt_text = f"다음 텍스트에서 이 브랜드를 가장 잘 나타내는 핵심 키워드를 3~4개만 쉼표(,)로 구분해서 한국어로 추출해줘.\n다른 부연 설명은 전혀 붙이지 말고, 오직 키워드만 '키워드1,키워드2,키워드3' 형식으로 응답해줘.\n---\n텍스트: \"{brand.detailed_description}\"\n---"
+                    # ✅ 프롬프트를 파일에서 동적으로 로딩
+                    prompt_text = load_prompt('brand_tags', context={'detailed_description': brand.detailed_description})
+
                     client = openai.OpenAI(api_key=api_key)
                     response = client.chat.completions.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt_text}], temperature=0.3, max_tokens=50)
                     keywords = [kw.strip() for kw in response.choices[0].message.content.strip().split(',') if kw.strip()]
@@ -180,9 +244,11 @@ def compare_brands_api(request):
                         tag, created = Tag.objects.get_or_create(name=keyword_name)
                         brand.tags.add(tag)
                 except Exception as e:
-                    print(f"OpenAI API 호출 중 오류(태그 생성): {e}")
+                    # ✅ 번역 적용
+                    print(t("OpenAI API 호출 중 오류(태그 생성): {error}", error=e))
             else:
-                print("OPENAI_API_KEY가 설정되지 않아 태그를 생성할 수 없습니다.")
+                # ✅ 번역 적용
+                print(t("OPENAI_API_KEY가 설정되지 않아 태그를 생성할 수 없습니다."))
         brands_data.append({
             'id': brand.id, 'name': brand.name, 'thumbnail_url': brand.thumbnail.url if brand.thumbnail else None,
             'categories': [cat.name for cat in brand.categories.all()], 'link': brand.link,
@@ -247,31 +313,31 @@ def filter_brands_api(request):
 def analyze_body_shape_api(request):
     """프로필 정보와 이미지의 실루엣 형태를 결합하여 초개인화된 AI 스타일링 팁을 생성합니다."""
     if request.method != 'POST' or not request.FILES.get('image'):
-        return JsonResponse({'status': 'error', 'message': '잘못된 요청입니다.'}, status=400)
+        return JsonResponse({'status': 'error', 'message': t('잘못된 요청입니다.')}, status=400)
     
     # 1. 고객 데이터 로딩
     try:
         profile = request.user.profile
         if not profile.height or not profile.current_weight:
-            return JsonResponse({'status': 'error', 'message': '체형 분석을 위해 프로필에 키와 현재 체중을 먼저 입력해주세요.'}, status=400)
+            return JsonResponse({'status': 'error', 'message': t('체형 분석을 위해 프로필에 키와 현재 체중을 먼저 입력해주세요.')}, status=400)
         height_m = profile.height / 100
         bmi = profile.current_weight / (height_m ** 2)
-        physique = "표준 체형"
-        if bmi < 18.5: physique = "마른 체형"
-        elif 25 <= bmi < 30: physique = "과체중"
-        elif bmi >= 30: physique = "비만 체형"
+        physique = t("표준 체형")
+        if bmi < 18.5: physique = t("마른 체형")
+        elif 25 <= bmi < 30: physique = t("과체중")
+        elif bmi >= 30: physique = t("비만 체형")
     except Exception:
-        return JsonResponse({'status': 'error', 'message': '프로필 정보를 찾을 수 없습니다.'}, status=404)
+        return JsonResponse({'status': 'error', 'message': t('프로필 정보를 찾을 수 없습니다.')}, status=404)
     
     gender = request.POST.get('gender')
     if gender not in ['male', 'female']:
-        return JsonResponse({'status': 'error', 'message': '성별을 선택해주세요.'}, status=400)
+        return JsonResponse({'status': 'error', 'message': t('성별을 선택해주세요.')}, status=400)
     user_concerns = request.POST.get('concerns', '').strip()
 
     # 2. 이미지 처리 (안전한 파일 이름 생성 포함)
     image_file = request.FILES['image']
     if image_file.size > 10 * 1024 * 1024:
-        return JsonResponse({'status': 'error', 'message': '이미지 파일은 10MB를 초과할 수 없습니다.'})
+        return JsonResponse({'status': 'error', 'message': t('이미지 파일은 10MB를 초과할 수 없습니다.')})
     try:
         img = Image.open(image_file)
         if hasattr(img, '_getexif'):
@@ -291,9 +357,9 @@ def analyze_body_shape_api(request):
         safe_filename = f"{uuid.uuid4()}.jpg"
         image_file_to_save = ContentFile(output.read(), name=safe_filename)
     except UnidentifiedImageError:
-        return JsonResponse({'status': 'error', 'message': '지원하지 않는 이미지 형식입니다. JPG, PNG, HEIC 파일을 이용해주세요.'}, status=400)
+        return JsonResponse({'status': 'error', 'message': t('지원하지 않는 이미지 형식입니다. JPG, PNG, HEIC 파일을 이용해주세요.')}, status=400)
     except Exception as e:
-        return JsonResponse({'status': 'error', 'message': f'이미지 처리 중 오류가 발생했습니다: {e}'}, status=400)
+        return JsonResponse({'status': 'error', 'message': t('이미지 처리 중 오류가 발생했습니다: {error}', error=e)}, status=400)
 
     # 3. 분석 인스턴스 생성 및 이미지 저장
     analysis_instance = BodyShapeAnalysis(user=request.user)
@@ -323,38 +389,20 @@ def analyze_body_shape_api(request):
         if body_shape:
             # 6. OpenAI API 호출
             api_key = os.getenv("OPENAI_API_KEY")
-            ai_recommendations, ai_style_tips = "추천 생성 오류", "스타일팁 생성 오류"
+            ai_recommendations = t("추천 생성 오류")
+            ai_style_tips = t("스타일팁 생성 오류")
             if api_key:
                 try:
-                    gender_kor = "남성" if gender == "male" else "여성"
-                    shape_kor = dict(BodyShapeAnalysis.body_shape_choices).get(body_shape, "분석 불가")
-                    prompt = f"""
-                    당신은 데이터 기반으로 스타일을 분석하는 현실주의 패션 전략가입니다.
-                    당신의 목표는 예쁘게 꾸며주는 게 아니라, **이 고객의 체형이 사회적으로 가장 무난하게 보이도록 설계하는 것**입니다.
-
-                    [고객 데이터]
-                    - 성별: {gender_kor}
-                    - 키: {profile.height} cm
-                    - 몸무게: {profile.current_weight} kg
-                    - 체구(BMI): {physique} (BMI: {bmi:.1f})
-                    - 실루엣 형태: {shape_kor}
-                    - 사용자 개인 고민: "{user_concerns if user_concerns else "특별한 고민 없음"}"
-
-                    [지시사항]
-                    1. '사용자 개인 고민'과 '체구({physique})'를 **최우선**으로 고려하여 조언해주세요.
-                       예를 들어, 고객이 "종아리가 두껍다"고 했다면, 반바지나 스키니진 추천은 절대 금지입니다.
-                    2. 실루엣 형태({shape_kor})는 세부 조정 용도로 참고하며, 전체 비율 보정에 사용합니다.
-                    3. 유행, 개성, 성별 고정관념은 배제하고, **'어떤 환경에서도 민망하지 않은 스타일'**을 제안하세요.
-                    4. 고객에게 "왜 이걸 입어야 하는지", "왜 저건 피해야 하는지"를 **납득 가능한 논리로** 설명하세요.
-                    5. 애매한 단어는 금지. 오직 구조, 비율, 시각적 착시 효과 같은 **객관적 언어**만 사용하세요.
-                    
-                    [요청 결과]
-                    다른 부연 설명 없이, 반드시 아래 키를 가진 **JSON 형식**으로만 응답하세요.
-                    {{
-                        "recommendations": "고객의 고민을 해결할 수 있는 현실적인 아이템 5가지를 제시.",
-                        "style_tips": "고객의 개인적인 고민과 체형 데이터를 종합하여, 이를 해결할 수 있는 구체적인 스타일링 방법을 3~4문장으로 설명."
-                    }}
-                    """
+                    prompt_context = {
+                        "gender_kor": t("남성") if gender == "male" else t("여성"),
+                        "height": profile.height,
+                        "weight": profile.current_weight,
+                        "physique": physique,
+                        "bmi": bmi,
+                        "shape_kor": dict(BodyShapeAnalysis.body_shape_choices).get(body_shape, t("분석 불가")),
+                        "user_concerns": user_concerns if user_concerns else t("특별한 고민 없음")
+                    }
+                    prompt = load_prompt('body_analysis', context=prompt_context)
                     client = openai.OpenAI(api_key=api_key)
                     response = client.chat.completions.create(model="gpt-4o-mini", response_format={"type": "json_object"}, messages=[{"role": "user", "content": prompt}])
                     ai_response = json.loads(response.choices[0].message.content)
@@ -387,11 +435,15 @@ def analyze_body_shape_api(request):
             analysis_instance.recommendations = ai_recommendations
             analysis_instance.style_tips = ai_style_tips
             analysis_instance.save()
+            shape_kor_raw = dict(BodyShapeAnalysis.body_shape_choices).get(body_shape, t('분석 불가'))
+            shape_kor_translated = t(shape_kor_raw)
+            translated_conjunction = t("이면서")
+            final_body_shape_text = f"{physique} {translated_conjunction} {shape_kor_translated}"
             
             # 8. API 응답 반환
             return JsonResponse({
                 'status': 'success',
-                'body_shape': f"{physique}이면서 {dict(BodyShapeAnalysis.body_shape_choices).get(body_shape, '분석 불가')}",
+                'body_shape': final_body_shape_text,
                 'skeleton_image_url': analysis_instance.skeleton_image.url,
                 'analysis_image_url': analysis_instance.analysis_image.url,
                 'recommendations': analysis_instance.recommendations,
@@ -405,4 +457,4 @@ def analyze_body_shape_api(request):
         traceback.print_exc()
         if 'analysis_instance' in locals() and analysis_instance.pk:
             analysis_instance.delete()
-        return JsonResponse({'status': 'error', 'message': '서버 내부에서 분석 중 오류가 발생했습니다. 관리자에게 문의하세요.'}, status=500)
+        return JsonResponse({'status': 'error', 'message': t('서버 내부에서 분석 중 오류가 발생했습니다. 관리자에게 문의하세요.')}, status=500)

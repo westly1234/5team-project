@@ -2,278 +2,399 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로그인 - HealthWise</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% t '로그인' %} - HealthWise</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
-        :root {
-            --text-primary: #212529;
-            --text-secondary: #6c757d;
-            --text-accent: #007bff;
-            --bg-page: #f8f9fa;
-            --bg-form: #ffffff;
-            --border-light: #dee2e6;
-            --border-focus: #80bdff;
-            --button-primary-bg: #007bff;
-            --button-primary-hover-bg: #0056b3;
-            --error-text: #dc3545;
-            --font-family-base: 'Noto Sans KR', sans-serif;
-        }
+    :root {
+      --bg-dark: #000000;
+      --bg-surface: #1a1a1a;
+      --bg-input: #2d2d2d;
+      --border-color: #444444;
+      --text-primary: #f0f0f0;
+      --text-secondary: #a0a0a0;
+      --accent-pink: #ff8c94;
+      --accent-teal: #68d3d9;
+      --accent-yellow: #ffcf68;
+      --font-family-base: 'Noto Sans KR', sans-serif;
+    }
 
-        body {
-            font-family: var(--font-family-base);
-            background-color: var(--bg-page);
-            color: var(--text-primary);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+    body {
+      font-family: var(--font-family-base);
+      background-color: var(--bg-dark);
+      color: var(--text-primary);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 20px;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-image:
+          radial-gradient(circle at 15% 25%, rgba(255, 140, 148, 0.12), transparent 35%),
+          radial-gradient(circle at 85% 75%, rgba(104, 211, 217, 0.12), transparent 35%),
+          radial-gradient(circle at 50% 50%, rgba(255, 207, 104, 0.07), transparent 40%);
+      background-attachment: fixed;
+    }
 
-        .login-container {
-            background-color: var(--bg-form);
-            padding: 40px 50px;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-            width: 100%;
-            max-width: 420px;
-            text-align: center;
-        }
+    .login-container {
+      background-color: rgba(16, 16, 16, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      border: 2px solid transparent;
+      background-image: linear-gradient(rgba(16, 16, 16, 0.85), rgba(16, 16, 16, 0.85)), 
+                        linear-gradient(90deg, var(--accent-pink), var(--accent-teal));
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+    }
 
-        .login-container h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--text-primary);
-        }
+    .login-container h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, var(--accent-pink), var(--accent-yellow), var(--accent-teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
 
-        .login-container .subtitle {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            margin-bottom: 30px;
-        }
+    .login-container .subtitle {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+    }
 
-        .login-form {
-            text-align: left;
-        }
+    .login-form {
+      text-align: left;
+    }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+    .form-group {
+      margin-bottom: 20px;
+    }
 
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
 
-        .form-group input[type="text"],
-        .form-group input[type="password"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-light);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 1rem;
-            color: var(--text-primary);
-            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
+    .form-group input[type="text"],
+    .form-group input[type="password"] {
+      width: 100%;
+      padding: 12px 15px;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.3s;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+      box-sizing: border-box;
+    }
 
-        .form-group input[type="text"]:focus,
-        .form-group input[type="password"]:focus {
-            border-color: var(--border-focus);
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-        }
+    .form-group input[type="text"]:focus,
+    .form-group input[type="password"]:focus {
+      border-color: var(--accent-teal);
+      box-shadow: 0 0 0 3px rgba(104, 211, 217, 0.3), inset 0 2px 4px rgba(0,0,0,0.3);
+      outline: none;
+    }
 
-        .user-type-group {
-            margin-bottom: 25px;
-        }
-        .user-type-group p {
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-        .user-type-options {
-            display: flex;
-            gap: 20px;
-        }
-        .user-type-options label {
-            font-weight: 400;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-        .user-type-options input[type="radio"] {
-            margin-right: 8px;
-            accent-color: var(--text-accent);
-            transform: scale(1.1);
-        }
+    .login-button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      margin-top: 10px;
+      background-image: linear-gradient(to right, var(--accent-teal) 0%, #a7f3d0 51%, var(--accent-teal) 100%);
+      background-size: 200% auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
 
-        .login-button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--button-primary-bg);
-            border: none;
-            border-radius: 6px;
-            color: white;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s ease-in-out;
-            margin-top: 10px;
-        }
+    .login-button:hover {
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
 
-        .login-button:hover {
-            background-color: var(--button-primary-hover-bg);
-        }
+    .form-errors {
+      color: var(--accent-pink);
+      font-size: 0.875rem;
+      margin-bottom: 15px;
+      padding: 10px 15px;
+      background-color: rgba(255, 140, 148, 0.1);
+      border: 1px solid rgba(255, 140, 148, 0.2);
+      border-radius: 8px;
+      list-style: none;
+      text-align: left;
+    }
 
-        .form-errors { /* 폼 상단 에러 메시지 */
-            color: var(--error-text);
-            font-size: 0.875rem;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: rgba(220, 53, 69, 0.05);
-            border: 1px solid rgba(220, 53, 69, 0.1);
-            border-radius: 6px;
-            list-style: none;
-            text-align: left;
-        }
-        .form-errors li {
-             margin-bottom: 5px;
-        }
-        .form-errors li:last-child {
-            margin-bottom: 0;
-        }
-        
-        .field-errorlist { /* Django 폼 필드 에러용 (ul.errorlist에 JS로 추가될 수 있음) */
-            list-style: none;
-            padding: 0;
-            margin: 6px 0 0 0;
-            font-size: 0.85rem;
-            color: var(--error-text);
-        }
+    .form-errors li {
+      margin-bottom: 5px;
+    }
 
-        .signup-link-container {
-            margin-top: 25px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
+    .form-errors li:last-child {
+      margin-bottom: 0;
+    }
 
-        .signup-link-container a {
-            color: var(--text-accent);
-            text-decoration: none;
-            font-weight: 500;
-        }
+    .field-errorlist {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 0 0;
+      font-size: 0.85rem;
+      color: var(--accent-pink);
+    }
 
-        .signup-link-container a:hover {
-            text-decoration: underline;
-        }
-        .language-selector {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-        .language-selector select {
-            background-color: #fff;
-            border: 1px solid var(--border-light);
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-    </style>
+    .signup-link-container {
+      margin-top: 25px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .signup-link-container a {
+      color: var(--accent-pink);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .signup-link-container a:hover {
+      text-decoration: underline;
+      color: var(--text-primary);
+    }
+    .language-dropdown-container {
+      position: absolute;
+      top: 25px;       /* 컨테이너 상단에서 25px 아래 */
+      right: 25px;      /* 컨테이너 우측에서 25px 왼쪽 */
+      z-index: 10;
+    }
+
+    /* nav-item 클래스를 버튼처럼 보이도록 스타일링 */
+    .language-dropdown-container .nav-item {
+      background: rgba(255, 255, 255, 0.05); /* 약간 투명한 배경 */
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px; /* 아이콘과 텍스트 사이 간격 */
+      font-family: inherit; /* body의 폰트 상속 */
+      font-size: 0.9rem;  /* 폰트 크기 조절 */
+      font-weight: 500;
+      transition: all 0.3s ease;
+      white-space: nowrap; /* 언어 이름이 길어져도 줄바꿈 방지 */
+    }
+
+    .language-dropdown-container .nav-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--accent-teal);
+      color: var(--text-primary);
+    }
+
+    .language-dropdown-container .nav-item .fa-globe {
+      font-size: 1.1em;
+    }
+
+    .language-dropdown-container .nav-item .fa-chevron-down {
+      transition: transform 0.3s ease;
+    }
+
+    /* 드롭다운이 열렸을 때 화살표 아이콘 회전 */
+    #language-toggle-btn.arrow-rotated .fa-chevron-down {
+        transform: translateY(2px) rotate(180deg);
+    }
+
+    .language-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%; /* 버튼 바로 아래에 위치 */
+      right: 0;
+      margin-top: 8px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+      min-width: 100%; /* 버튼 너비에 맞게 최소 너비 설정 */
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    }
+
+    .language-dropdown-menu.show {
+      display: block;
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .language-option-form {
+      display: block;
+      margin: 0;
+    }
+
+    .language-option-btn {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 12px 18px;
+      text-align: left;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s;
+      font-family: inherit;
+      font-weight: 500;
+    }
+
+    .language-option-btn:hover {
+      background-color: var(--bg-input);
+      color: var(--text-primary);
+    }
+
+    .language-option-btn.active {
+      color: var(--accent-teal);
+      font-weight: 700;
+      background-color: rgba(104, 211, 217, 0.1);
+    }
+  </style>
 </head>
 <body>
-    <form action="{% url 'set_language' %}" method="post" class="language-selector">
-        {% csrf_token %}
-        <input name="next" type="hidden" value="{{ redirect_to }}">
-        <select name="language" onchange="this.form.submit()">
-            {% get_current_language as LANGUAGE_CODE %}
+  <div class="login-container">
+    <div class="language-dropdown-container">
+        <!-- 1. 현재 선택된 언어를 표시하는 버튼 -->
+        <button type="button" id="language-toggle-btn" class="nav-item">
+            <i class="fas fa-globe"></i>
+            <span class="language-text">
+                {% get_current_language as LANGUAGE_CODE %}
+                {% if LANGUAGE_CODE == 'ko' %}언어
+                {% elif LANGUAGE_CODE == 'en' %}Language
+                {% elif LANGUAGE_CODE == 'es' %}Idioma
+                {% else %}Language
+                {% endif %}
+            </span>
+            <i class="fas fa-chevron-down" style="font-size: 0.7em;"></i>
+        </button>
+        
+        <!-- 2. 애니메이션과 함께 나타날 드롭다운 메뉴 -->
+        <div id="language-dropdown-menu" class="language-dropdown-menu">
             {% get_available_languages as LANGUAGES %}
+            {% get_current_language as LANGUAGE_CODE %}
+            
+            <!-- ▼▼▼ 이 부분이 핵심입니다! lang_name 변수를 사용합니다. ▼▼▼ -->
             {% for lang_code, lang_name in LANGUAGES %}
-                <option value="{{ lang_code }}" {% if lang_code == LANGUAGE_CODE %}selected{% endif %}>
-                    {{ lang_name }}
-                </option>
+                <form action="{% url 'set_language' %}" method="post" class="language-option-form">
+                    {% csrf_token %}
+                    <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                    <input name="language" type="hidden" value="{{ lang_code }}">
+                    <button type="submit" class="language-option-btn {% if lang_code == LANGUAGE_CODE %}active{% endif %}">
+                        {{ lang_name }}
+                    </button>
+                </form>
             {% endfor %}
-        </select>
-    </form>
-    <div class="login-container">
-        <h1>{% t 'Login' %}</h1>
-        <p class="subtitle">{% t 'Welcome to HealthWise. Please log in.' %}</p>
-
-        <form method="post" action="{% url 'accounts:login' %}" class="login-form">
-            {% csrf_token %}
-
-            {% if form.non_field_errors %}
-              <ul class="form-errors">
-                {% for error in form.non_field_errors %}
-                  <li>{{ error }}</li>
-                {% endfor %}
-              </ul>
-            {% endif %}
-
-            <div class="user-type-group">
-                <p> {% t '회원 유형:' %} </p>
-                <div class="user-type-options">
-                    <label><input type="radio" name="user_type" value="company" {% if request.POST.user_type == 'company' %}checked{% endif %} required> {% t '기업' %} </label>
-                    <label><input type="radio" name="user_type" value="normal" {% if not request.POST.user_type or request.POST.user_type == 'normal' %}checked{% endif %} required> {% t '일반' %} </label>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="{{ form.username.id_for_label }}"> {% t '아이디' %} </label>
-                {{ form.username }}
-                {{ form.username.errors }}
-            </div>
-          
-            <div class="form-group">
-                <label for="{{ form.password.id_for_label }}"> {% t '암호' %} </label>
-                {{ form.password }}
-                {{ form.password.errors }}
-            </div>
-
-            {% if request.GET.next %}
-                <input type="hidden" name="next" value="{{ request.GET.next }}">
-            {% endif %}
-          
-            <button type="submit" class="login-button"> {% t '로그인' %} </button>
-        </form>
-
-        <div class="signup-link-container">
-            {% t "Don't have an account?" %} <a href="{% url 'accounts:signup'%}">{% t 'Sign up here' %}</a>.
+            <!-- ▲▲▲ 여기까지가 핵심 ▲▲▲ -->
         </div>
     </div>
+    <h1>{% t '로그인' %}</h1>
+    <p class="subtitle">{% t 'HealthWise에 오신 것을 환영합니다. 로그인 해주세요.' %}</p>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function setupFormField(fieldId, placeholderText) {
-                const inputElement = document.getElementById(fieldId);
-                if (inputElement) {
-                    inputElement.classList.add('form-control'); /* 이 클래스는 CSS에서 input[type="text"] 등으로 직접 스타일링 중 */
-                    inputElement.setAttribute('placeholder', placeholderText);
-                }
-                const errorList = inputElement?.parentElement?.querySelector('ul.errorlist');
-                if (errorList) {
-                    errorList.classList.add('field-errorlist');
-                }
-            }
-            setupFormField('{{ form.username.id_for_label }}', 'Enter your username');
-            setupFormField('{{ form.password.id_for_label }}', 'Enter your password');
-        });
-    </script>
+    <form method="post" action="{% url 'accounts:login' %}" class="login-form">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <ul class="form-errors">
+          {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">{% t '아이디' %}</label>
+        {{ form.username }}
+        {{ form.username.errors }}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.password.id_for_label }}">{% t '암호' %}</label>
+        {{ form.password }}
+        {{ form.password.errors }}
+      </div>
+
+      {% if request.GET.next %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+      {% endif %}
+
+
+      <button type="submit" class="login-button">{% t '로그인' %}</button>
+
+      <div class="signup-link-container" style="margin-top: 15px;">
+        <a href="{% url 'accounts:find_username' %}">{% t '아이디 찾기' %}</a> |
+        <a href="{% url 'accounts:password_reset' %}">{% t '비밀번호 찾기' %}</a>
+      </div>
+    </form>
+
+    <div class="signup-link-container">
+      {% t '계정이 없으신가요?' %} <a href="{% url 'accounts:signup' %}">{% t '회원가입' %}</a>.
+
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtn = document.getElementById('language-toggle-btn');
+      const dropdownMenu = document.getElementById('language-dropdown-menu');
+
+      if (toggleBtn && dropdownMenu) {
+          toggleBtn.addEventListener('click', (event) => {
+              event.stopPropagation(); 
+              dropdownMenu.classList.toggle('show');
+              toggleBtn.classList.toggle('arrow-rotated');
+          });
+
+          document.addEventListener('click', (event) => {
+              if (!toggleBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                  dropdownMenu.classList.remove('show');
+                  toggleBtn.classList.remove('arrow-rotated');
+              }
+          });
+      }
+      function setupFormField(fieldId, placeholderText) {
+        const inputElement = document.getElementById(fieldId);
+        if (inputElement) {
+          inputElement.classList.add('form-control');
+          inputElement.setAttribute('placeholder', placeholderText);
+        }
+        const errorList = inputElement?.parentElement?.querySelector('ul.errorlist');
+        if (errorList) {
+          errorList.classList.add('field-errorlist');
+        }
+      }
+
+      setupFormField('{{ form.username.id_for_label }}', 'Enter your username');
+      setupFormField('{{ form.password.id_for_label }}', 'Enter your password');
+    });
+  </script>
 </body>
 </html>

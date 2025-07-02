@@ -1,8 +1,8 @@
 {% extends 'web/base_simple.html' %}
-{% load static custom_translate i18n %}
+{% load static i18n store_i18n %}
 {% block title %}{% t '브랜드 비교하기' %}{% endblock %}
 
-{% block content %}
+{% block extra_head %}
 <style>
     .compare-container { max-width: 1200px; margin: 4rem auto; padding: 2rem; color: #fff; }
     .compare-container h1 { font-size: 2.5rem; text-align: center; margin-bottom: 1rem; }
@@ -29,7 +29,9 @@
     .go-to-site-btn { background-color: #4ecdc4; color: #0a0a0a; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; transition: all 0.2s; }
     .go-to-site-btn:hover { background-color: #fff; }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="compare-container" id="compare-container">
     <h1> {% t '브랜드 비교' %} </h1>
     <p> {% t '선택하신 브랜드의 특징을 한 눈에 비교해보세요.' %} </p>
@@ -37,8 +39,26 @@
         <p> {% t '브랜드 정보를 불러오는 중...' %} </p>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_scripts %}
 <script>
+    window.i18nData = {};
+    try {
+    // ✅ 이제 이 태그는 이 파일에 로드된 store_extras를 사용하므로 100% 작동합니다.
+        const i18nJsonString = '{{ js_translations_json|escapejs }}';
+        window.i18nData = JSON.parse(i18nJsonString);
+    } catch (e) {
+        console.error("I18N 초기화 오류:", e);
+    }
+    function t(key, params = {}) {
+        if (!window.i18nData) { return key; }
+            let translatedString = window.i18nData[key] || key;
+        for (const param in params) {
+            translatedString = translatedString.replace(new RegExp(`{${param}}`, 'g'), params[param]);
+        }
+        return translatedString;
+    }
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const ids = urlParams.get('ids');
@@ -53,15 +73,15 @@
                     if (data.brands && data.brands.length > 0) {
                         renderCompareTable(data.brands);
                     } else {
-                        wrapper.innerHTML = '<p>브랜드 정보를 불러오는 데 실패했습니다.</p>';
+                        wrapper.innerHTML = `<p>${t('브랜드 정보를 불러오는 데 실패했습니다.')}</p>`;
                     }
                 })
                 .catch(error => {
                     console.error('Error fetching compare data:', error);
-                    wrapper.innerHTML = '<p>오류가 발생했습니다. 다시 시도해주세요.</p>';
+                    wrapper.innerHTML = `<p>${t('오류가 발생했습니다. 다시 시도해주세요.')}</p>`;
                 });
         } else {
-            wrapper.innerHTML = '<p>비교할 브랜드를 선택해주세요.</p>';
+            wrapper.innerHTML = `<p>${t('비교할 브랜드를 선택해주세요.')}</p>`;
         }
 
         function renderCompareTable(brands) {
@@ -73,32 +93,32 @@
             tableHTML += '</tr>';
 
             // 썸네일
-            tableHTML += '<tr><td class="feature-name">브랜드 로고</td>';
+            tableHTML += `<tr><td class="feature-name">${t('브랜드 로고')}</td>`;
             brands.forEach(brand => {
-                const imgTag = brand.thumbnail_url ? `<img src="${brand.thumbnail_url}" alt="${brand.name}" class="brand-thumbnail">` : '<span>이미지 없음</span>';
+                const imgTag = brand.thumbnail_url ? `<img src="${brand.thumbnail_url}" alt="${brand.name}" class="brand-thumbnail">` : `<span>${t('이미지 없음')}</span>`;
                 tableHTML += `<td>${imgTag}</td>`;
             });
             tableHTML += '</tr>';
 
             // 카테고리
-            tableHTML += '<tr><td class="feature-name"> {% t '카테고리' %} </td>';
+            tableHTML += `<tr><td class="feature-name">${t('카테고리')}</td>`;
             brands.forEach(brand => {
-                tableHTML += `<td class="tag-list">${brand.categories.map(c => `<span>${c}</span>`).join('')}</td>`;
+                const categoriesHTML = brand.categories.map(c => `<span>${t(c)}</span>`).join('');
+                tableHTML += `<td class="tag-list">${categoriesHTML}</td>`;
             });
             tableHTML += '</tr>';
             
             // 평균 평점
-            tableHTML += '<tr><td class="feature-name">평균 평점</td>';
+            tableHTML += `<tr><td class="feature-name">${t('평균 평점')}</td>`;
             brands.forEach(brand => {
-                tableHTML += `<td>${brand.avg_rating.toFixed(1)} 점</td>`;
+                tableHTML += `<td>${t('{rating} 점', {rating: brand.avg_rating.toFixed(1)})}</td>`;
             });
             tableHTML += '</tr>';
 
             // 핵심 태그
-            tableHTML += '<tr><td class="feature-name"> {% t '핵심 태그' %} </td>';
+            tableHTML += `<tr><td class="feature-name">${t('핵심 태그')}</td>`;
             brands.forEach(brand => {
-                // 태그가 없을 경우 '태그 없음' 텍스트를 표시
-                const tagsHTML = brand.tags.length > 0 ? brand.tags.map(t => `<span>${t}</span>`).join('') : '<span>태그 없음</span>';
+                const tagsHTML = brand.tags.length > 0 ? brand.tags.map(tag => `<span>${t(tag)}</span>`).join('') : `<span>${t('태그 없음')}</span>`;
                 tableHTML += `<td class="tag-list">${tagsHTML}</td>`;
             });
             tableHTML += '</tr>';
@@ -106,9 +126,9 @@
             // ✅ '프로모션' 행이 여기서 삭제되었습니다.
 
             // 바로가기 버튼
-            tableHTML += '<tr><td class="feature-name">홈페이지</td>';
+            tableHTML += `<tr><td class="feature-name">${t('홈페이지')}</td>`;
             brands.forEach(brand => {
-                tableHTML += `<td><a href="${brand.link}" class="go-to-site-btn" target="_blank">방문하기</a></td>`;
+                tableHTML += `<td><a href="${brand.link}" class="go-to-site-btn" target="_blank">${t('방문하기')}</a></td>`;
             });
             tableHTML += '</tr>';
 
