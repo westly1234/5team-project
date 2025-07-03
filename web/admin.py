@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import HealthSurvey, FitnessProfile
+from .models import HealthSurvey, FitnessProfile, DailyHealthMetric
 from django.core.mail import send_mail
 from django.utils import timezone
 from .models import Inquiry
@@ -26,6 +26,26 @@ admin.site.register(User, CustomUserAdmin)
 
 # 기타 모델들은 일반 방식으로 등록
 admin.site.register(FitnessProfile)
+
+@admin.register(DailyHealthMetric)
+class DailyHealthMetricAdmin(admin.ModelAdmin):
+    """
+    DailyHealthMetric 모델을 위한 Admin 설정
+    """
+    # 목록 페이지에 보여줄 필드들을 지정합니다.
+    list_display = ('user', 'date', 'weight', 'skeletal_muscle_mass', 'body_fat_mass')
+    
+    # 필터 옵션을 추가하여 특정 사용자나 날짜로 쉽게 조회할 수 있게 합니다.
+    list_filter = ('user', 'date')
+    
+    # 검색 기능을 추가합니다. (사용자 이름으로 검색)
+    search_fields = ('user__username',)
+    
+    # 날짜 계층 탐색 기능을 추가합니다.
+    date_hierarchy = 'date'
+    
+    # 한 페이지에 보여줄 항목 수를 지정합니다.
+    list_per_page = 20
 
 @admin.register(Inquiry)
 class InquiryAdmin(admin.ModelAdmin):

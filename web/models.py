@@ -50,6 +50,29 @@ class FitnessProfile(models.Model):
         # 이 모델에 맞는 __str__ 입니다.
         return f"{self.goal} - {self.gender}"
 
+# ==============================================================
+# 모델 3: DailyHealthMetric (✨ 새로 추가하는 모델)
+# ==============================================================
+class DailyHealthMetric(models.Model):
+    """
+    사용자의 일별 건강 지표(체중, 골격근량 등) 변화를 기록하는 모델.
+    차트 데이터의 원천이 됩니다.
+    """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="health_metrics")
+    date = models.DateField(db_index=True) # 날짜 (기록일)
+    weight = models.FloatField(null=True, blank=True, verbose_name="체중 (kg)")
+    skeletal_muscle_mass = models.FloatField(null=True, blank=True, verbose_name="골격근량 (kg)")
+    body_fat_mass = models.FloatField(null=True, blank=True, verbose_name="체지방량 (kg)")
+
+    class Meta:
+        # 한 명의 사용자는 하루에 하나의 기록만 가질 수 있도록 설정 (중복 방지)
+        unique_together = ('user', 'date')
+        ordering = ['-date'] # 최신 날짜부터 정렬
+        verbose_name = "일별 건강 지표"
+        verbose_name_plural = "일별 건강 지표"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.date}"
 
 class Inquiry(models.Model):
     user = models.ForeignKey(
