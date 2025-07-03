@@ -13,7 +13,6 @@
     "'' 부위에 해당하는 운동이 데이터베이스에 등록되어 있지 않습니다. 관리자에게 문의하세요.": "'' No exercises corresponding to '' area are registered in the database. Please contact the administrator.",
     "'' 운동을 완료했습니다! 오늘도 수고하셨습니다.": "'' Exercise completed! Great job today.",
     "'' 파일 처리 중 오류 발생:": "'' Error occurred while processing the file:",
-    "''에 대한 검색 결과가 없습니다.\" query=search_query %}{% else %}{% t \"해당 조건에 맞는 브랜드가 없습니다.": "No search results for ''\" query=search_query %}{% else %}{% t \"No brands match the specified criteria.",
     "'운동 추가하기' 섹션에서 새로운 운동을 추가하세요.": "Please add a new exercise in the 'Add Exercise' section.",
     "(내용 없는 PDF 파일)": "(Empty PDF file)",
     "(빈 CSV 파일)": "(Empty CSV file)",
@@ -658,7 +657,7 @@
     "뇌졸중": "Stroke",
     "뇌혈관 질환": "Cerebrovascular Disease",
     "님, HEALTHWISE에 오신 것을<br>진심으로 환영합니다!": "Welcome to HEALTHWISE, <br> we sincerely welcome you!",
-    "님의 맞춤 루틴": " Customized Routine",
+    "님의 맞춤 루틴": "'s Customized Routine",
     "님의 모든 운동 기록 보관소입니다.": "{{ user.username }}'s workout records are all stored here.",
     "다른 식단 분석하기": "Analyze Another Diet",
     "다시 로그인하기": "Log In Again",
@@ -1413,5 +1412,9 @@
     "흡연 안 함 (비흡연)": "Non-smoker",
     "흡연 여부": "Smoking status",
     "힙합": "Hip hop",
-    "🤖 AI가 루틴을 꼼꼼하게 분석하고 있습니다...": "🤖 AI is thoroughly analyzing your routine..."
-}
+    "🤖 AI가 루틴을 꼼꼼하게 분석하고 있습니다...": "🤖 AI is thoroughly analyzing your routine...",
+    "'{query}'에 대한 검색 결과가 없습니다.": "No search results found for '{query}'.",
+    "해당 조건에 맞는 브랜드가 없습니다.": "No brands match the given criteria.",
+    "죄송합니다. 현재 '{part}' 부위에 추천할 수 있는 운동이 준비되지 않았습니다.": "Sorry, no recommended exercises are available for the '{part}' area at the moment.",
+    "루틴 저장 중 오류가 발생했습니다: {error}": "An error occurred while saving the routine: {error}"
+}   

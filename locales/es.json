@@ -13,7 +13,6 @@
     "'' 부위에 해당하는 운동이 데이터베이스에 등록되어 있지 않습니다. 관리자에게 문의하세요.": "'' No hay ejercicios registrados en la base de datos para esa área. Contacta al administrador.",
     "'' 운동을 완료했습니다! 오늘도 수고하셨습니다.": "'' ¡Has completado el ejercicio! Buen trabajo hoy.",
     "'' 파일 처리 중 오류 발생:": "'' Ocurrió un error al procesar el archivo:",
-    "''에 대한 검색 결과가 없습니다.\" query=search_query %}{% else %}{% t \"해당 조건에 맞는 브랜드가 없습니다.": "No se encontraron resultados para ''.\" query=search_query %}{% else %}{% t \"No hay marcas que cumplan con esos criterios.",
     "'운동 추가하기' 섹션에서 새로운 운동을 추가하세요.": "'Agrega un ejercicio' en la sección para añadir un nuevo ejercicio.",
     "(내용 없는 PDF 파일)": "(Archivo PDF sin contenido)",
     "(빈 CSV 파일)": "(Archivo CSV vacío)",
@@ -1414,5 +1413,9 @@
     "흡연 안 함 (비흡연)": "No fuma (no fumador)",
     "흡연 여부": "Estado de fumar",
     "힙합": "Hip hop",
-    "🤖 AI가 루틴을 꼼꼼하게 분석하고 있습니다...": "🤖 La IA está analizando tu rutina minuciosamente..."
+    "🤖 AI가 루틴을 꼼꼼하게 분석하고 있습니다...": "🤖 La IA está analizando tu rutina minuciosamente...",
+    "'{query}'에 대한 검색 결과가 없습니다.": "No se encontraron resultados para '{query}'.",
+    "해당 조건에 맞는 브랜드가 없습니다.": "No hay marcas que coincidan con los criterios indicados.",
+    "죄송합니다. 현재 '{part}' 부위에 추천할 수 있는 운동이 준비되지 않았습니다.": "Lo sentimos, actualmente no hay ejercicios recomendados disponibles para la zona de '{part}'.",
+    "루틴 저장 중 오류가 발생했습니다: {error}": "Se produjo un error al guardar la rutina: {error}"
 }

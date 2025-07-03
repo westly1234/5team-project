@@ -49,13 +49,17 @@
                     <div>
                         <label for="part" class="block text-sm font-medium text-gray-400 mb-1"> {% t '운동 부위' %} </label>
                         <select id="part" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-blue-500 focus:border-blue-500">
-                            <option> {% t '하체' %} </option><option> {% t '등' %} </option><option> {% t '가슴' %} </option><option> {% t '어깨' %} </option><option>{% t '팔' %}</option><option> {% t '복근' %} </option>
+                            {% for part in body_parts %}
+                                <option value="{{ part.key }}">{{ part.name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div>
                         <label for="level" class="block text-sm font-medium text-gray-400 mb-1"> {% t '운동 난이도' %} </label>
                         <select id="level" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-blue-500 focus:border-blue-500">
-                            <option> {% t '초급' %} </option><option> {% t '중급' %} </option><option> {% t '고급' %} </option>
+                            {% for level in levels %}
+                                <option value="{{ level.key }}">{{ level.name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
