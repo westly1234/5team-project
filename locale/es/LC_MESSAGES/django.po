@@ -1,0 +1,283 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-03 10:55+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
+"1 : 2;\n"
+
+#: .\achievements\models.py:9
+msgid "식단"
+msgstr ""
+
+#: .\achievements\models.py:10
+msgid "운동"
+msgstr ""
+
+#: .\achievements\models.py:11
+msgid "꾸준함"
+msgstr ""
+
+#: .\achievements\models.py:12
+msgid "탐험"
+msgstr ""
+
+#: .\achievements\models.py:13
+msgid "챗봇"
+msgstr ""
+
+#: .\achievements\models.py:17
+msgid "개발용 고유 코드"
+msgstr ""
+
+#: .\achievements\models.py:38 .\chatbot\views.py:402
+msgid "업적"
+msgstr ""
+
+#: .\achievements\models.py:39
+msgid "업적 목록"
+msgstr ""
+
+#: .\achievements\models.py:42 .\chatbot\models.py:9
+#: .\web\templates\web\_header.html:60
+msgid "사용자"
+msgstr ""
+
+#: .\achievements\models.py:43
+msgid "달성한 업적"
+msgstr ""
+
+#: .\achievements\models.py:44
+msgid "달성 일시"
+msgstr ""
+
+#: .\achievements\models.py:48
+msgid "사용자 달성 업적"
+msgstr ""
+
+#: .\achievements\models.py:49
+msgid "사용자 달성 업적 목록"
+msgstr ""
+
+#: .\chatbot\models.py:11
+msgid "대화 제목"
+msgstr ""
+
+#: .\chatbot\models.py:13
+msgid "전체 대화 내용"
+msgstr ""
+
+#: .\chatbot\models.py:14
+msgid "요약 내용"
+msgstr ""
+
+#: .\chatbot\models.py:15
+msgid "사용자 지정 제목 여부"
+msgstr ""
+
+#: .\chatbot\models.py:16
+msgid "생성일"
+msgstr ""
+
+#: .\chatbot\models.py:20
+msgid "챗봇 대화"
+msgstr ""
+
+#: .\chatbot\models.py:21
+msgid "챗봇 대화 목록"
+msgstr ""
+
+#: .\chatbot\models.py:29
+msgid "제목 없음"
+msgstr ""
+
+#: .\chatbot\views.py:386
+msgid "파일 처리 오류"
+msgstr ""
+
+#: .\chatbot\views.py:402
+msgid "칭호"
+msgstr ""
+
+#: .\chatbot\views.py:403
+msgid "그려줘"
+msgstr ""
+
+#: .\chatbot\views.py:403
+msgid "만들어줘"
+msgstr ""
+
+#: .\chatbot\views.py:460
+#, python-format
+msgid ""
+"%(question)s\n"
+"\n"
+"--- 사용자가 첨부한 파일의 내용입니다 ---\n"
+"%(file_content)s"
+msgstr ""
+
+#: .\chatbot\views.py:521
+#, python-format
+msgid ""
+"'%(keyword)s'에 대한 추천 상품을 찾는 데 실패했어요. 😥\n"
+"다른 키워드로 다시 질문해주시겠어요?"
+msgstr ""
+
+#: .\config\settings.py:142
+msgid "Korean"
+msgstr ""
+
+#: .\config\settings.py:143
+msgid "English"
+msgstr ""
+
+#: .\config\settings.py:144
+msgid "Spanish"
+msgstr ""
+
+#: .\diet\templates\diet\diet_result.html:116
+msgid "피드백을 생성하는 데 실패했습니다."
+msgstr ""
+
+#: .\diet\templates\diet\diet_result.html:130
+msgid "AI 서버와 통신하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+msgstr ""
+
+#: .\routine\views.py:156
+msgid "하체"
+msgstr ""
+
+#: .\routine\views.py:157
+msgid "등"
+msgstr ""
+
+#: .\routine\views.py:158
+msgid "가슴"
+msgstr ""
+
+#: .\routine\views.py:159
+msgid "어깨"
+msgstr ""
+
+#: .\routine\views.py:160
+msgid "팔"
+msgstr ""
+
+#: .\routine\views.py:161
+msgid "복근"
+msgstr ""
+
+#: .\routine\views.py:164
+msgid "초급"
+msgstr ""
+
+#: .\routine\views.py:165
+msgid "중급"
+msgstr ""
+
+#: .\routine\views.py:166
+msgid "고급"
+msgstr ""
+
+#: .\routine\views.py:213
+msgid "알 수 없는 부위"
+msgstr ""
+
+#: .\routine\views.py:220
+msgid "루틴 생성 불가"
+msgstr ""
+
+#: .\routine\views.py:221
+#, python-format
+msgid ""
+"죄송합니다. 현재 '%(part)s' 부위에 추천할 수 있는 운동이 준비되지 않았습니다."
+msgstr ""
+
+#: .\routine\views.py:297 .\routine\views.py:333
+#, python-format
+msgid "'%s' 루틴이 성공적으로 생성되었습니다!"
+msgstr ""
+
+#: .\routine\views.py:300
+msgid "루틴 저장 실패"
+msgstr ""
+
+#: .\routine\views.py:300
+#, python-format
+msgid "루틴 저장 중 오류가 발생했습니다: %(error)s"
+msgstr ""
+
+#: .\routine\views.py:313
+msgid "최소 하나 이상의 운동을 선택해주세요."
+msgstr ""
+
+#: .\routine\views.py:336
+msgid "잘못된 요청입니다."
+msgstr ""
+
+#: .\routine\views.py:357 .\routine\views.py:394
+#, python-format
+msgid "%(username)s님의 맞춤 루틴"
+msgstr "Rutina Personalizada de %(username)s"
+
+#: .\routine\views.py:368 .\routine\views.py:405
+#, python-format
+msgid "AI 추천: %(part)s (%(level)s)"
+msgstr "Recomendación de IA: %(part)s (%(level)s)"
+
+#: .\routine\views.py:421
+msgid "이 루틴에는 포함된 운동이 없습니다. 운동을 추가해주세요."
+msgstr ""
+
+#: .\routine\views.py:478
+msgid "루틴 이름은 비워둘 수 없습니다."
+msgstr ""
+
+#: .\routine\views.py:481
+msgid "루틴에는 최소 하나 이상의 운동이 포함되어야 합니다."
+msgstr ""
+
+#: .\routine\views.py:506
+msgid "루틴이 성공적으로 수정되었습니다!"
+msgstr ""
+
+#: .\routine\views.py:508
+msgid "루틴 수정 중 잘못된 데이터가 감지되었습니다."
+msgstr ""
+
+#: .\routine\views.py:510
+#, python-format
+msgid "루틴 수정 중 오류가 발생했습니다: %(error)s"
+msgstr ""
+
+#: .\routine\views.py:522
+#, python-format
+msgid "'%s' 루틴이 삭제되었습니다."
+msgstr ""
+
+#: .\routine\views.py:533
+#, python-format
+msgid "'%s' 운동을 완료했습니다! 오늘도 수고하셨습니다."
+msgstr ""
+
+
+#: .\web\views.py:127
+msgid "님의 맞춤 루틴"
+msgstr ""
+
+#, python-format
+#~ msgid "%(username)s's Custom Routine"
+#~ msgstr "Rutina Personalizada de %(username)s"

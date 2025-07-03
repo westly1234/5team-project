@@ -16,7 +16,6 @@ import requests
 import random
 from datetime import timedelta
 from django.utils import timezone
-
 from achievements.services import check_and_award_achievement
 from django.utils import translation
 
@@ -278,11 +277,13 @@ def gpt_plan_view(request):
     # [6단계] 루틴 저장 및 리디렉션
     try:
         with transaction.atomic():
-            # 화면 표시용 번역된 이름 가져오기
+            # 화면 표시용 번역된 이름 가져오기 (이건 그대로 둡니다)
             display_part_name = _(db_part)
             display_level_name = _(db_level)
             
-            routine_name = _("AI 추천: %(part)s (%(level)s)") % {'part': display_part_name, 'level': display_level_name}
+            # ✨ 핵심 수정: _()를 제거하고 한국어 원본 포맷으로 DB에 저장합니다.
+            # db_part와 db_level은 항상 '하체', '초급' 같은 한국어입니다.
+            routine_name = f"AI 추천: {db_part} ({db_level})"
             new_routine = Routine.objects.create(user=request.user, name=routine_name)
             
             new_routine_exercises = []
@@ -300,6 +301,8 @@ def gpt_plan_view(request):
         return render(request, 'routine/routine_plan_with_details.html', context)
 
 
+# routine/views.py
+
 @login_required
 def custom_plan_view(request):
     """사용자가 직접 구성한 루틴 생성 뷰"""
@@ -311,8 +314,10 @@ def custom_plan_view(request):
             return redirect('routine:select')
 
         with transaction.atomic():
-            routine_name = _("%(username)s님의 맞춤 루틴") % {'username': request.user.username}
+            # ✨ 핵심 수정: _() 함수를 제거하여 항상 한국어 원본 포맷으로 저장
+            routine_name = f"{request.user.username}님의 맞춤 루틴"
             new_routine = Routine.objects.create(user=request.user, name=routine_name)
+            
             new_routine_exercises = []
             for item in exercise_list:
                 exercise = get_object_or_404(Exercise, id=item.get('id'))
@@ -321,6 +326,7 @@ def custom_plan_view(request):
                 else:
                     re_obj = RoutineExercise.objects.create(routine=new_routine, exercise=exercise, sets=int(item.get('sets', 0)), reps=int(item.get('reps', 0)), weight=int(item.get('weight', 0)))
                 new_routine_exercises.append(re_obj)
+            
             if new_routine and new_routine_exercises:
                 trigger_routine_creation_achievements(request, new_routine, new_routine_exercises)
         
@@ -335,6 +341,36 @@ def custom_plan_view(request):
 def my_routines_view(request):
     """내 루틴 목록 페이지 뷰"""
     user_routines = Routine.objects.filter(user=request.user).prefetch_related('routineexercise_set__exercise').order_by('-created_at')
+
+    # --- ✨ 핵심 수정 부분 시작 ✨ ---
+    # 템플릿으로 보내기 전에 각 루틴의 이름을 번역 처리합니다.
+    for routine in user_routines:
+        # '...님의 맞춤 루틴' 형식인지 확인합니다.
+        match_custom = re.match(r'^(.*)님의 맞춤 루틴$', routine.name)
+        # 2. AI 추천 루틴 패턴 검사
+        match_ai = re.match(r'^AI 추천: (.*) \((.*)\)$', routine.name)
+
+        if match_custom:
+            username = match_custom.group(1)
+            # 한국어 원본을 번역 키(msgid)로 사용
+            # my_routines_view 에서는 routine.display_name = ... 형식으로 할당
+            display_routine_title = _("%(username)s님의 맞춤 루틴") % {'username': username}
+        elif match_ai:
+            part = match_ai.group(1)  # '하체', '등' 등
+            level = match_ai.group(2) # '초급', '중급' 등
+            
+            # 각 부분을 먼저 번역
+            translated_part = _(part)
+            translated_level = _(level)
+            
+            # 한국어 원본 포맷을 번역 키(msgid)로 사용
+            # my_routines_view 에서는 routine.display_name = ... 형식으로 할당
+            display_routine_title = _("AI 추천: %(part)s (%(level)s)") % {'part': translated_part, 'level': translated_level}
+        else:
+            # 어떤 패턴과도 일치하지 않으면 원래 이름을 그대로 사용
+            display_routine_title = routine.name
+        # --- ✨ 핵심 수정 부분 끝 ✨ ---
+
     return render(request, 'routine/my_routines.html', {'routines': user_routines, 'active_menu': 'routine_list'})
 
 
@@ -345,13 +381,54 @@ def routine_plan_detail_view(request, routine_id):
     routine = get_object_or_404(Routine, id=routine_id, user=request.user)
     routine_exercises = routine.routineexercise_set.select_related('exercise').order_by('id')
     all_muscle_groups = sorted(list(set(ex.localized_muscle_group for ex in Exercise.objects.all() if ex.localized_muscle_group)))
+    
+    # --- 번역 로직 (수정 없음) ---
+    match_custom = re.match(r'^(.*)님의 맞춤 루틴$', routine.name)
+    # 2. AI 추천 루틴 패턴 검사
+    match_ai = re.match(r'^AI 추천: (.*) \((.*)\)$', routine.name)
 
+    if match_custom:
+        username = match_custom.group(1)
+        # 한국어 원본을 번역 키(msgid)로 사용
+        # my_routines_view 에서는 routine.display_name = ... 형식으로 할당
+        display_routine_title = _("%(username)s님의 맞춤 루틴") % {'username': username}
+    elif match_ai:
+        part = match_ai.group(1)  # '하체', '등' 등
+        level = match_ai.group(2) # '초급', '중급' 등
+        
+        # 각 부분을 먼저 번역
+        translated_part = _(part)
+        translated_level = _(level)
+        
+        # 한국어 원본 포맷을 번역 키(msgid)로 사용
+        # my_routines_view 에서는 routine.display_name = ... 형식으로 할당
+        display_routine_title = _("AI 추천: %(part)s (%(level)s)") % {'part': translated_part, 'level': translated_level}
+    else:
+        # 어떤 패턴과도 일치하지 않으면 원래 이름을 그대로 사용
+        display_routine_title = routine.name
+
+    # ✨ ================== 핵심 수정 부분 시작 ================== ✨
+    # 안정성 강화: 루틴에 운동이 하나도 없는 경우를 먼저 처리합니다.
+    if not routine_exercises.exists():
+        context = {
+            'routine_obj': routine,
+            'routine_title': display_routine_title,
+            'routine': [],  # 템플릿의 for루프가 에러 없이 돌도록 빈 리스트를 전달합니다.
+            'all_muscle_groups': all_muscle_groups,
+            'exercises_for_js': '[]', # JS 변수가 에러를 일으키지 않도록 빈 배열을 전달합니다.
+            'active_menu': 'routine_list',
+            # 템플릿에서 이 메시지를 표시할 수 있도록 추가합니다.
+            'error_message': _("이 루틴에는 포함된 운동이 없습니다. 운동을 추가해주세요.") 
+        }
+        return render(request, 'routine/routine_plan_with_details.html', context)
+    # ✨ ================== 핵심 수정 부분 끝 ================== ✨
+
+    # --- 기존 로직 (운동이 하나 이상 있을 경우에만 실행됨) ---
     routine_details = []
-    # [추가] JavaScript에서 사용할 운동 정보 리스트
     exercises_for_js = []
 
-    for re in routine_exercises:
-        exercise = re.exercise
+    for re_obj in routine_exercises: # 변수명을 re에서 re_obj로 변경하여 명확성 확보
+        exercise = re_obj.exercise
         populate_exercise_details_if_empty(exercise)
         
         detail = {
@@ -364,13 +441,12 @@ def routine_plan_detail_view(request, routine_id):
             'precautions': exercise.localized_precautions,
         }
         if exercise.exercise_type == 'cardio':
-            detail.update({'duration_minutes': re.duration_minutes})
+            detail.update({'duration_minutes': re_obj.duration_minutes})
         else:
-            detail.update({'sets': re.sets, 'reps': re.reps, 'weight': re.weight})
+            detail.update({'sets': re_obj.sets, 'reps': re_obj.reps, 'weight': re_obj.weight})
         
         routine_details.append(detail)
         
-        # [추가] exercises_for_js 리스트에 필요한 정보만 담기
         exercises_for_js.append({
             'id': exercise.id,
             'name': exercise.localized_name,
@@ -381,15 +457,13 @@ def routine_plan_detail_view(request, routine_id):
     
     context = {
         'routine_obj': routine,
-        'routine_title': routine.name,
+        'routine_title': display_routine_title,
         'routine': routine_details,
         'all_muscle_groups': all_muscle_groups,
-        # [추가] JSON으로 변환하여 템플릿에 전달
         'exercises_for_js': json.dumps(exercises_for_js),
         'active_menu': 'routine_list'
     }
     return render(request, 'routine/routine_plan_with_details.html', context)
-
 
 @require_POST
 @login_required

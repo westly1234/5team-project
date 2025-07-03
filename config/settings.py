@@ -13,6 +13,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.0.205', 'localhost', '127.0.0.1']
 
+GETTEXT_PATH = r'C:\gettext\bin' # <-- 이 경로가 이제 올바른 경로입니다.
+
+if os.path.exists(GETTEXT_PATH):
+    os.environ['PATH'] = GETTEXT_PATH + os.pathsep + os.environ.get('PATH', '')
+
 # Application definition
 INSTALLED_APPS = [
     'modeltranslation',
