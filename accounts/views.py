@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.contrib.auth.tokens import default_token_generator
+from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth import get_user_model, logout, login
@@ -12,7 +13,7 @@ from django.http import HttpRequest, JsonResponse
 from django.core.mail import EmailMultiAlternatives, send_mail
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
-from web.models import HealthSurvey
+from web.models import HealthSurvey, DailyHealthMetric
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import logout
@@ -22,7 +23,6 @@ from django.contrib.auth.decorators import login_required
 from .forms import UserUpdateForm, ProfileUpdateForm, FindUsernameForm, CustomPasswordResetForm, CustomSetPasswordForm
 from .models import Profile, BodyCompositionRecord
 from achievements.services import check_and_award_achievement, UserAchievement
-from web.models import FitnessProfile
 from web.utils import t
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -150,26 +150,92 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
+
 @login_required
 def profile_edit(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
+    
+    # ✨ 2. 폼이 제출되기 전의 이전 프로필 상태를 저장해둡니다.
+    # 체중/근육량 변화를 감지하기 위해 필요합니다.
+    try:
+        previous_profile_data = {
+            'target_weight': profile.target_weight,
+            'current_weight': profile.current_weight,
+            'image': profile.image,
+            # (필요 시) 다른 필드들도 추가
+        }
+    except Profile.DoesNotExist:
+        # 프로필이 방금 생성된 경우
+        previous_profile_data = {}
+
     if request.method == 'POST':
         user_form = UserUpdateForm(request.POST, instance=request.user)
         profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=profile)
+        
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
+            saved_profile = profile_form.save()
+            
+            # --- 건강 이력 기록 (이전과 동일) ---
+            today = timezone.now().date()
+            DailyHealthMetric.objects.update_or_create(
+                user=request.user,
+                date=today,
+                defaults={
+                    'weight': saved_profile.current_weight,
+                    'skeletal_muscle_mass': saved_profile.skeletal_muscle_mass,
+                    'body_fat_mass': saved_profile.body_fat_mass,
+                }
+            )
+            # ------------------------------------
 
-            profile_form.save()
+            # --- ✨ 3. [핵심] 업적 달성 확인 로직 추가 ---
+            # EXPLORE 카테고리 업적 확인
+            check_and_award_achievement(request, request.user, 'first_fitness_profile')
+            
+            if saved_profile.image and not previous_profile_data.get('image'):
+                check_and_award_achievement(request, request.user, 'first_profile_image')
+
+            if saved_profile.target_weight and not previous_profile_data.get('target_weight'):
+                check_and_award_achievement(request, request.user, 'first_target_weight')
+            
+            # 첫 신체 기록 업적 (체중, 골격근량, 체지방량 중 하나라도 처음 입력했다면)
+            if saved_profile.current_weight or saved_profile.skeletal_muscle_mass or saved_profile.body_fat_mass:
+                check_and_award_achievement(request, request.user, 'first_body_record')
+
+            # 프로필 완성도 확인 (모든 필수 필드가 채워졌는지 검사)
+            # 이 로직은 Profile 모델의 필드에 따라 달라지므로, 예시로 작성합니다.
+            required_fields = [
+                saved_profile.height, saved_profile.current_weight, saved_profile.target_weight,
+                saved_profile.skeletal_muscle_mass, saved_profile.body_fat_mass
+            ]
+            if all(required_fields):
+                check_and_award_achievement(request, request.user, 'profile_perfectionist')
+
+            # WORKOUT 카테고리 업적 확인 (목표 체중 달성 등)
+            if saved_profile.target_weight and saved_profile.current_weight:
+                if saved_profile.current_weight <= saved_profile.target_weight:
+                    check_and_award_achievement(request, request.user, 'target_weight_achieved')
+            
+            # (선택적) 체지방/근육량 변화 감지 로직 (더 복잡함)
+            # 이 기능은 DailyHealthMetric을 비교해야 하므로 별도의 서비스 함수로 만드는 것이 좋습니다.
+            # 예시: achievements.services.check_body_composition_changes(request.user)
+
+            # ----------------------------------------------
+            
             messages.success(request, t('프로필 정보가 성공적으로 업데이트되었습니다!'))
-            # ... (이하 업적 관련 코드는 생략하지 않고 그대로 둡니다) ...
-
             return redirect('web:services')
         else:
             messages.error(request, t('입력된 정보를 다시 확인해주세요.'))
     else:
         user_form = UserUpdateForm(instance=request.user)
         profile_form = ProfileUpdateForm(instance=profile)
-    context = {'user_form': user_form, 'profile_form': profile_form, 'active_title': profile.active_title}
+        
+    context = {
+        'user_form': user_form, 
+        'profile_form': profile_form, 
+        'active_title': profile.active_title
+    }
     return render(request, 'accounts/profile_edit.html', context)
 
 @login_required

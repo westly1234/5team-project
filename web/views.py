@@ -3,16 +3,17 @@
 import json
 import re
 from collections import OrderedDict, defaultdict
+from datetime import timedelta
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
+from django.utils import timezone 
 from django.utils.translation import gettext as _
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import Inquiry
+from .models import Inquiry, DailyHealthMetric
 
 # --- 다른 앱의 모델 및 서비스 import (기존 코드와 동일) ---
 try:
@@ -94,99 +95,93 @@ def services_page(request):
         'active_menu': 'dashboard',
     }
     
-    if check_and_award_achievement:
-        one_year_ago = today - timezone.timedelta(days=365)
-        if user.date_joined.date() <= one_year_ago:
-            check_and_award_achievement(request, user, 'anniversary_1year',  extra_tags='achievement_unlocked')
+    # 1. 1주년 업적 확인 (기존 로직 유지)
+    one_year_ago = today - timezone.timedelta(days=365)
+    if user.date_joined.date() <= one_year_ago:
+        # check_and_award_achievement 함수가 존재할 경우에만 호출
+        if callable(check_and_award_achievement):
+            check_and_award_achievement(request, user, 'anniversary_1year', extra_tags='achievement_unlocked')
 
-    if Profile:
-        try:
-            profile = Profile.objects.get(user=user)
-            context['profile'] = profile
-        except Profile.DoesNotExist:
-            context['profile'] = None
+    # 2. 프로필 및 활성 칭호 정보 가져오기
+    try:
+        profile = Profile.objects.select_related('active_title__achievement').get(user=user)
+        context['profile'] = profile
+        context['active_title'] = profile.active_title
+    except Profile.DoesNotExist:
+        context['profile'] = None
+        context['active_title'] = None
 
-    if Profile:
-        try:
-            profile = Profile.objects.select_related('active_title__achievement').get(user=user)
-            context['profile'] = profile
-            context['active_title'] = profile.active_title
-        except Profile.DoesNotExist:
-            context['profile'] = None
-            context['active_title'] = None
-
-    latest_routine = None
+    # 3. 최근 운동 루틴 정보 가져오기
     try:
         latest_routine = Routine.objects.filter(user=user).prefetch_related('routineexercise_set__exercise').latest('created_at')
         
-        # [핵심 수정 1] 루틴 이름 분석 로직 추가
-        routine_name_info = {'type': 'custom', 'name': latest_routine.name} # 기본값
-        
-        # 번역된 문자열을 기준으로 비교하기 위해 _() 함수 사용
+        routine_name_info = {'type': 'custom', 'name': latest_routine.name}
         ai_pattern = _("AI 추천:")
         custom_pattern_end = _("님의 맞춤 루틴")
 
         if latest_routine.name.startswith(ai_pattern):
             routine_name_info['type'] = 'ai'
-            # "AI 추천: " 부분을 제거한 나머지 이름
             routine_name_info['name'] = latest_routine.name[len(ai_pattern):].strip()
-
         elif latest_routine.name.endswith(custom_pattern_end):
             routine_name_info['type'] = 'user_custom'
-            # "님의 맞춤 루틴" 부분을 제거한 사용자 이름 부분
             routine_name_info['name'] = latest_routine.name[:-len(custom_pattern_end)].strip()
         
         context['routine_name_info'] = routine_name_info
-
-        # 운동 목록 생성 로직 (이전과 동일하게 localized_name 사용)
-        exercises_in_routine = []
-        for routine_ex in latest_routine.routineexercise_set.all()[:5]:
-            exercise_detail = {
-                'name': routine_ex.exercise.localized_name,
-                'sets': routine_ex.sets,
-                'reps': routine_ex.reps
-            }
-            exercises_in_routine.append(exercise_detail)
-        context['exercises_list'] = exercises_in_routine
-
+        context['exercises_list'] = [
+            {'name': re.exercise.localized_name, 'sets': re.sets, 'reps': re.reps}
+            for re in latest_routine.routineexercise_set.all()[:5]
+        ]
+        context['latest_routine'] = latest_routine
     except Routine.DoesNotExist:
         context['exercises_list'] = []
         context['routine_name_info'] = None
+        context['latest_routine'] = None
         
-    context['latest_routine'] = latest_routine
-
+    # 4. 오늘의 식단 요약 정보 가져오기
     today_diet_summary = defaultdict(float)
-    if Meal:
-        daily_meals = Meal.objects.filter(user=user, created_at__date=today)
-        for meal in daily_meals:
-            if meal.analysis_result and isinstance(meal.analysis_result, dict) and 'total_nutrition' in meal.analysis_result:
-                nutrition = meal.analysis_result['total_nutrition']
-                today_diet_summary['total_kcal'] += parse_nutrition_value(nutrition.get('calories', 0))
-                today_diet_summary['carbs'] += parse_nutrition_value(nutrition.get('carbohydrate', 0))
-                today_diet_summary['protein'] += parse_nutrition_value(nutrition.get('protein', 0))
-                today_diet_summary['fat'] += parse_nutrition_value(nutrition.get('fat', 0))
+    daily_meals = Meal.objects.filter(user=user, created_at__date=today)
+    for meal in daily_meals:
+        if meal.analysis_result and isinstance(meal.analysis_result, dict) and 'total_nutrition' in meal.analysis_result:
+            nutrition = meal.analysis_result['total_nutrition']
+            today_diet_summary['total_kcal'] += parse_nutrition_value(nutrition.get('calories', 0))
+            today_diet_summary['carbs'] += parse_nutrition_value(nutrition.get('carbohydrate', 0))
+            today_diet_summary['protein'] += parse_nutrition_value(nutrition.get('protein', 0))
+            today_diet_summary['fat'] += parse_nutrition_value(nutrition.get('fat', 0))
     context['today_diet_summary'] = dict(today_diet_summary)
-
-    inbody_chart_data = {'labels': [], 'weights': [], 'muscles': [], 'fats': []}
-    if BodyCompositionRecord:
-        all_records = BodyCompositionRecord.objects.filter(user=user).order_by('created_at')
-        daily_last_records = OrderedDict()
-        for record in all_records:
-            date_key = record.created_at.date()
-            daily_last_records[date_key] = record
-        final_records_list = list(daily_last_records.values())[-30:]
-        inbody_chart_data['labels'] = [rec.created_at.strftime('%m/%d') for rec in final_records_list]
-        inbody_chart_data['weights'] = [rec.weight for rec in final_records_list]
-        inbody_chart_data['muscles'] = [rec.skeletal_muscle_mass for rec in final_records_list]
-        inbody_chart_data['fats'] = [rec.body_fat_mass for rec in final_records_list]
-    context['inbody_chart_data'] = json.dumps(inbody_chart_data)
-
-    diet_chart_data = {
+    context['diet_chart_data'] = json.dumps({
         'carbs': round(today_diet_summary['carbs'], 1),
         'protein': round(today_diet_summary['protein'], 1),
         'fat': round(today_diet_summary['fat'], 1),
-    }
-    context['diet_chart_data'] = json.dumps(diet_chart_data) 
+    })
+
+    # --- ✨ 5. [핵심 수정] 건강 지표 차트 데이터 준비 ---
+    # BodyCompositionRecord 대신 DailyHealthMetric 모델을 사용합니다.
+    metrics = DailyHealthMetric.objects.filter(
+        user=user,
+        date__gte=today - timedelta(days=30)
+    ).order_by('date')
+
+    chart_labels = []
+    weight_data = []
+    muscle_data = []
+    fat_data = []
+
+    if metrics.exists():
+        # 모든 OS에서 작동하는 표준 형식으로 변경
+        chart_labels = [m.date.strftime('%m/%d') for m in metrics]
+        
+        # 데이터가 None일 경우, JavaScript의 null로 변환하여 차트 선이 끊어지게 합니다.
+        weight_data = [round(m.weight, 1) if m.weight is not None else 'null' for m in metrics]
+        muscle_data = [round(m.skeletal_muscle_mass, 1) if m.skeletal_muscle_mass is not None else 'null' for m in metrics]
+        fat_data = [round(m.body_fat_mass, 1) if m.body_fat_mass is not None else 'null' for m in metrics]
+            
+    # JSON으로 변환하여 템플릿에 전달합니다.
+    # 기존 'inbody_chart_data' 대신, 각 데이터를 개별 키로 전달하여 템플릿에서 사용하기 쉽게 합니다.
+    context['chart_labels'] = json.dumps(chart_labels)
+    context['weight_data'] = json.dumps(weight_data)
+    context['muscle_data'] = json.dumps(muscle_data)
+    context['fat_data'] = json.dumps(fat_data)
+    # ----------------------------------------------------
     
     return render(request, 'web/services.html', context)
 

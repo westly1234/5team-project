@@ -3,10 +3,12 @@
 from django.contrib import messages
 from .models import Achievement, UserAchievement
 import logging
+from web.utils import t # ✨ 1. t 함수를 임포트합니다.
+from django.utils import translation
 
 logger = logging.getLogger(__name__)
 
-def check_and_award_achievement(request, user, codename):
+def check_and_award_achievement(request, user, codename, extra_tags=''):
     try:
         achievement = Achievement.objects.get(codename=codename)
     except Achievement.DoesNotExist:
@@ -16,12 +18,11 @@ def check_and_award_achievement(request, user, codename):
     if not UserAchievement.objects.filter(user=user, achievement=achievement).exists():
         UserAchievement.objects.create(user=user, achievement=achievement)
 
-        # ✅ 1. JSON 파일에 있는 업적 이름의 '번역 키'를 만듭니다.
-        #    예: "achievement.workout_log_365.name"
+        lang_code = translation.get_language_from_request(request)
         achievement_name_key = f"achievement.{achievement.codename}.name"
-        
-        # ✅ 2. 다른 어떤 문자열도 섞지 말고, 이 '번역 키' 자체를 메시지로 저장합니다.
-        messages.success(request, achievement_name_key, extra_tags='achievement_unlocked')
-            
+        translated_message = t(achievement_name_key, lang_code=lang_code)
+        final_tags = f'achievement_unlocked {extra_tags}'.strip()
+        messages.success(request, translated_message, extra_tags=final_tags)
+
         return True
     return False
