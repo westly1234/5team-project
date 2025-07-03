@@ -35,7 +35,7 @@
                 <div class="routine-card flex flex-col bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg transition-all duration-300 hover:border-violet-500/50 hover:shadow-2xl hover:shadow-violet-500/10">
                     <a href="{% url 'routine:routine_plan_detail' routine.id %}" class="block p-6 flex-grow no-underline">
                         <div class="flex justify-between items-start">
-                            <h2 class="text-xl font-bold text-white mb-2">{{ routine.name }}</h2>
+                            <h2 class="text-xl font-bold text-white mb-2">{{ routine.display_name }}</h2>
                             <form id="delete-form-{{ routine.id }}" method="post" action="{% url 'routine:delete_routine' routine.id %}" class="inline">
                                 {% csrf_token %}
                                 <button type="button" onclick="confirmDelete(event, '{{ routine.id }}')" class="text-gray-500 hover:text-red-400 transition-colors" title="{% t '삭제하기' %}"><i class="bi bi-trash3"></i></button>

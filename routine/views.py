@@ -18,6 +18,7 @@ from datetime import timedelta
 from django.utils import timezone
 from achievements.services import check_and_award_achievement
 from django.utils import translation
+from web.utils import t
 
 
 def populate_exercise_details_if_empty(exercise: Exercise):
@@ -294,7 +295,8 @@ def gpt_plan_view(request):
             trigger_routine_creation_achievements(request, new_routine, new_routine_exercises)
             check_and_award_achievement(request, request.user, 'ai_trainer')
 
-        messages.success(request, _("'%s' 루틴이 성공적으로 생성되었습니다!") % new_routine.name)
+        success_message = (request, _("'%s' 루틴이 성공적으로 생성되었습니다!") % new_routine.name)
+        messages.success(request, success_message, extra_tags='routine_notification')
         return redirect('routine:routine_plan_detail', routine_id=new_routine.id)
     except Exception as e:
         context = {'routine_title': _("루틴 저장 실패"), 'routine': [], 'error': _("루틴 저장 중 오류가 발생했습니다: %(error)s") % {'error': str(e)}, 'active_menu': 'routine'}
@@ -310,11 +312,10 @@ def custom_plan_view(request):
     try:
         exercise_list = json.loads(exercises_json)
         if not exercise_list:
-            messages.warning(request, _("최소 하나 이상의 운동을 선택해주세요."))
+            messages.warning(request, t('최소 하나 이상의 운동을 선택해주세요.'), extra_tags='routine_notification')
             return redirect('routine:select')
 
         with transaction.atomic():
-            # ✨ 핵심 수정: _() 함수를 제거하여 항상 한국어 원본 포맷으로 저장
             routine_name = f"{request.user.username}님의 맞춤 루틴"
             new_routine = Routine.objects.create(user=request.user, name=routine_name)
             
@@ -329,49 +330,43 @@ def custom_plan_view(request):
             
             if new_routine and new_routine_exercises:
                 trigger_routine_creation_achievements(request, new_routine, new_routine_exercises)
-        
-        messages.success(request, _("'%s' 루틴이 성공적으로 생성되었습니다!") % new_routine.name)
+        message_template = t('루틴이 성공적으로 생성되었습니다!')
+        final_message = f"'{new_routine.name}' {message_template}"
+        messages.success(request, final_message, extra_tags='routine_notification')
         return redirect('routine:routine_plan_detail', routine_id=new_routine.id)
     except (json.JSONDecodeError, Exercise.DoesNotExist):
-        messages.error(request, _("잘못된 요청입니다."))
+        messages.error(request, t('잘못된 요청입니다.'), extra_tags='routine_notification')
         return redirect('routine:select')
 
 
 @login_required
 def my_routines_view(request):
-    """내 루틴 목록 페이지 뷰"""
+    """내 루틴 목록 페이지 뷰 (보여줄 때 번역)"""
     user_routines = Routine.objects.filter(user=request.user).prefetch_related('routineexercise_set__exercise').order_by('-created_at')
-
-    # --- ✨ 핵심 수정 부분 시작 ✨ ---
-    # 템플릿으로 보내기 전에 각 루틴의 이름을 번역 처리합니다.
+    
+    ai_prefix_translated = t("AI 추천:")
+    user_suffix_translated = t("님의 맞춤 루틴")
+    
     for routine in user_routines:
-        # '...님의 맞춤 루틴' 형식인지 확인합니다.
-        match_custom = re.match(r'^(.*)님의 맞춤 루틴$', routine.name)
-        # 2. AI 추천 루틴 패턴 검사
-        match_ai = re.match(r'^AI 추천: (.*) \((.*)\)$', routine.name)
+        original_name = routine.name
+        
+        ai_prefix_original = "AI 추천:"
+        user_suffix_original = "님의 맞춤 루틴"
 
-        if match_custom:
-            username = match_custom.group(1)
-            # 한국어 원본을 번역 키(msgid)로 사용
-            # my_routines_view 에서는 routine.display_name = ... 형식으로 할당
-            display_routine_title = _("%(username)s님의 맞춤 루틴") % {'username': username}
-        elif match_ai:
-            part = match_ai.group(1)  # '하체', '등' 등
-            level = match_ai.group(2) # '초급', '중급' 등
-            
-            # 각 부분을 먼저 번역
-            translated_part = _(part)
-            translated_level = _(level)
-            
-            # 한국어 원본 포맷을 번역 키(msgid)로 사용
-            # my_routines_view 에서는 routine.display_name = ... 형식으로 할당
-            display_routine_title = _("AI 추천: %(part)s (%(level)s)") % {'part': translated_part, 'level': translated_level}
+        if original_name.startswith(ai_prefix_original):
+            dynamic_part = original_name.removeprefix(ai_prefix_original).strip()
+            routine.display_name = f"{ai_prefix_translated} {dynamic_part}"
+        elif original_name.endswith(user_suffix_original):
+            username_part = original_name.removesuffix(user_suffix_original).strip()
+            routine.display_name = f"{username_part}{user_suffix_translated}"
         else:
-            # 어떤 패턴과도 일치하지 않으면 원래 이름을 그대로 사용
-            display_routine_title = routine.name
-        # --- ✨ 핵심 수정 부분 끝 ✨ ---
-
-    return render(request, 'routine/my_routines.html', {'routines': user_routines, 'active_menu': 'routine_list'})
+            routine.display_name = original_name
+            
+    context = {
+        'routines': user_routines,
+        'active_menu': 'routine_list'
+    }
+    return render(request, 'routine/my_routines.html', context)
 
 
 # routine/views.py 의 routine_plan_detail_view 함수
@@ -387,43 +382,22 @@ def routine_plan_detail_view(request, routine_id):
     # 2. AI 추천 루틴 패턴 검사
     match_ai = re.match(r'^AI 추천: (.*) \((.*)\)$', routine.name)
 
-    if match_custom:
-        username = match_custom.group(1)
-        # 한국어 원본을 번역 키(msgid)로 사용
-        # my_routines_view 에서는 routine.display_name = ... 형식으로 할당
-        display_routine_title = _("%(username)s님의 맞춤 루틴") % {'username': username}
-    elif match_ai:
-        part = match_ai.group(1)  # '하체', '등' 등
-        level = match_ai.group(2) # '초급', '중급' 등
-        
-        # 각 부분을 먼저 번역
-        translated_part = _(part)
-        translated_level = _(level)
-        
-        # 한국어 원본 포맷을 번역 키(msgid)로 사용
-        # my_routines_view 에서는 routine.display_name = ... 형식으로 할당
-        display_routine_title = _("AI 추천: %(part)s (%(level)s)") % {'part': translated_part, 'level': translated_level}
+    ai_prefix_translated = t("AI 추천:")
+    user_suffix_translated = t("님의 맞춤 루틴")
+    
+    original_name = routine.name
+    ai_prefix_original = "AI 추천:"
+    user_suffix_original = "님의 맞춤 루틴"
+
+    if original_name.startswith(ai_prefix_original):
+        dynamic_part = original_name.removeprefix(ai_prefix_original).strip()
+        routine_title = f"{ai_prefix_translated} {dynamic_part}"
+    elif original_name.endswith(user_suffix_original):
+        username_part = original_name.removesuffix(user_suffix_original).strip()
+        routine_title = f"{username_part}{user_suffix_translated}"
     else:
-        # 어떤 패턴과도 일치하지 않으면 원래 이름을 그대로 사용
-        display_routine_title = routine.name
+        routine_title = original_name
 
-    # ✨ ================== 핵심 수정 부분 시작 ================== ✨
-    # 안정성 강화: 루틴에 운동이 하나도 없는 경우를 먼저 처리합니다.
-    if not routine_exercises.exists():
-        context = {
-            'routine_obj': routine,
-            'routine_title': display_routine_title,
-            'routine': [],  # 템플릿의 for루프가 에러 없이 돌도록 빈 리스트를 전달합니다.
-            'all_muscle_groups': all_muscle_groups,
-            'exercises_for_js': '[]', # JS 변수가 에러를 일으키지 않도록 빈 배열을 전달합니다.
-            'active_menu': 'routine_list',
-            # 템플릿에서 이 메시지를 표시할 수 있도록 추가합니다.
-            'error_message': _("이 루틴에는 포함된 운동이 없습니다. 운동을 추가해주세요.") 
-        }
-        return render(request, 'routine/routine_plan_with_details.html', context)
-    # ✨ ================== 핵심 수정 부분 끝 ================== ✨
-
-    # --- 기존 로직 (운동이 하나 이상 있을 경우에만 실행됨) ---
     routine_details = []
     exercises_for_js = []
 
@@ -457,13 +431,31 @@ def routine_plan_detail_view(request, routine_id):
     
     context = {
         'routine_obj': routine,
-        'routine_title': display_routine_title,
+        'routine_title': routine_title,
         'routine': routine_details,
         'all_muscle_groups': all_muscle_groups,
         'exercises_for_js': json.dumps(exercises_for_js),
         'active_menu': 'routine_list'
     }
     return render(request, 'routine/routine_plan_with_details.html', context)
+
+def get_translated_routine_name(routine):
+    """Routine 객체를 받아 번역된 이름을 반환하는 셔 함수"""
+    original_name = routine.name
+    
+    # 고정된 한국어 패턴을 기준으로 비교
+    ai_prefix_original = "AI 추천:"
+    user_suffix_original = "님의 맞춤 루틴"
+
+    if original_name.startswith(ai_prefix_original):
+        dynamic_part = original_name.removeprefix(ai_prefix_original).strip()
+        # t 함수가 현재 언어를 자동으로 감지
+        return f"{t('AI 추천:')} {dynamic_part}"
+    elif original_name.endswith(user_suffix_original):
+        username_part = original_name.removesuffix(user_suffix_original).strip()
+        return f"{username_part}{t('님의 맞춤 루틴')}"
+    else:
+        return original_name
 
 @require_POST
 @login_required
@@ -475,10 +467,10 @@ def edit_routine_view(request, routine_id):
         new_routine_name = request.POST.get('routine_name', routine.name).strip()
 
         if not new_routine_name:
-            messages.error(request, _("루틴 이름은 비워둘 수 없습니다."))
+            messages.error(request, t('루틴 이름은 비워둘 수 없습니다.'), extra_tags='routine_notification')
             return redirect('routine:routine_plan_detail', routine_id=routine.id)
         if not exercises_data:
-            messages.error(request, _("루틴에는 최소 하나 이상의 운동이 포함되어야 합니다."))
+            messages.error(request, t('루틴에는 최소 하나 이상의 운동이 포함되어야 합니다.'), extra_tags='routine_notification')
             return redirect('routine:routine_plan_detail', routine_id=routine.id)
 
         with transaction.atomic():
@@ -503,11 +495,11 @@ def edit_routine_view(request, routine_id):
             if routine and new_routine_exercises:
                 trigger_routine_creation_achievements(request, routine, new_routine_exercises)
 
-        messages.success(request, _("루틴이 성공적으로 수정되었습니다!"))
+        messages.success(request, t('루틴이 성공적으로 수정되었습니다!'), extra_tags='routine_notification')
     except (json.JSONDecodeError, Exercise.DoesNotExist):
-        messages.error(request, _("루틴 수정 중 잘못된 데이터가 감지되었습니다."))
+        messages.error(request, t('루틴 수정 중 잘못된 데이터가 감지되었습니다.'), extra_tags='routine_notification')
     except Exception as e:
-        messages.error(request, _("루틴 수정 중 오류가 발생했습니다: %(error)s") % {'error': e})
+        messages.error(request, t('루틴 수정 중 오류가 발생했습니다: %(error)s') % {'error': e}, extra_tags='routine_notification')
 
     return redirect('routine:routine_plan_detail', routine_id=routine.id)
 
@@ -517,9 +509,17 @@ def edit_routine_view(request, routine_id):
 def delete_routine_view(request, routine_id):
     """루틴 삭제 처리 뷰"""
     routine = get_object_or_404(Routine, id=routine_id, user=request.user)
-    routine_name = routine.name
+    
+    # ✨ [핵심 수정] 루틴을 삭제하기 전에, 보여줄 이름을 미리 번역합니다.
+    translated_routine_name = get_translated_routine_name(routine)
+    
     routine.delete()
-    messages.success(request, _("'%s' 루틴이 삭제되었습니다.") % routine_name)
+    
+    # 번역된 이름을 사용하여 메시지를 생성합니다.
+    message_template = t('루틴이 삭제되었습니다')
+    final_message = f"'{translated_routine_name}' {message_template}"
+    messages.success(request, final_message, extra_tags='routine_notification')
+
     return redirect('routine:my_routines')
 
 
@@ -530,7 +530,14 @@ def workout_complete_view(request, routine_id):
     routine = get_object_or_404(Routine, id=routine_id, user=request.user)
     workout_log = WorkoutLog.objects.create(user=request.user, routine=routine, completed_at=timezone.now())
     trigger_workout_completion_achievements(request, workout_log)
-    messages.success(request, _("'%s' 운동을 완료했습니다! 오늘도 수고하셨습니다.") % routine.name)
+    
+    # ✨ [핵심 수정] 헬퍼 함수를 사용하여 루틴 이름을 먼저 번역합니다.
+    translated_routine_name = get_translated_routine_name(routine)
+    
+    message_template = t('운동을 완료했습니다! 오늘도 수고하셨습니다.')
+    final_message = f"'{translated_routine_name}' {message_template}"
+    messages.success(request, final_message, extra_tags='routine_notification')
+    
     return redirect('routine:my_routines')
 
 
