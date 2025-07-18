@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: 5team-project
+    env: docker
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        value: django-insecure-a^3=vq=*a+u*)sagi%5kr9^$gmgl379y5)9q=a%_f*b6$9)$vx
+      - key: DEBUG
+        value: 'False'
+      - key: ALLOWED_HOSTS
+        value: 5team-project.onrender.com
+      - key: OPENAI_API_KEY
+        value: your-openai-key
+      - key: YOUTUBE_API_KEY
+        value: your-youtube-key
+      - key: KAKAO_MAP_API_KEY
+        value: your-kakao-key
+      - key: COUPANG_ACCESS_KEY
+        value: your-coupang-access
+      - key: COUPANG_SECRET_KEY
+        value: your-coupang-secret
