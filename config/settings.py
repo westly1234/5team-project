@@ -164,3 +164,5 @@ TEMP_IMAGE_DIR = os.path.join(MEDIA_ROOT, 'temp_images')
 
 # TEMP_IMAGE_DIR이 존재하지 않으면 생성
 os.makedirs(TEMP_IMAGE_DIR, exist_ok=True)
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
