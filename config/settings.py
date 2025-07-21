@@ -11,7 +11,7 @@ SECRET_KEY = 'django-insecure-a^3=vq=*a+u*)sagi%5kr9^$gmgl379y5)9q=a%_f*b6$9)$vx
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.205', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['52.91.170.201', 'localhost', '127.0.0.1']
 
 GETTEXT_PATH = r'C:\gettext\bin' # <-- 이 경로가 이제 올바른 경로입니다.
 
