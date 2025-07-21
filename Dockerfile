@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
 # requirements 설치
 COPY requirements.txt .
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 프로젝트 전체 복사
 COPY . .
