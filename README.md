@@ -45,6 +45,7 @@ The chatbot is the core intelligence module of this platform.
 ├── media/            # Uploaded files
 ├── staticfiles/      # Collected static files
 
+
 ## ✨ Key Features
 
 ### 👤 User & Account
@@ -85,6 +86,7 @@ The chatbot is the core intelligence module of this platform.
 - AI body shape analysis
 - Fashion & training tips
 
+
 ## 🚀 Quick Start
 
 ```bash
@@ -101,6 +103,7 @@ pip install -r requirements.txt
 
 # Run server
 python manage.py runserver
+
 
 ## 🧩 System Architecture
 
