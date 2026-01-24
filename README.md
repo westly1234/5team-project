@@ -1,4 +1,4 @@
-# 5team-Project 🧠💪  
+# Healthcare Project
 AI-Powered Wellness Platform built with Django & GPT  
 
 > Personal fitness, diet, routine, music, and AI health coach in one integrated platform.
